@@ -147,9 +147,10 @@ fn tools() -> Value {
              json!({"session": p_string("Session name")}),
              &[]),
         tool("click",
-             "Click an element matched by a CSS selector (dispatches real mouse events: mousedown, mouseup, click).",
+             "Click an element matched by a CSS selector (dispatches real mouse events: mousedown, mouseup, click). Set wait_navigation when the click submits a form or navigates — navette then waits for the new page to finish loading.",
              json!({
                  "selector": p_string("CSS selector of the element to click"),
+                 "wait_navigation": p_bool("Wait for the navigation triggered by this click (form submit, link)"),
                  "session": p_string("Session name")
              }),
              &["selector"]),
@@ -180,6 +181,17 @@ fn tools() -> Value {
              "List open browser sessions with their current URL and title.",
              json!({}),
              &[]),
+        tool("state_export",
+             "Export the session's cookies as JSON (the logged-in state). Keep it secret — it IS the login. Re-import later with state_import, even after a navette restart.",
+             json!({"session": p_string("Session name")}),
+             &[]),
+        tool("state_import",
+             "Import cookies JSON (from state_export) into a session to restore a logged-in state without re-logging in.",
+             json!({
+                 "cookies": p_string("The cookies JSON exported by state_export (raw or wrapped in {\"cookies\":[...]})"),
+                 "session": p_string("Session name")
+             }),
+             &["cookies"]),
         tool("session_close",
              "Close a browser session and free its window.",
              json!({"session": p_string("Session name to close")}),
@@ -238,7 +250,10 @@ fn run_tool(name: &str, a: &Value) -> Value {
             })
         }
         "click" => {
-            let body = json!({"selector": a.get("selector").cloned().unwrap_or(json!("")), "session": session});
+            let mut body = json!({"selector": a.get("selector").cloned().unwrap_or(json!("")), "session": session});
+            if a.get("wait_navigation").and_then(|v| v.as_bool()).unwrap_or(false) {
+                body["wait_navigation"] = json!(true);
+            }
             let (code, data) = http_call("/click", "POST", Some(&body));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("click failed ({}): {}", code, compact(data)), true) }
@@ -272,6 +287,20 @@ fn run_tool(name: &str, a: &Value) -> Value {
             let (code, data) = http_call("/sessions", "GET", None);
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("sessions failed ({})", code), true) }
+        }
+        "state_export" => {
+            let (code, data) = http_call("/sessions/state", "POST", Some(&json!({"session": sget("session", "default")})));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("state_export failed ({}): {}", code, compact(data)), true) }
+        }
+        "state_import" => {
+            let raw = a.get("cookies").and_then(|v| v.as_str()).unwrap_or("");
+            let parsed: Value = serde_json::from_str(raw).unwrap_or_else(|_| a.clone());
+            let cookies = parsed.get("cookies").cloned().unwrap_or_else(|| parsed.clone());
+            let body = json!({"session": sget("session", "default"), "cookies": cookies});
+            let (code, data) = http_call("/sessions/load", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("state_import failed ({}): {}", code, compact(data)), true) }
         }
         "session_close" => {
             let (code, data) = http_call("/sessions/close", "POST", Some(&json!({"session": session})));

@@ -36,3 +36,13 @@ pub fn eval_js(_s: &SessionRef, _js: &str) -> Result<String, String> {
 pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
     Err("platform not supported yet".into())
 }
+
+pub fn export_cookies(_s: &SessionRef) -> Result<Value, String> {
+    Err("platform not supported yet".into())
+}
+
+pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String> {
+    Err("platform not supported yet".into())
+}
+
+pub fn wait_settle(_s: &SessionRef) {}

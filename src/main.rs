@@ -272,8 +272,16 @@ fn route(fd: &mut TcpStream, req: Req) {
 
         ("POST", "/click") => {
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let wait_nav = j.get("wait_navigation").and_then(|v| v.as_bool()).unwrap_or(false);
             let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::eval_js(&s, &click_js(&jstr(&sel))) {
+            let clicked = backend::eval_js(&s, &click_js(&jstr(&sel)));
+            if wait_nav {
+                // The click may have started a form-POST navigation: settle.
+                if clicked.is_ok() {
+                    backend::wait_settle(&s);
+                }
+            }
+            match clicked {
                 Ok(v) => respond(fd, 200, "OK", "application/json",
                                  &json_bytes(&json!({"ok": v == "OK", "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
@@ -319,6 +327,23 @@ fn route(fd: &mut TcpStream, req: Req) {
             respond(fd, if found { 200 } else { 408 }, if found { "OK" } else { "Request Timeout" },
                     "application/json",
                     &json_bytes(&json!({"ok": found, "selector": sel})));
+        }
+
+        ("POST", "/sessions/state") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            match backend::export_cookies(&s) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/sessions/load") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            match backend::import_cookies(&s, j.get("cookies").cloned().unwrap_or(json!([])).as_array().map(|a| a.as_slice()).unwrap_or(&[])) {
+                Ok(n_cookies) => respond(fd, 200, "OK", "application/json",
+                                         &json_bytes(&json!({"ok": true, "imported": n_cookies}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
         }
 
         _ => {

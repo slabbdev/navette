@@ -46,10 +46,12 @@ The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if
 | `POST /navigate` | `{url, session?, with_content?, format?}` | `{ok, url, title[, content]}` — `with_content` folds the read into one round-trip |
 | `POST /read` | `{session?, format?}` markdown/text/html | `{ok, content}` |
 | `POST /screenshot` | `{session?}` | PNG bytes |
-| `POST /click` | `{selector, session?}` | `{ok}` (real mouse events) |
+| `POST /click` | `{selector, session?, wait_navigation?}` | `{ok}` (real mouse events; opt-in auto-wait for form-POST navigations) |
 | `POST /type` | `{selector, value, session?}` | `{ok}` (React-safe native setter) |
 | `POST /evaluate` | `{js, session?}` | `{ok, result}` |
 | `POST /wait` | `{selector, ms?, session?}` | `{ok}` |
+| `POST /sessions/state` | `{session}` | cookies JSON — the logged-in state |
+| `POST /sessions/load` | `{session, cookies}` | `{ok, imported}` restore a logged-in state |
 | `POST /sessions/close` | `{session}` | `{ok}` |
 
 Sessions are created lazily; ghost windows are attached only when a screenshot needs them.
