@@ -22,7 +22,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
 use tao::event::Event;
-use tao::event_loop::{ControlFlow, EventLoopBuilder, EventLoopProxy};
+use tao::event_loop::{ControlFlow, EventLoop, EventLoopBuilder, EventLoopProxy};
 use tao::window::{Window, WindowBuilder};
 use wry::WebView;
 
@@ -60,6 +60,13 @@ pub struct PendingNav {
 static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
 static PROXY: OnceLock<EventLoopProxy<Command>> = OnceLock::new();
 static RPC_ID: AtomicU64 = AtomicU64::new(1);
+
+thread_local! {
+    // The tao EventLoop is !Send and lives only on the main thread;
+    // run_main_loop (called on main) takes it out and runs it.
+    static MAIN_EVENT_LOOP: std::cell::RefCell<Option<EventLoop<Command>>> =
+        std::cell::RefCell::new(None);
+}
 
 fn sessions() -> &'static Mutex<HashMap<String, SessionRef>> {
     SESSIONS.get_or_init(|| Mutex::new(HashMap::new()))
@@ -365,14 +372,23 @@ fn create_session(
     }))
 }
 
-pub fn run_main_loop() {
+// Called on the main thread BEFORE the listener starts: the proxy is ready
+// immediately, while the loop itself starts processing at run_main_loop().
+pub fn init_main_loop() {
     let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
-    let proxy = event_loop.create_proxy();
-    let _ = PROXY.set(proxy);
-    event_loop.run(move |event, target, control_flow| {
-        *control_flow = ControlFlow::Wait;
-        if let Event::UserEvent(cmd) = event {
-            handle_command(cmd, target);
+    let _ = PROXY.set(event_loop.create_proxy());
+    MAIN_EVENT_LOOP.with(|c| *c.borrow_mut() = Some(event_loop));
+}
+
+pub fn run_main_loop() {
+    MAIN_EVENT_LOOP.with(|cell| {
+        if let Some(event_loop) = cell.borrow_mut().take() {
+            event_loop.run(move |event, target, control_flow| {
+                *control_flow = ControlFlow::Wait;
+                if let Event::UserEvent(cmd) = event {
+                    handle_command(cmd, target);
+                }
+            });
         }
     });
 }
