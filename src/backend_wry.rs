@@ -1,25 +1,22 @@
-// backend_wry — Windows + Linux backend via wry/tao.
+// backend_wry — Windows + Linux backend via wry/tao (0.57/0.30).
 // One implementation for both OSes: WebView2 (Windows) and WebKitGTK (Linux)
 // behind the same surface. The macOS backend (backend_macos.rs) is separate —
 // it has the delegate-fold optimization, screenshots and cookie state.
 //
 // Threading: the tao event loop owns the main thread; HTTP threads send
 // Commands through the EventLoopProxy and wait on channels (same shape as the
-// macOS backend's run_on_main hops).
+// macOS backend's run_on_main hops). Results flow back through wry's
+// evaluate_script_with_callback — the main thread is never blocked, and the
+// navigate completion + folded content extraction ride the same callback path.
 //
-// Results flow back through wry's evaluate_script_with_callback: no blocking
-// of the main thread anywhere — the navigate completion and the folded content
-// extraction ride the same callback path.
-//
-// tao/wry GTK objects are !Send — they are wrapped in ghost handles that are
+// tao/wry GTK+COM handles are !Send — they live in ghost wrappers that are
 // only ever DEREFERENCED on the main thread (event loop + its scheduled
-// blocks). The Send impls are the standard tao/wrio pattern for handles whose
+// blocks). The Send/Sync impls are the standard pattern for handles whose
 // methods stay on the creating thread.
 
 use serde_json::{json, Value};
-use std::collections::HashMap;
-use std::sync::mpsc::SyncSender;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::mpsc::SyncSender;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
@@ -44,8 +41,8 @@ pub struct GhostWebView(pub WebView);
 pub struct Session {
     pub name: String,
     pub window: GhostWindow,
-    // The handler closures (ipc / page-load) receive this slot and read the
-    // webview from it after build() — builder-time circularity avoided.
+    // The page-load handler closure receives this slot and reads the webview
+    // from it after build() — builder-time circularity avoided.
     pub webview_slot: Arc<Mutex<Option<GhostWebView>>>,
     pub pending: Arc<Mutex<Option<PendingNav>>>,
     pub current_url: Arc<Mutex<String>>,
@@ -71,10 +68,6 @@ fn proxy() -> &'static EventLoopProxy<Command> {
     PROXY.get().expect("event loop proxy not initialized")
 }
 
-fn next_rpc_id() -> u64 {
-    RPC_ID.fetch_add(1, Ordering::SeqCst)
-}
-
 // ---------- Public surface (called from HTTP threads)
 
 pub fn run_get_or_create(name: &str) -> SessionRef {
@@ -94,15 +87,13 @@ pub fn list_sessions() -> Value {
 }
 
 pub fn close_session(name: &str) {
-    let (tx, rx) = std::sync::mpsc::sync_channel(1);
-    proxy().send_event(Command::Close(name.to_string(), tx)).ok();
-    let _ = rx.recv();
+    proxy().send_event(Command::Close(name.to_string())).ok();
 }
 
 pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<String, String> {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
     // Register the pending completion BEFORE the load so the Finished event
-    // (fired on main) finds it.
+    // (fired on main) finds it and folds the content extraction in.
     {
         let mut p = s.pending.lock().unwrap();
         *p = Some(PendingNav { tx: tx.clone(), after });
@@ -117,31 +108,89 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
 
 pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
-    let id = next_rpc_id();
-    s.evals.lock().unwrap().insert(id, tx);
-    let script = eval_wrapper(id, js);
+    // The callback receives the JSON-serialized result of the wrapped JS.
+    let wrapped = format!(
+        "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
+        js = js
+    );
     proxy()
-        .send_event(Command::EvalJs(s.name.clone(), script))
+        .send_event(Command::EvalJs(s.name.clone(), wrapped, tx))
         .map_err(|_| "event loop gone")?;
-    match rx.recv_timeout(Duration::from_secs(20)) {
-        Ok(v) => Ok(v),
-        Err(_) => {
-            s.evals.lock().unwrap().remove(&id);
-            Err("evaluate timeout".into())
-        }
-    }
+    rx.recv_timeout(Duration::from_secs(20))
+        .unwrap_or_else(|_| Err("evaluate timeout".into()))
 }
 
 pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
     Err("screenshots on Windows/Linux land in the next release — macOS ships them today".into())
 }
 
-pub fn export_cookies(_s: &SessionRef) -> Result<Value, String> {
-    Err("cookie state on Windows/Linux lands in the next release".into())
+pub fn export_cookies(s: &SessionRef) -> Result<Value, String> {
+    let wv = s
+        .webview_slot
+        .lock()
+        .unwrap()
+        .as_ref()
+        .ok_or("no webview")?;
+    let cookies = wv.0.cookies().map_err(|e| e.to_string())?;
+    let out: Vec<Value> = cookies
+        .iter()
+        .map(|c| {
+            let expires = match c.expires() {
+                Some(wry::cookie::Expiration::DateTime(dt)) => json!(dt.unix_timestamp()),
+                _ => Value::Null,
+            };
+            json!({
+                "name": c.name(),
+                "value": c.value(),
+                "domain": c.domain().unwrap_or(""),
+                "path": c.path().unwrap_or("/"),
+                "expires": expires,
+                "secure": c.secure(),
+                "httpOnly": c.http_only(),
+            })
+        })
+        .collect();
+    Ok(json!({ "cookies": out }))
 }
 
-pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String> {
-    Err("cookie state on Windows/Linux lands in the next release".into())
+pub fn import_cookies(s: &SessionRef, cookies: &Value) -> Result<usize, String> {
+    let wv = s
+        .webview_slot
+        .lock()
+        .unwrap()
+        .as_ref()
+        .ok_or("no webview")?;
+    let mut count = 0usize;
+    if let Some(arr) = cookies.get("cookies").and_then(|v| v.as_array()) {
+        for c in arr {
+            let name = c.get("name").and_then(|v| v.as_str()).unwrap_or("");
+            if name.is_empty() {
+                continue;
+            }
+            let value = c.get("value").and_then(|v| v.as_str()).unwrap_or("");
+            let mut builder = wry::cookie::Cookie::build((name, value));
+            if let Some(d) = c.get("domain").and_then(|v| v.as_str()) {
+                builder = builder.domain(d);
+            }
+            if let Some(p) = c.get("path").and_then(|v| v.as_str()) {
+                builder = builder.path(p);
+            }
+            if c.get("secure").and_then(|v| v.as_bool()).unwrap_or(false) {
+                builder = builder.secure(true);
+            }
+            if c.get("httpOnly").and_then(|v| v.as_bool()).unwrap_or(false) {
+                builder = builder.http_only(true);
+            }
+            if let Some(ts) = c.get("expires").and_then(|v| v.as_f64()) {
+                if let Ok(dt) = wry::cookie::time::OffsetDateTime::from_unix_timestamp(ts as i64) {
+                    builder = builder.expires(wry::cookie::Expiration::from(dt));
+                }
+            }
+            wv.0.set_cookie(&builder.finish()).map_err(|e| e.to_string())?;
+            count += 1;
+        }
+    }
+    Ok(count)
 }
 
 // After a click that may have triggered a form-POST navigation: wait for the
@@ -165,10 +214,9 @@ pub fn wait_settle(s: &SessionRef) {
 
 // ---------- Event loop (main thread)
 
-fn eval_wrapper(id: u64, js: &str) -> String {
+fn eval_wrapper(js: &str) -> String {
     format!(
-        "window.__navette_rpc({id}, Promise.resolve((function(){{ try {{ return (function(){{ {js} }})(); }} catch(e) {{ return {{__nav_error: String(e)}} }}; }})()).then(v => v === undefined ? null : v))",
-        id = id,
+        "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
         js = js
     )
 }
@@ -216,18 +264,16 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 }
             }
         }
-        Command::EvalJs(name, script) => {
+        Command::EvalJs(name, script, tx) => {
             let map = sessions().lock().unwrap();
             if let Some(s) = map.get(&name) {
                 if let Some(wv) = s.webview_slot.lock().unwrap().as_ref() {
-                    if let Err(e) = wv.0.evaluate_script(&script) {
-                        // Complete the failing eval with an error marker.
-                        let marker = format!("{{\"__nav_error\":{}}}", serde_json::to_string(&e.to_string()).unwrap_or_default());
-                        if let Some((_id, tx)) = s.evals.lock().unwrap().iter().next().map(|(k, v)| (*k, v.clone())) {
-                            let _ = tx.send(marker);
-                            s.evals.lock().unwrap().remove(&_id);
-                        }
-                    }
+                    let cb = move |result: String| {
+                        let _ = tx.send(result);
+                    };
+                    let _ = wv.0.evaluate_script_with_callback(&script, cb);
+                } else {
+                    let _ = tx.send("__nav_error: webview gone".to_string());
                 }
             }
         }
@@ -274,43 +320,41 @@ fn create_session(
     let current_title = Arc::new(Mutex::new(String::new()));
     let webview_slot: Arc<Mutex<Option<GhostWebView>>> = Arc::new(Mutex::new(None));
 
-    // IPC: eval results (__navette_rpc id:...) and folded navigate results
-    // (__navette_fold:...) both arrive here, on the main thread.
-    let ipc_evals = evals.clone();
-    let ipc_pending = pending.clone();
-    let ipc_url = current_url.clone();
-    let ipc_title = current_title.clone();
-    let ipc_webview_slot = webview_slot.clone();
+    // Page-load handler: on Finished, fire the folded extraction through
+    // evaluate_script_with_callback; its callback completes the pending
+    // navigate. Never blocks the main thread.
+    let pl_pending = pending.clone();
+    let pl_url = current_url.clone();
+    let pl_slot = webview_slot.clone();
 
-    let builder = wry::WebViewBuilder::new()
+    let webview = wry::WebViewBuilder::new()
         .with_url("about:blank")
-        .with_initialization_script(RPC_SHIM)
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
                 }
-                *ipc_url.lock().unwrap() = url;
-                // Folded extraction: fire the metadata/content JS through the
-                // ipc shim; the result completes the pending navigate without
-                // ever blocking this handler (or the main thread).
-                let wv = ipc_webview_slot.lock().unwrap().as_ref().map(|g| &g.0);
-                let Some(wv) = wv else { return };
-                let js = ipc_pending
-                    .lock()
-                    .unwrap()
-                    .as_ref()
-                    .map(|p| p.after.clone().unwrap_or_else(|| {
-                        "JSON.stringify({t:document.title,c:''})".to_string()
-                    }))
+                *pl_url.lock().unwrap() = url;
+                let Some(p) = pl_pending.lock().unwrap().take() else { return };
+                let Some(wv) = pl_slot.lock().unwrap().as_ref() else {
+                    let _ = p.tx.send(Err("webview gone".into()));
+                    return;
+                };
+                let js = p
+                    .after
+                    .clone()
                     .unwrap_or_else(|| "JSON.stringify({t:document.title,c:''})".to_string());
-                let _ = wv.0.evaluate_script(&format!(
-                    "window.__navette_rpc('__navette_fold', Promise.resolve((function(){{ try {{ return (function(){{ {js} }})(); }} catch(e) {{ return {{__nav_error: String(e)}} }}; }})()).then(v => v === undefined ? null : v))",
+                let fold_js = format!(
+                    "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
                     js = js
-                ));
+                );
+                let cb = move |result: String| {
+                    let _ = p.tx.send(Ok(result));
+                };
+                let _ = wv.0.evaluate_script_with_callback(&fold_js, cb);
             },
         )
-        .build()
+        .build(&window.0)
         .map_err(|e| e.to_string())?;
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
@@ -326,9 +370,7 @@ fn create_session(
 }
 
 pub fn run_main_loop() {
-    let event_loop = EventLoopBuilder::<Command>::with_user_event()
-        .build()
-        .expect("tao event loop");
+    let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
     let proxy = event_loop.create_proxy();
     let _ = PROXY.set(proxy);
     event_loop.run(move |event, target, control_flow| {
