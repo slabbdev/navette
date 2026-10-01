@@ -6,6 +6,9 @@
 #[cfg(target_os = "macos")]
 #[path = "backend_macos.rs"]
 mod backend;
+#[cfg(any(target_os = "windows", target_os = "linux"))]
+#[path = "backend_wry.rs"]
+mod backend;
 #[cfg(not(target_os = "macos"))]
 #[path = "backend_stub.rs"]
 mod backend;
@@ -426,7 +429,9 @@ fn serve(args: &[String]) {
 
     #[cfg(target_os = "macos")]
     backend::app_run();
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    backend::run_main_loop(); // tao event loop — owns main, never returns
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
         println!("[navette] no engine backend on this platform yet — HTTP skeleton only");
         loop {
