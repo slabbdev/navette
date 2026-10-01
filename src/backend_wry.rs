@@ -344,6 +344,10 @@ fn create_session(
     let pl_slot = webview_slot.clone();
 
     let webview = wry::WebViewBuilder::new()
+        // wry 0.57 crashes building a child webview with no URL; the
+        // about:blank load is safe now — its Finished event carries
+        // "about:blank" and never matches a pending navigate's target URL.
+        .with_url("about:blank")
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
