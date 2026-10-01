@@ -418,6 +418,8 @@ fn serve(args: &[String]) {
     }
     eprintln!("[navette] +{} ms — listener ready", t0.elapsed().as_millis());
 
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    backend::init_main_loop();
     #[cfg(target_os = "macos")]
     {
         backend::prewarm_default();
@@ -431,6 +433,13 @@ fn serve(args: &[String]) {
     backend::app_run();
     #[cfg(any(target_os = "windows", target_os = "linux"))]
     backend::run_main_loop(); // tao event loop — owns main, never returns
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+    {
+        println!("[navette] no engine backend on this platform yet — HTTP skeleton only");
+        loop {
+            thread::sleep(Duration::from_secs(3600));
+        }
+    }
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
         println!("[navette] no engine backend on this platform yet — HTTP skeleton only");
