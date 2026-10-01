@@ -342,7 +342,7 @@ fn route(fd: &mut TcpStream, req: Req) {
 
         ("POST", "/sessions/load") => {
             let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::import_cookies(&s, j.get("cookies").cloned().unwrap_or(json!([])).as_array().map(|a| a.as_slice()).unwrap_or(&[])) {
+            match backend::import_cookies(&s, &j) {
                 Ok(n_cookies) => respond(fd, 200, "OK", "application/json",
                                          &json_bytes(&json!({"ok": true, "imported": n_cookies}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),

@@ -460,9 +460,13 @@ pub fn export_cookies(s: &Arc<Session>) -> Result<Value, String> {
     }
 }
 
-pub fn import_cookies(s: &Arc<Session>, cookies: &[Value]) -> Result<usize, String> {
+pub fn import_cookies(s: &Arc<Session>, cookies: &Value) -> Result<usize, String> {
     let so = s.webview.clone();
-    let list = cookies.to_vec();
+    let list = cookies
+        .get("cookies")
+        .and_then(|v| v.as_array())
+        .cloned()
+        .unwrap_or_default();
     let n = list.len();
     run_on_main(move || unsafe {
         let wv = &*so;

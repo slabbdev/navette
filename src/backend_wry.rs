@@ -190,16 +190,14 @@ impl std::fmt::Debug for Command {
     }
 }
 
-static MAIN_LOOP: OnceLock<()> = OnceLock::new();
-
-fn handle_command(cmd: Command) {
+fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<Command>) {
     match cmd {
         Command::GetOrCreate(name, tx) => {
             if let Some(s) = sessions().lock().unwrap().get(&name) {
                 let _ = tx.send(s.clone());
                 return;
             }
-            match create_session(&name) {
+            match create_session(&name, target) {
                 Ok(s) => {
                     sessions().lock().unwrap().insert(name.clone(), s.clone());
                     let _ = tx.send(s);
@@ -259,8 +257,10 @@ fn handle_command(cmd: Command) {
     }
 }
 
-fn create_session(name: &str) -> Result<SessionRef, String> {
-    MAIN_LOOP.get().ok_or("event loop not initialized")?;
+fn create_session(
+    name: &str,
+    target: &tao::event_loop::EventLoopWindowTarget<Command>,
+) -> Result<SessionRef, String> {
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
         .with_inner_size(tao::dpi::LogicalSize::new(WIDTH, HEIGHT))
@@ -268,7 +268,8 @@ fn create_session(name: &str) -> Result<SessionRef, String> {
             -WIDTH - 120.0,
             60.0,
         )))
-        .build();
+        .build(target)
+        .expect("ghost window");
     let window = GhostWindow(window);
 
     let evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>> = Arc::new(Mutex::new(HashMap::new()));
@@ -283,8 +284,9 @@ fn create_session(name: &str) -> Result<SessionRef, String> {
     let ipc_pending = pending.clone();
     let ipc_url = current_url.clone();
     let ipc_title = current_title.clone();
+    let ipc_webview_slot = webview_slot.clone();
 
-    let builder = wry::WebViewBuilder::new(&window.0)
+    let builder = wry::WebViewBuilder::new()
         .with_url("about:blank")
         .with_initialization_script(RPC_SHIM)
         .with_ipc_handler(Arc::new(move |req| {
@@ -312,7 +314,7 @@ fn create_session(name: &str) -> Result<SessionRef, String> {
                 }
             }
         }))
-        .with_on_page_load_handler(Arc::new(
+        .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
@@ -336,7 +338,7 @@ fn create_session(name: &str) -> Result<SessionRef, String> {
                     js = js
                 ));
             },
-        ))
+        )
         .build()
         .map_err(|e| e.to_string())?;
 
@@ -354,15 +356,15 @@ fn create_session(name: &str) -> Result<SessionRef, String> {
 }
 
 pub fn run_main_loop() {
-    let _ = MAIN_LOOP.set(());
     let event_loop = EventLoopBuilder::<Command>::with_user_event()
-        .build();
+        .build()
+        .expect("tao event loop");
     let proxy = event_loop.create_proxy();
     let _ = PROXY.set(proxy);
-    event_loop.run(move |event, _, control_flow| {
+    event_loop.run(move |event, target, control_flow| {
         *control_flow = ControlFlow::Wait;
         if let Event::UserEvent(cmd) = event {
-            handle_command(cmd);
+            handle_command(cmd, target);
         }
     });
 }
