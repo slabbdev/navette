@@ -55,7 +55,8 @@ pub type SessionRef = Arc<Session>;
 pub struct PendingNav {
     pub tx: SyncSender<Result<String, String>>,
     pub after: Option<String>,
-    pub url: String, // completion matches the target URL — the initial
+    pub url: String,
+    pub name: String, // completion matches the target URL — the initial
                      // about:blank event must not swallow it
 }
 
@@ -90,6 +91,8 @@ pub fn run_get_or_create(name: &str) -> SessionRef {
 
 pub fn prewarm_default() {}
 
+pub fn init_main_loop() {}
+
 pub fn list_sessions() -> Value {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
     proxy().send_event(Command::List(tx)).ok();
@@ -110,6 +113,7 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
             tx: tx.clone(),
             after,
             url: url.trim_end_matches('/').to_string(),
+            name: s.name.clone(),
         });
     }
     s.current_url.lock().unwrap().clear();
@@ -221,6 +225,10 @@ pub fn wait_settle(s: &SessionRef) {
 }
 
 // ---------- Event loop (main thread)
+
+fn fold_js_retry() -> String {
+    "JSON.stringify({t:document.title,c:document.body.innerText})".to_string()
+}
 
 fn eval_wrapper(js: &str) -> String {
     format!(
@@ -336,11 +344,8 @@ fn create_session(
     let pl_slot = webview_slot.clone();
 
     let webview = wry::WebViewBuilder::new()
-        // No initial load: an about:blank Finished event would race the first
-        // real navigate's pending registration and swallow its content.
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
-                eprintln!("[navette][dbg] page-load event finished={} url={}", matches!(event, wry::PageLoadEvent::Finished), url);
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
                 }
@@ -359,14 +364,30 @@ fn create_session(
                     "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
                     js = js
                 );
+                let tx = p.tx.clone();
+                let slot2 = pl_slot.clone();
                 let cb = move |result: String| {
-                    eprintln!("[navette][dbg] fold result: {}", &result[..result.len().min(120)]);
-                    let _ = p.tx.send(Ok(result));
+                    // A freshly loaded page can report an empty document on the
+                    // first tick (seen on WebView2) — retry once via the proxy
+                    // (which runs the retry on the main thread where WebView2
+                    // requires its calls).
+                    if result == "null" || result == "{\"t\":\"\",\"c\":\"\"}" {
+                        let (tx2, rx2) = std::sync::mpsc::sync_channel(1);
+                        let retry = "JSON.stringify({t:document.title,c:document.body?document.body.innerText:''})".to_string();
+                        let _ = proxy().send_event(Command::EvalJs(p.name.clone(), retry, tx2));
+                        if let Ok(second) = rx2.recv_timeout(Duration::from_secs(5)) {
+                            let _ = tx.send(Ok(second));
+                            return;
+                        }
+                        let _ = tx.send(Err("empty fold after retry".into()));
+                        return;
+                    }
+                    let _ = tx.send(Ok(result));
                 };
                 let _ = wv.0.evaluate_script_with_callback(&fold_js, cb);
             },
         )
-        .build(&window.0)
+        .build_as_child(&window.0)
         .map_err(|e| e.to_string())?;
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
@@ -379,14 +400,6 @@ fn create_session(
         current_url,
         current_title,
     }))
-}
-
-// Called on the main thread BEFORE the listener starts: the proxy is ready
-// immediately, while the loop itself starts processing at run_main_loop().
-pub fn init_main_loop() {
-    let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
-    let _ = PROXY.set(event_loop.create_proxy());
-    MAIN_EVENT_LOOP.with(|c| *c.borrow_mut() = Some(event_loop));
 }
 
 pub fn run_main_loop() {
