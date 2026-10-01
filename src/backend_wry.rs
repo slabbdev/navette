@@ -340,7 +340,7 @@ fn create_session(
         // real navigate's pending registration and swallow its content.
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
-                eprintln!("[navette][dbg] page-load event {:?} url={}", event, url);
+                eprintln!("[navette][dbg] page-load event finished={} url={}", matches!(event, wry::PageLoadEvent::Finished), url);
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
                 }
