@@ -9,7 +9,7 @@ mod backend;
 #[cfg(any(target_os = "windows", target_os = "linux"))]
 #[path = "backend_wry.rs"]
 mod backend;
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
 #[path = "backend_stub.rs"]
 mod backend;
 
