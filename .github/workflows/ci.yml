@@ -15,7 +15,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 ./target/release/navette serve --port 8765 > serve.log 2>&1 &
+          RUST_BACKTRACE=1 sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 3
           cat serve.log
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
@@ -41,7 +41,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 ./target/release/navette.exe serve --port 8765 > serve.log 2>&1 &
+          RUST_BACKTRACE=1 sh -c './target/release/navette.exe serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
@@ -61,7 +61,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 xvfb-run -a ./target/release/navette serve --port 8765 > serve.log 2>&1 &
+          RUST_BACKTRACE=1 xvfb-run -a sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
