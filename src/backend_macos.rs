@@ -10,11 +10,14 @@ use objc2::define_class;
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol};
 use objc2::{class, msg_send, ClassType};
-use objc2_foundation::{NSPoint, NSString, NSRect, NSSize};
+use objc2_foundation::{
+    NSHTTPCookieDomain, NSHTTPCookieExpires, NSHTTPCookieName, NSHTTPCookiePath,
+    NSHTTPCookieSecure, NSHTTPCookieValue, NSPoint, NSString, NSRect, NSSize,
+};
 use serde_json::{json, Value};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -95,6 +98,9 @@ pub fn run_on_main<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) ->
 
 unsafe fn make_webview() -> SendObj {
     let config: *mut AnyObject = msg_send![class!(WKWebViewConfiguration), new];
+    // Ephemeral store: full isolation between sessions, nothing on disk.
+    // (A per-identifier persistent store exists on macOS 13+ but its
+    // initWithIdentifier selector proved unstable on this WebKit build.)
     let store: *mut AnyObject = msg_send![class!(WKWebsiteDataStore), nonPersistentDataStore];
     let _: () = msg_send![config, setWebsiteDataStore: store];
     let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(WIDTH, HEIGHT));
@@ -397,6 +403,135 @@ pub fn screenshot(s: &Arc<Session>) -> Result<Vec<u8>, String> {
     match rx.recv_timeout(Duration::from_secs(30)) {
         Ok(v) => v,
         Err(_) => Err("snapshot timeout".into()),
+    }
+}
+
+// ---------- Cookies (session state)
+
+unsafe fn cookie_store(webview: &AnyObject) -> *mut AnyObject {
+    let cfg: *mut AnyObject = msg_send![webview, configuration];
+    let store: *mut AnyObject = msg_send![cfg, websiteDataStore];
+    msg_send![store, httpCookieStore]
+}
+
+pub fn export_cookies(s: &Arc<Session>) -> Result<Value, String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    let so = s.webview.clone();
+    run_on_main(move || unsafe {
+        let wv = &*so;
+        let cstore = cookie_store(wv);
+        let block = block2::RcBlock::new(move |cookies: *mut AnyObject| {
+            let mut out: Vec<Value> = Vec::new();
+            if !cookies.is_null() {
+                let count: usize = msg_send![cookies, count];
+                for i in 0..count {
+                    let c: *mut AnyObject = msg_send![cookies, objectAtIndex: i];
+                    let name: *mut AnyObject = msg_send![c, name];
+                    let value: *mut AnyObject = msg_send![c, value];
+                    let domain: *mut AnyObject = msg_send![c, domain];
+                    let path: *mut AnyObject = msg_send![c, path];
+                    let secure: bool = msg_send![c, isSecure];
+                    let http_only: bool = msg_send![c, isHTTPOnly];
+                    let exp: *mut AnyObject = msg_send![c, expiresDate];
+                    let expires = if exp.is_null() {
+                        Value::Null
+                    } else {
+                        let ts: f64 = msg_send![exp, timeIntervalSince1970];
+                        json!(ts)
+                    };
+                    out.push(json!({
+                        "name": any_to_string(name).unwrap_or_default(),
+                        "value": any_to_string(value).unwrap_or_default(),
+                        "domain": any_to_string(domain).unwrap_or_default(),
+                        "path": any_to_string(path).unwrap_or_default(),
+                        "expires": expires,
+                        "secure": secure,
+                        "httpOnly": http_only,
+                    }));
+                }
+            }
+            let _ = tx.send(Ok(json!({ "cookies": out })));
+        });
+        let _: () = msg_send![cstore, getAllCookies: &*block];
+    });
+    match rx.recv_timeout(Duration::from_secs(15)) {
+        Ok(r) => r,
+        Err(_) => Err("cookie export timeout".into()),
+    }
+}
+
+pub fn import_cookies(s: &Arc<Session>, cookies: &[Value]) -> Result<usize, String> {
+    let so = s.webview.clone();
+    let list = cookies.to_vec();
+    let n = list.len();
+    run_on_main(move || unsafe {
+        let wv = &*so;
+        let cstore = cookie_store(wv);
+        for c in &list {
+            let objs_arr: *mut AnyObject = msg_send![class!(NSMutableArray), array];
+            let keys_arr: *mut AnyObject = msg_send![class!(NSMutableArray), array];
+            let add = |k: &AnyObject, v: &AnyObject| {
+                let _: () = msg_send![&*keys_arr, addObject: k];
+                let _: () = msg_send![&*objs_arr, addObject: v];
+            };
+            let sval = |k: &str| -> Retained<NSString> {
+                NSString::from_str(c.get(k).and_then(|v| v.as_str()).unwrap_or(""))
+            };
+            let name = sval("name");
+            add(NSHTTPCookieName, &name);
+            let value = sval("value");
+            add(NSHTTPCookieValue, &value);
+            let domain = sval("domain");
+            add(NSHTTPCookieDomain, &domain);
+            let path = sval("path");
+            add(NSHTTPCookiePath, &path);
+            if let Some(ts) = c.get("expires").and_then(|v| v.as_f64()) {
+                let d: Retained<AnyObject> = msg_send![class!(NSDate), dateWithTimeIntervalSince1970: ts];
+                add(NSHTTPCookieExpires, &d);
+            }
+            if let Some(b) = c.get("secure").and_then(|v| v.as_bool()) {
+                let bnum: Retained<AnyObject> = msg_send![class!(NSNumber), numberWithBool: b];
+                add(NSHTTPCookieSecure, &bnum);
+            }
+            let cnt: usize = msg_send![&*objs_arr, count];
+            let dict: *mut AnyObject = msg_send![class!(NSMutableDictionary),
+                dictionaryWithObjects: &*objs_arr
+                forKeys: &*keys_arr
+                count: cnt
+            ];
+            let cookie: *mut AnyObject = msg_send![class!(NSHTTPCookie), cookieWithProperties: &*dict];
+            if cookie.is_null() {
+                continue;
+            }
+            let _: () = msg_send![cstore, setCookie: cookie completionHandler: std::ptr::null::<AnyObject>()];
+        }
+    });
+    // Settle: give the store a beat to apply and sync the cookies.
+    thread::sleep(Duration::from_millis(300));
+    Ok(n)
+}
+
+// After a click that may trigger a navigation: settle briefly. If the click
+// started a navigation, wait for it to finish; if nothing happened within
+// 300 ms, return immediately (opt-in via wait_navigation on /click).
+pub fn wait_settle(s: &Arc<Session>) {
+    let start = Instant::now();
+    let mut saw_loading = false;
+    while start.elapsed() < Duration::from_secs(10) {
+        let loading = {
+            let so = s.webview.clone();
+            run_on_main(move || unsafe {
+                let wv = &*so;
+                let l: bool = msg_send![wv, isLoading];
+                l
+            })
+        };
+        if loading {
+            saw_loading = true;
+        } else if saw_loading || start.elapsed() > Duration::from_millis(300) {
+            return;
+        }
+        thread::sleep(Duration::from_millis(10));
     }
 }
 
