@@ -55,6 +55,8 @@ pub type SessionRef = Arc<Session>;
 pub struct PendingNav {
     pub tx: SyncSender<Result<String, String>>,
     pub after: Option<String>,
+    pub url: String, // completion matches the target URL — the initial
+                     // about:blank event must not swallow it
 }
 
 static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
@@ -104,7 +106,11 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
     // (fired on main) finds it and folds the content extraction in.
     {
         let mut p = s.pending.lock().unwrap();
-        *p = Some(PendingNav { tx: tx.clone(), after });
+        *p = Some(PendingNav {
+            tx: tx.clone(),
+            after,
+            url: url.trim_end_matches('/').to_string(),
+        });
     }
     s.current_url.lock().unwrap().clear();
     proxy()
