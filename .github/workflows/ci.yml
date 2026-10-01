@@ -29,6 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: ensure WebView2 runtime
+        shell: pwsh
+        run: |
+          $present = Test-Path "C:\Program Files (x86)\Microsoft\EdgeWebView\Application"
+          if (-not $present) {
+            Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile webview2bootstrapper.exe
+            Start-Process -FilePath "./webview2bootstrapper.exe" -ArgumentList "/silent","/install" -Wait
+          } else { Write-Host "WebView2 runtime present" }
       - run: cargo build --release
       - name: smoke
         shell: bash
