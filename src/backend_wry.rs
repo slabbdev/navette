@@ -340,6 +340,7 @@ fn create_session(
         // real navigate's pending registration and swallow its content.
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
+                eprintln!("[navette][dbg] page-load event {:?} url={}", event, url);
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
                 }
@@ -359,6 +360,7 @@ fn create_session(
                     js = js
                 );
                 let cb = move |result: String| {
+                    eprintln!("[navette][dbg] fold result: {}", &result[..result.len().min(120)]);
                     let _ = p.tx.send(Ok(result));
                 };
                 let _ = wv.0.evaluate_script_with_callback(&fold_js, cb);
