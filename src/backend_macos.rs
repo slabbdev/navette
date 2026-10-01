@@ -155,6 +155,8 @@ pub fn get_or_create(name: &str) -> Arc<Session> {
     s
 }
 
+pub fn init_main_loop() {}
+
 pub fn prewarm_default() {
     // Called directly on main before app.run().
     // NOTE (measured, twice): a fire-and-forget about:blank load here
