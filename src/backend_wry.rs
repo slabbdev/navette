@@ -15,6 +15,7 @@
 // methods stay on the creating thread.
 
 use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::SyncSender;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -116,8 +117,10 @@ pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     proxy()
         .send_event(Command::EvalJs(s.name.clone(), wrapped, tx))
         .map_err(|_| "event loop gone")?;
-    rx.recv_timeout(Duration::from_secs(20))
-        .unwrap_or_else(|_| Err("evaluate timeout".into()))
+    match rx.recv_timeout(Duration::from_secs(20)) {
+        Ok(v) => Ok(v),
+        Err(_) => Err("evaluate timeout".into()),
+    }
 }
 
 pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
@@ -125,12 +128,8 @@ pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
 }
 
 pub fn export_cookies(s: &SessionRef) -> Result<Value, String> {
-    let wv = s
-        .webview_slot
-        .lock()
-        .unwrap()
-        .as_ref()
-        .ok_or("no webview")?;
+    let guard = s.webview_slot.lock().unwrap();
+    let wv = guard.as_ref().ok_or("no webview")?;
     let cookies = wv.0.cookies().map_err(|e| e.to_string())?;
     let out: Vec<Value> = cookies
         .iter()
@@ -154,12 +153,8 @@ pub fn export_cookies(s: &SessionRef) -> Result<Value, String> {
 }
 
 pub fn import_cookies(s: &SessionRef, cookies: &Value) -> Result<usize, String> {
-    let wv = s
-        .webview_slot
-        .lock()
-        .unwrap()
-        .as_ref()
-        .ok_or("no webview")?;
+    let guard = s.webview_slot.lock().unwrap();
+    let wv = guard.as_ref().ok_or("no webview")?;
     let mut count = 0usize;
     if let Some(arr) = cookies.get("cookies").and_then(|v| v.as_array()) {
         for c in arr {
@@ -336,7 +331,8 @@ fn create_session(
                 }
                 *pl_url.lock().unwrap() = url;
                 let Some(p) = pl_pending.lock().unwrap().take() else { return };
-                let Some(wv) = pl_slot.lock().unwrap().as_ref() else {
+                let guard = pl_slot.lock().unwrap();
+                let Some(wv) = guard.as_ref() else {
                     let _ = p.tx.send(Err("webview gone".into()));
                     return;
                 };
