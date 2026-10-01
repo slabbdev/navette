@@ -18,8 +18,9 @@ jobs:
           ./target/release/navette serve --port 8765 &
           sleep 3
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
-          curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"url":"https://example.com","with_content":true}' | grep -q 'Example Domain'
+          RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+            -d '{"url":"https://example.com","with_content":true}') || RESP="CURL_FAILED"
+          echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; exit 1; }
           echo "macOS smoke OK"
 
   windows:
@@ -34,8 +35,9 @@ jobs:
           ./target/release/navette.exe serve --port 8765 &
           sleep 5
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
-          curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"url":"https://example.com","with_content":true}' | grep -q 'Example Domain'
+          RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+            -d '{"url":"https://example.com","with_content":true}') || RESP="CURL_FAILED"
+          echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; exit 1; }
           echo "Windows smoke OK"
 
   linux:
@@ -51,6 +53,7 @@ jobs:
           xvfb-run -a ./target/release/navette serve --port 8765 &
           sleep 5
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
-          curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"url":"https://example.com","with_content":true}' | grep -q 'Example Domain'
+          RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+            -d '{"url":"https://example.com","with_content":true}') || RESP="CURL_FAILED"
+          echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; exit 1; }
           echo "Linux smoke OK"
