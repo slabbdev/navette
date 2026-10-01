@@ -406,6 +406,7 @@ fn create_session(
 }
 
 pub fn run_main_loop() {
+    eprintln!("[navette][dbg] run_main_loop starting");
     MAIN_EVENT_LOOP.with(|cell| {
         if let Some(event_loop) = cell.borrow_mut().take() {
             event_loop.run(move |event, target, control_flow| {
