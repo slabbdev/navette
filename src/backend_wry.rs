@@ -320,6 +320,7 @@ fn create_session(
     name: &str,
     target: &tao::event_loop::EventLoopWindowTarget<Command>,
 ) -> Result<SessionRef, String> {
+    eprintln!("[navette][dbg] create_session: start");
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
         .with_inner_size(tao::dpi::LogicalSize::new(WIDTH, HEIGHT))
@@ -330,6 +331,7 @@ fn create_session(
         .build(target)
         .expect("ghost window");
     let window = GhostWindow(window);
+    eprintln!("[navette][dbg] create_session: window built");
 
     let pending: Arc<Mutex<Option<PendingNav>>> = Arc::new(Mutex::new(None));
     let current_url = Arc::new(Mutex::new(String::new()));
