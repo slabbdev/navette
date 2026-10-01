@@ -18,7 +18,7 @@ objc2-foundation = "0.3"
 core-graphics = "0.24"
 
 [target.'cfg(any(target_os = "windows", target_os = "linux"))'.dependencies]
-wry = "0.46"
+wry = "0.57"
 tao = "0.30"
 
 [profile.release]

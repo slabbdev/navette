@@ -7,9 +7,9 @@
 // Commands through the EventLoopProxy and wait on channels (same shape as the
 // macOS backend's run_on_main hops).
 //
-// Evaluation results flow back through the IPC shim (window.ipc.postMessage):
-// no blocking of the main thread anywhere — the navigate completion and the
-// folded content extraction ride the same IPC path.
+// Results flow back through wry's evaluate_script_with_callback: no blocking
+// of the main thread anywhere — the navigate completion and the folded content
+// extraction ride the same callback path.
 //
 // tao/wry GTK objects are !Send — they are wrapped in ghost handles that are
 // only ever DEREFERENCED on the main thread (event loop + its scheduled
@@ -47,7 +47,6 @@ pub struct Session {
     // The handler closures (ipc / page-load) receive this slot and read the
     // webview from it after build() — builder-time circularity avoided.
     pub webview_slot: Arc<Mutex<Option<GhostWebView>>>,
-    pub evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>>,
     pub pending: Arc<Mutex<Option<PendingNav>>>,
     pub current_url: Arc<Mutex<String>>,
     pub current_title: Arc<Mutex<String>>,
@@ -166,8 +165,6 @@ pub fn wait_settle(s: &SessionRef) {
 
 // ---------- Event loop (main thread)
 
-const RPC_SHIM: &str = r#"window.__navette_rpc = (id, value) => { window.ipc.postMessage(id + ':' + JSON.stringify(value === undefined ? null : value)); };"#;
-
 fn eval_wrapper(id: u64, js: &str) -> String {
     format!(
         "window.__navette_rpc({id}, Promise.resolve((function(){{ try {{ return (function(){{ {js} }})(); }} catch(e) {{ return {{__nav_error: String(e)}} }}; }})()).then(v => v === undefined ? null : v))",
@@ -179,7 +176,7 @@ fn eval_wrapper(id: u64, js: &str) -> String {
 pub enum Command {
     GetOrCreate(String, SyncSender<SessionRef>),
     Navigate(String, String),
-    EvalJs(String, String),
+    EvalJs(String, String, SyncSender<String>),
     List(SyncSender<Value>),
     Close(String),
 }
@@ -272,7 +269,6 @@ fn create_session(
         .expect("ghost window");
     let window = GhostWindow(window);
 
-    let evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>> = Arc::new(Mutex::new(HashMap::new()));
     let pending: Arc<Mutex<Option<PendingNav>>> = Arc::new(Mutex::new(None));
     let current_url = Arc::new(Mutex::new(String::new()));
     let current_title = Arc::new(Mutex::new(String::new()));
@@ -289,31 +285,6 @@ fn create_session(
     let builder = wry::WebViewBuilder::new()
         .with_url("about:blank")
         .with_initialization_script(RPC_SHIM)
-        .with_ipc_handler(Arc::new(move |req| {
-            let body = req.body().to_string();
-            if let Some(folded) = body.strip_prefix("__navette_fold:") {
-                // Folded navigate completion: value = {"t":…,"c":…}
-                let v: Value = serde_json::from_str(folded).unwrap_or(json!({}));
-                *ipc_title.lock().unwrap() = v
-                    .get("t")
-                    .and_then(|x| x.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                if let Some(p) = ipc_pending.lock().unwrap().take() {
-                    let _ = p.tx.send(Ok(folded.to_string()));
-                }
-                let _ = ipc_url;
-                return;
-            }
-            if let Some((id_str, value)) = body.split_once(':') {
-                if let Ok(id) = id_str.parse::<u64>() {
-                    let value = if value == "null" { String::new() } else { value.to_string() };
-                    if let Some(tx) = ipc_evals.lock().unwrap().remove(&id) {
-                        let _ = tx.send(value);
-                    }
-                }
-            }
-        }))
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
@@ -348,7 +319,6 @@ fn create_session(
         name: name.to_string(),
         window,
         webview_slot,
-        evals,
         pending,
         current_url,
         current_title,
