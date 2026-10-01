@@ -366,6 +366,7 @@ fn create_session(
                 );
                 let tx = p.tx.clone();
                 let slot2 = pl_slot.clone();
+                eprintln!("[navette][dbg] fold fired, evaluating extraction");
                 let cb = move |result: String| {
                     // A freshly loaded page can report an empty document on the
                     // first tick (seen on WebView2) — retry once via the proxy
@@ -389,8 +390,10 @@ fn create_session(
         )
         .build_as_child(&window.0)
         .map_err(|e| e.to_string())?;
+        eprintln!("[navette][dbg] create_session: webview built");
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
+        eprintln!("[navette][dbg] create_session: session ready");
 
     Ok(Arc::new(Session {
         name: name.to_string(),
