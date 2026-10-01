@@ -330,7 +330,8 @@ fn create_session(
     let pl_slot = webview_slot.clone();
 
     let webview = wry::WebViewBuilder::new()
-        .with_url("about:blank")
+        // No initial load: an about:blank Finished event would race the first
+        // real navigate's pending registration and swallow its content.
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
