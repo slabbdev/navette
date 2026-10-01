@@ -1,0 +1,9 @@
+/target/
+.build/
+*.xcodeproj
+.DS_Store
+bench/.venv/
+bench/node_modules/
+bench/corpus/
+bench/lightpanda-*
+bench/package-lock.json
