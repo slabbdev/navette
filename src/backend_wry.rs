@@ -29,6 +29,9 @@ use wry::WebView;
 pub const WIDTH: f64 = 1280.0;
 pub const HEIGHT: f64 = 800.0;
 
+// Injected at webview creation: the eval-result and fold-completion path.
+const RPC_SHIM: &str = r#"window.__navette_rpc = (id, value) => { window.ipc.postMessage(id + ':' + JSON.stringify(value === undefined ? null : value)); };"#;
+
 unsafe impl Send for GhostWindow {}
 unsafe impl Sync for GhostWindow {}
 pub struct GhostWindow(pub Window);
@@ -45,6 +48,7 @@ pub struct Session {
     // The page-load handler closure receives this slot and reads the webview
     // from it after build() — builder-time circularity avoided.
     pub webview_slot: Arc<Mutex<Option<GhostWebView>>>,
+    pub evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>>,
     pub pending: Arc<Mutex<Option<PendingNav>>>,
     pub current_url: Arc<Mutex<String>>,
     pub current_title: Arc<Mutex<String>>,
@@ -66,6 +70,10 @@ static RPC_ID: AtomicU64 = AtomicU64::new(1);
 
 fn sessions() -> &'static Mutex<HashMap<String, SessionRef>> {
     SESSIONS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn next_rpc_id() -> u64 {
+    RPC_ID.fetch_add(1, Ordering::SeqCst)
 }
 
 fn proxy() -> &'static EventLoopProxy<Command> {
@@ -117,17 +125,18 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
 
 pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
-    // The callback receives the JSON-serialized result of the wrapped JS.
-    let wrapped = format!(
-        "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
-        js = js
-    );
+    let id = next_rpc_id();
+    let script = eval_wrapper(id, js);
+    s.evals.lock().unwrap().insert(id, tx.clone());
     proxy()
-        .send_event(Command::EvalJs(s.name.clone(), wrapped, tx))
+        .send_event(Command::EvalJs(s.name.clone(), script, tx))
         .map_err(|_| "event loop gone")?;
     match rx.recv_timeout(Duration::from_secs(20)) {
         Ok(v) => Ok(v),
-        Err(_) => Err("evaluate timeout".into()),
+        Err(_) => {
+            s.evals.lock().unwrap().remove(&id);
+            Err("evaluate timeout".into())
+        }
     }
 }
 
@@ -164,9 +173,10 @@ pub fn wait_settle(s: &SessionRef) {
 
 // ---------- Event loop (main thread)
 
-fn eval_wrapper(js: &str) -> String {
+fn eval_wrapper(id: u64, js: &str) -> String {
     format!(
-        "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
+        "window.__navette_rpc({id}, Promise.resolve((function(){{ try {{ return (function(){{ {js} }})(); }} catch(e) {{ return {{__nav_error: String(e)}} }}; }})()).then(v => v === undefined ? null : v))",
+        id = id,
         js = js
     )
 }
@@ -265,17 +275,18 @@ fn create_session(
     let window = GhostWindow(window);
     eprintln!("[navette][dbg] create_session: window built");
 
+    let evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>> = Arc::new(Mutex::new(HashMap::new()));
     let pending: Arc<Mutex<Option<PendingNav>>> = Arc::new(Mutex::new(None));
     let current_url = Arc::new(Mutex::new(String::new()));
     let current_title = Arc::new(Mutex::new(String::new()));
     let webview_slot: Arc<Mutex<Option<GhostWebView>>> = Arc::new(Mutex::new(None));
 
-    // Page-load handler: on Finished, fire the folded extraction through
-    // evaluate_script_with_callback; its callback completes the pending
-    // navigate. Never blocks the main thread. On an empty first-tick result
-    // (seen on WebView2), retry ONCE through the event loop — WebView2
-    // requires its calls on the main thread, and the proxy schedules exactly
-    // there.
+    // IPC: eval results (__navette_rpc id:...) and folded navigate results
+    // (__navette_fold:...) both arrive here, on the main thread.
+    let ipc_evals = evals.clone();
+    let ipc_pending = pending.clone();
+    let ipc_url = current_url.clone();
+    let ipc_title = current_title.clone();
     let pl_pending = pending.clone();
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
@@ -283,6 +294,31 @@ fn create_session(
 
     let webview = wry::WebViewBuilder::new()
         .with_url("about:blank")
+        .with_initialization_script(RPC_SHIM)
+        .with_ipc_handler(move |req: wry::http::Request<String>| {
+            let body = req.body().to_string();
+            if let Some(folded) = body.strip_prefix("__navette_fold:") {
+                // Folded navigate completion: value = {"t":…,"c":…}
+                let v: Value = serde_json::from_str(folded).unwrap_or(json!({}));
+                *ipc_title.lock().unwrap() = v
+                    .get("t")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                if let Some(p) = ipc_pending.lock().unwrap().take() {
+                    let _ = p.tx.send(Ok(folded.to_string()));
+                }
+                return;
+            }
+            if let Some((id_str, value)) = body.split_once(':') {
+                if let Ok(id) = id_str.parse::<u64>() {
+                    let value = if value == "null" { String::new() } else { value.to_string() };
+                    if let Some(tx) = ipc_evals.lock().unwrap().remove(&id) {
+                        let _ = tx.send(value);
+                    }
+                }
+            }
+        })
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
@@ -343,6 +379,7 @@ fn create_session(
         name: name.to_string(),
         window,
         webview_slot,
+        evals,
         pending,
         current_url,
         current_title,
