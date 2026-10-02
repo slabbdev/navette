@@ -22,6 +22,9 @@ jobs:
         run: |
           ulimit -c unlimited
           python3 -m http.server 8901 -d test &
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1280x800x24 &
+          sleep 1
           RUST_BACKTRACE=full WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 \
             gdb -batch \
               -ex 'handle SIGSEGV stop nopass' \
