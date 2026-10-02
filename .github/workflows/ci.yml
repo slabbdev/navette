@@ -68,5 +68,5 @@ jobs:
           RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d '{"url":"https://example.com","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
-          pkill -f "navette serve" || true
+          pkill -x navette || true
           echo "Linux smoke OK"
