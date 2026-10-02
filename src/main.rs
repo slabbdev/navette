@@ -238,6 +238,19 @@ fn route(fd: &mut TcpStream, req: Req) {
                     let mut payload = json!({"ok": true, "session": name, "url": url, "title": ""});
                     if with_content {
                         match serde_json::from_str::<Value>(&out) {
+                            Ok(v) if v.is_string() => {
+                                // wry serializes the fold result, which may
+                                // itself be a JSON string — decode twice.
+                                let inner = v.as_str().unwrap();
+                                match serde_json::from_str::<Value>(inner) {
+                                    Ok(v2) => {
+                                        payload["title"] = v2.get("t").cloned().unwrap_or(json!(""));
+                                        payload["content"] = v2.get("c").cloned().unwrap_or(json!(""));
+                                        payload["format"] = json!(format);
+                                    }
+                                    Err(_) => payload["title"] = json!(out),
+                                }
+                            }
                             Ok(v) => {
                                 payload["title"] = v.get("t").cloned().unwrap_or(json!(""));
                                 payload["content"] = v.get("c").cloned().unwrap_or(json!(""));
