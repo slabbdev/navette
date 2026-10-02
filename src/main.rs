@@ -242,6 +242,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                                 payload["title"] = v.get("t").cloned().unwrap_or(json!(""));
                                 payload["content"] = v.get("c").cloned().unwrap_or(json!(""));
                                 payload["format"] = json!(format);
+                                payload["raw_fold"] = json!(out);
                                 if let Some(err) = v.get("__nav_error") {
                                     payload["fold_error"] = err.clone();
                                 }
