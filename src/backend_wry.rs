@@ -196,6 +196,7 @@ impl std::fmt::Debug for Command {
 }
 
 fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<Command>) {
+    eprintln!("[navette][dbg] command received");
     match cmd {
         Command::GetOrCreate(name, tx) => {
             if let Some(s) = sessions().lock().unwrap().get(&name) {
