@@ -422,8 +422,6 @@ fn serve(args: &[String]) {
     }
     eprintln!("[navette] +{} ms — listener ready", t0.elapsed().as_millis());
 
-    #[cfg(any(target_os = "windows", target_os = "linux"))]
-    backend::init_main_loop();
     #[cfg(target_os = "macos")]
     {
         backend::prewarm_default();
@@ -451,6 +449,34 @@ fn serve(args: &[String]) {
             thread::sleep(Duration::from_secs(3600));
         }
     }
+}
+
+// MARK: - TCP listener (shared by all backends)
+
+pub fn start_listener(port: u16) {
+    let listener = match TcpListener::bind(("127.0.0.1", port)) {
+        Ok(l) => l,
+        Err(e) => {
+            if health_ok(port) {
+                eprintln!("[navette] port {port} already served by another navette — idling");
+                loop {
+                    thread::sleep(Duration::from_secs(3600));
+                }
+            }
+            eprintln!("[navette] cannot bind 127.0.0.1:{port} — {e}");
+            std::process::exit(1);
+        }
+    };
+    thread::spawn(move || {
+        for stream in listener.incoming() {
+            match stream {
+                Ok(s) => {
+                    thread::spawn(move || serve_fd(s));
+                }
+                Err(_) => continue,
+            }
+        }
+    });
 }
 
 // MARK: - resident daemon (LaunchAgent)
