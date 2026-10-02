@@ -5,9 +5,12 @@
 //
 // Threading: the tao event loop owns the main thread; HTTP threads send
 // Commands through the EventLoopProxy and wait on channels (same shape as the
-// macOS backend's run_on_main hops). Results flow back through wry's
-// evaluate_script_with_callback — the main thread is never blocked, and the
-// navigate completion + folded content extraction ride the same callback path.
+// macOS backend's run_on_main hops).
+//
+// Results flow back through the IPC shim (window.ipc.postMessage):
+// evaluate results are id-tagged, navigate completions carry the folded
+// content. The main thread is never blocked, and the navigate completion +
+// folded content extraction ride the same callback path.
 //
 // tao/wry GTK+COM handles are !Send — they live in ghost wrappers that are
 // only ever DEREFERENCED on the main thread (event loop + its scheduled
@@ -29,7 +32,8 @@ use wry::WebView;
 pub const WIDTH: f64 = 1280.0;
 pub const HEIGHT: f64 = 800.0;
 
-// Injected at webview creation: the eval-result and fold-completion path.
+// Injected at webview creation: eval results and fold completions both post
+// through window.ipc (the with_callback path returns empty on WebKitGTK).
 const RPC_SHIM: &str = r#"window.__navette_rpc = (id, value) => { window.ipc.postMessage(id + ':' + JSON.stringify(value === undefined ? null : value)); };"#;
 
 unsafe impl Send for GhostWindow {}
@@ -59,8 +63,8 @@ pub type SessionRef = Arc<Session>;
 pub struct PendingNav {
     pub tx: SyncSender<Result<String, String>>,
     pub after: Option<String>,
-    pub url: String, // completion matches the target URL — the initial
-                     // about:blank event must not swallow it
+    pub url: String,  // completion matches the target URL — the initial
+                      // about:blank event must not swallow it
     pub name: String, // the retry EvalJs needs the session name
 }
 
@@ -126,10 +130,16 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
 pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
     let id = next_rpc_id();
-    let script = eval_wrapper(id, js);
-    s.evals.lock().unwrap().insert(id, tx.clone());
+    // The script POSTS its result through the ipc shim (the with_callback
+    // path returns empty on WebKitGTK — the ipc path is the reliable one).
+    let script = format!(
+        "(function(){{ try {{ var r = JSON.stringify((function(){{ {js} }})()); window.ipc.postMessage('{id}:' + r); }} catch(e) {{ window.ipc.postMessage('{id}:' + JSON.stringify({{__nav_error: String(e)}})); }} }})()",
+        id = id,
+        js = js
+    );
+    s.evals.lock().unwrap().insert(id, tx);
     proxy()
-        .send_event(Command::EvalJs(s.name.clone(), script, tx))
+        .send_event(Command::EvalJs(s.name.clone(), script))
         .map_err(|_| "event loop gone")?;
     match rx.recv_timeout(Duration::from_secs(20)) {
         Ok(v) => Ok(v),
@@ -173,18 +183,21 @@ pub fn wait_settle(s: &SessionRef) {
 
 // ---------- Event loop (main thread)
 
-fn eval_wrapper(id: u64, js: &str) -> String {
+// Folded extraction with an IN-PAGE retry: the JS re-runs itself up to 10
+// times (300 ms apart) until the page reports content, then posts through
+// the ipc shim. Works identically on WebView2 and WebKitGTK — no callback
+// involvement, no main-thread blocking.
+pub fn fold_js_for(after: &str) -> String {
     format!(
-        "window.__navette_rpc({id}, Promise.resolve((function(){{ try {{ return (function(){{ {js} }})(); }} catch(e) {{ return {{__nav_error: String(e)}} }}; }})()).then(v => v === undefined ? null : v))",
-        id = id,
-        js = js
+        "(function(){{ var attempt = 0; var run = () => {{ try {{ var r = (function(){{ {js} }})(); var o = JSON.parse(r); if (o && (o.c || o.t)) {{ window.ipc.postMessage('__navette_fold:' + r); return; }} throw 'empty'; }} catch(e) {{ if (attempt < 10) {{ attempt++; setTimeout(run, 300); }} else {{ window.ipc.postMessage('__navette_fold:' + JSON.stringify({{t:document.title,c:'',__nav_error:String(e)}})); }} }} }}; run(); }})()",
+        js = after
     )
 }
 
 pub enum Command {
     GetOrCreate(String, SyncSender<SessionRef>),
     Navigate(String, String),
-    EvalJs(String, String, SyncSender<String>),
+    EvalJs(String, String),
     List(SyncSender<Value>),
     Close(String),
 }
@@ -225,14 +238,11 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 }
             }
         }
-        Command::EvalJs(name, script, tx) => {
+        Command::EvalJs(name, script) => {
             let map = sessions().lock().unwrap();
             if let Some(s) = map.get(&name) {
                 if let Some(wv) = s.webview_slot.lock().unwrap().as_ref() {
-                    let cb = move |result: String| {
-                        let _ = tx.send(result);
-                    };
-                    let _ = wv.0.evaluate_script_with_callback(&script, cb);
+                    let _ = wv.0.evaluate_script(&script);
                 }
             }
         }
@@ -288,10 +298,10 @@ fn create_session(
     let ipc_pending = pending.clone();
     let ipc_url = current_url.clone();
     let ipc_title = current_title.clone();
+    let ipc_slot = webview_slot.clone();
     let pl_pending = pending.clone();
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
-    let pl_name = name.to_string();
 
     let webview = wry::WebViewBuilder::new()
         .with_url("about:blank")
@@ -328,58 +338,12 @@ fn create_session(
                 *pl_url.lock().unwrap() = url;
                 let Some(p) = pl_pending.lock().unwrap().take() else { return };
                 let guard = pl_slot.lock().unwrap();
-                let Some(wv) = guard.as_ref() else {
-                    let _ = p.tx.send(Err("webview gone".into()));
-                    return;
-                };
+                let Some(wv) = guard.as_ref() else { return };
                 let js = p
                     .after
                     .clone()
                     .unwrap_or_else(|| "JSON.stringify({t:document.title,c:''})".to_string());
-                let fold_js = format!(
-                    "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
-                    js = js
-                );
-                let tx = p.tx.clone();
-                let name2 = p.name.clone();
-                let slot2 = pl_slot.clone();
-                let cb = move |result: String| {
-                    // A freshly loaded page can report an empty document on the
-                    // first tick (seen on WebView2) — retry once through the
-                    // event loop (WebView2 requires its calls on the main
-                    // thread, and the proxy schedules exactly there).
-                    let empty = result == "null"
-                        || serde_json::from_str::<Value>(&result)
-                            .ok()
-                            .and_then(|v| {
-                                Some(
-                                    v.get("c")
-                                        .and_then(|c| c.as_str())
-                                        .unwrap_or("")
-                                        .is_empty(),
-                                )
-                            })
-                            .unwrap_or(false);
-                    if empty {
-                        let (tx2, rx2) = std::sync::mpsc::sync_channel(1);
-                        let retry = "JSON.stringify({t:document.title,c:document.body?document.body.innerText:''})".to_string();
-                        let _ = proxy().send_event(Command::EvalJs(name2.clone(), retry, tx2));
-                        let tx3 = tx.clone();
-                        std::thread::spawn(move || {
-                            match rx2.recv_timeout(Duration::from_secs(5)) {
-                                Ok(second) => {
-                                    let _ = tx3.send(Ok(second));
-                                }
-                                Err(_) => {
-                                    let _ = tx3.send(Err("empty fold after retry".into()));
-                                }
-                            }
-                        });
-                        return;
-                    }
-                    let _ = tx.send(Ok(result));
-                };
-                let _ = wv.0.evaluate_script_with_callback(&fold_js, cb);
+                let _ = wv.0.evaluate_script(&fold_js_for(&js));
             },
         )
         .build_as_child(&window.0)
@@ -387,6 +351,10 @@ fn create_session(
     eprintln!("[navette][dbg] create_session: webview built");
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
+    SLOTS.get_or_init(|| Mutex::new(Vec::new()))
+        .lock()
+        .unwrap()
+        .push(webview_slot.clone());
     eprintln!("[navette][dbg] create_session: session ready");
 
     Ok(Arc::new(Session {
@@ -398,6 +366,15 @@ fn create_session(
         current_url,
         current_title,
     }))
+}
+
+// The page-load handler needs the freshly built webview; the slot registry is
+// the bridge (one session in practice — the default).
+static SLOTS: OnceLock<Mutex<Vec<Arc<Mutex<Option<GhostWebView>>>>>> = OnceLock::new();
+
+fn ipc_webview_slot() -> Option<Arc<Mutex<Option<GhostWebView>>>> {
+    let map = SLOTS.get_or_init(|| Mutex::new(Vec::new()));
+    map.lock().unwrap().last().cloned()
 }
 
 pub fn run_main_loop() {
