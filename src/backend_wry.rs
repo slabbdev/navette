@@ -252,6 +252,13 @@ impl std::fmt::Debug for Command {
 }
 
 fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<Command>) {
+    eprintln!("[navette][dbg] command: {}", match &cmd {
+        Command::GetOrCreate(n, _) => format!("GetOrCreate {n}"),
+        Command::Navigate(n, u) => format!("Navigate {n} -> {u}"),
+        Command::EvalJs(n, _, _) => format!("EvalJs {n}"),
+        Command::List(_) => "List".into(),
+        Command::Close(n) => format!("Close {n}"),
+    });
     match cmd {
         Command::GetOrCreate(name, tx) => {
             if let Some(s) = sessions().lock().unwrap().get(&name) {
@@ -321,6 +328,7 @@ fn create_session(
     target: &tao::event_loop::EventLoopWindowTarget<Command>,
 ) -> Result<SessionRef, String> {
     eprintln!("[navette][dbg] create_session: start");
+    eprintln!("[navette][dbg] create_session: building window");
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
         .with_inner_size(tao::dpi::LogicalSize::new(WIDTH, HEIGHT))
@@ -345,6 +353,7 @@ fn create_session(
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
+    eprintln!("[navette][dbg] create_session: building webview (child of ghost window)");
     let webview = wry::WebViewBuilder::new()
         // wry 0.57 crashes building a child webview with no URL; the
         // about:blank load is safe now — its Finished event carries
@@ -397,6 +406,7 @@ fn create_session(
         .build_as_child(&window.0)
         .map_err(|e| e.to_string())?;
         eprintln!("[navette][dbg] create_session: webview built");
+        eprintln!("[navette][dbg] create_session: webview built");
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
         eprintln!("[navette][dbg] create_session: session ready");
@@ -415,6 +425,7 @@ pub fn run_main_loop() {
     eprintln!("[navette][dbg] run_main_loop starting");
     MAIN_EVENT_LOOP.with(|cell| {
         if let Some(event_loop) = cell.borrow_mut().take() {
+            eprintln!("[navette][dbg] event loop running");
             event_loop.run(move |event, target, control_flow| {
                 *control_flow = ControlFlow::Wait;
                 if let Event::UserEvent(cmd) = event {
