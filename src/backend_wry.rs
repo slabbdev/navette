@@ -341,12 +341,25 @@ fn create_session(
                 );
                 let tx = p.tx.clone();
                 let name2 = p.name.clone();
+                let slot2 = pl_slot.clone();
                 let cb = move |result: String| {
-                    let empty = result == "null" || result == "{\"t\":\"\",\"c\":\"\"}"
-                        || result.contains("__nav_error");
+                    // A freshly loaded page can report an empty document on the
+                    // first tick (seen on WebView2) — retry once through the
+                    // event loop (WebView2 requires its calls on the main
+                    // thread, and the proxy schedules exactly there).
+                    let empty = result == "null"
+                        || serde_json::from_str::<Value>(&result)
+                            .ok()
+                            .and_then(|v| {
+                                Some(
+                                    v.get("c")
+                                        .and_then(|c| c.as_str())
+                                        .unwrap_or("")
+                                        .is_empty(),
+                                )
+                            })
+                            .unwrap_or(false);
                     if empty {
-                        // Retry once through the event loop (main thread —
-                        // WebView2 requires its calls there).
                         let (tx2, rx2) = std::sync::mpsc::sync_channel(1);
                         let retry = "JSON.stringify({t:document.title,c:document.body?document.body.innerText:''})".to_string();
                         let _ = proxy().send_event(Command::EvalJs(name2.clone(), retry, tx2));

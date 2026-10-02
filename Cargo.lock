@@ -1203,6 +1203,7 @@ dependencies = [
  "base64",
  "block2",
  "core-graphics",
+ "libc",
  "objc2",
  "objc2-foundation",
  "png",
