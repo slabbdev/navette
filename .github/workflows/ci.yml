@@ -42,7 +42,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 sh -c './target/release/navette.exe serve --port 8765; exit 0' > serve.log 2>&1 &
+          RUST_BACKTRACE=1 sh -c 'powershell -Command "Start-Process -FilePath \"./target/release/navette.exe\" -ArgumentList \"serve\",\"--port\",\"8765\" -WindowStyle Hidden" ; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
@@ -64,7 +64,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 xvfb-run -a -s "-screen 0 1280x800x24" sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
+          RUST_BACKTRACE=1 WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 setsid xvfb-run -a -s "-screen 0 1280x800x24" sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
