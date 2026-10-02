@@ -1,0 +1,75 @@
+name: debug-auto (unattended crash capture)
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'OS'
+        type: choice
+        options: [linux, windows]
+        default: linux
+
+jobs:
+  linux:
+    if: inputs.os == 'linux'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev glib-networking xvfb gdb curl
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - name: reproduce under gdb (batch)
+        run: |
+          ulimit -c unlimited
+          python3 -m http.server 8901 -d test &
+          RUST_BACKTRACE=full WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 \
+            gdb -batch \
+              -ex 'handle SIGSEGV stop nopass' \
+              -ex 'handle SIGABRT stop nopass' \
+              -ex 'run' \
+              -ex 'bt' \
+              -ex 'info threads' \
+              --args ./target/release/navette serve --port 8765 \
+            > gdb.log 2>&1 || true
+          sleep 20
+      - name: upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-crash
+          path: |
+            gdb.log
+            core*
+
+  windows:
+    if: inputs.os == 'windows'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: ensure WebView2 runtime
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "C:\Program Files (x86)\Microsoft\EdgeWebView\Application")) {
+            Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?LinkId=2124703" -OutFile wv2.exe
+            Start-Process -FilePath "./wv2.exe" -ArgumentList "/silent","/install" -Wait
+          }
+      - run: cargo build --release
+      - name: reproduce (serve, crash during nav expected)
+        shell: bash
+        run: |
+          RUST_BACKTRACE=full ./target/release/navette.exe serve --port 8765 > serve.log 2>&1 &
+          sleep 5
+          curl -s -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+            -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}' > nav-resp.json || true
+          cat nav-resp.json || true
+          cat serve.log || true
+          sleep 10
+      - name: upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-crash
+          path: |
+            serve.log
+            nav-resp.json
