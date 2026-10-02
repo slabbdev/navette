@@ -26,6 +26,19 @@ use std::time::{Duration, Instant};
 
 static T0: OnceLock<Instant> = OnceLock::new();
 pub static PORT: OnceLock<u16> = OnceLock::new();
+
+#[cfg(unix)]
+extern "C" fn graceful_term(_sig: i32) {
+    std::process::exit(0);
+}
+
+#[cfg(unix)]
+fn install_graceful_signals() {
+    unsafe {
+        libc::signal(libc::SIGTERM, graceful_term as usize);
+        libc::signal(libc::SIGINT, graceful_term as usize);
+    }
+}
 static LOGGED_FIRST_NAV: AtomicBool = AtomicBool::new(false);
 
 // MARK: - JS snippets (shared across backends; keep in sync with the reference)
@@ -374,6 +387,8 @@ fn health_ok(port: u16) -> bool {
 }
 
 fn serve(args: &[String]) {
+    #[cfg(unix)]
+    install_graceful_signals();
     let _ = T0.set(Instant::now());
     let port: u16 = args
         .iter()
