@@ -61,7 +61,7 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 xvfb-run -a sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
+          RUST_BACKTRACE=1 WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 xvfb-run -a -s "-screen 0 1280x800x24" sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
