@@ -22,7 +22,7 @@ use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
 
 use tao::event::Event;
-use tao::event_loop::{ControlFlow, EventLoop, EventLoopBuilder, EventLoopProxy};
+use tao::event_loop::{ControlFlow, EventLoopBuilder, EventLoopProxy};
 use tao::window::{Window, WindowBuilder};
 use wry::WebView;
 
@@ -55,9 +55,9 @@ pub type SessionRef = Arc<Session>;
 pub struct PendingNav {
     pub tx: SyncSender<Result<String, String>>,
     pub after: Option<String>,
-    pub url: String,
-    pub name: String, // completion matches the target URL — the initial
+    pub url: String, // completion matches the target URL — the initial
                      // about:blank event must not swallow it
+    pub name: String, // the retry EvalJs needs the session name
 }
 
 static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
@@ -135,65 +135,12 @@ pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
     Err("screenshots on Windows/Linux land in the next release — macOS ships them today".into())
 }
 
-pub fn export_cookies(s: &SessionRef) -> Result<Value, String> {
-    let guard = s.webview_slot.lock().unwrap();
-    let wv = guard.as_ref().ok_or("no webview")?;
-    let cookies = wv.0.cookies().map_err(|e| e.to_string())?;
-    let out: Vec<Value> = cookies
-        .iter()
-        .map(|c| {
-            let expires = match c.expires() {
-                Some(wry::cookie::Expiration::DateTime(dt)) => json!(dt.unix_timestamp()),
-                _ => Value::Null,
-            };
-            json!({
-                "name": c.name(),
-                "value": c.value(),
-                "domain": c.domain().unwrap_or(""),
-                "path": c.path().unwrap_or("/"),
-                "expires": expires,
-                "secure": c.secure(),
-                "httpOnly": c.http_only(),
-            })
-        })
-        .collect();
-    Ok(json!({ "cookies": out }))
+pub fn export_cookies(_s: &SessionRef) -> Result<Value, String> {
+    Err("cookie state on Windows/Linux lands in the next release".into())
 }
 
-pub fn import_cookies(s: &SessionRef, cookies: &Value) -> Result<usize, String> {
-    let guard = s.webview_slot.lock().unwrap();
-    let wv = guard.as_ref().ok_or("no webview")?;
-    let mut count = 0usize;
-    if let Some(arr) = cookies.get("cookies").and_then(|v| v.as_array()) {
-        for c in arr {
-            let name = c.get("name").and_then(|v| v.as_str()).unwrap_or("");
-            if name.is_empty() {
-                continue;
-            }
-            let value = c.get("value").and_then(|v| v.as_str()).unwrap_or("");
-            let mut builder = wry::cookie::Cookie::build((name, value));
-            if let Some(d) = c.get("domain").and_then(|v| v.as_str()) {
-                builder = builder.domain(d);
-            }
-            if let Some(p) = c.get("path").and_then(|v| v.as_str()) {
-                builder = builder.path(p);
-            }
-            if c.get("secure").and_then(|v| v.as_bool()).unwrap_or(false) {
-                builder = builder.secure(true);
-            }
-            if c.get("httpOnly").and_then(|v| v.as_bool()).unwrap_or(false) {
-                builder = builder.http_only(true);
-            }
-            if let Some(ts) = c.get("expires").and_then(|v| v.as_f64()) {
-                if let Ok(dt) = wry::cookie::time::OffsetDateTime::from_unix_timestamp(ts as i64) {
-                    builder = builder.expires(wry::cookie::Expiration::from(dt));
-                }
-            }
-            wv.0.set_cookie(&builder.finish()).map_err(|e| e.to_string())?;
-            count += 1;
-        }
-    }
-    Ok(count)
+pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String> {
+    Err("cookie state on Windows/Linux lands in the next release".into())
 }
 
 // After a click that may have triggered a form-POST navigation: wait for the
@@ -217,10 +164,6 @@ pub fn wait_settle(s: &SessionRef) {
 
 // ---------- Event loop (main thread)
 
-fn fold_js_retry() -> String {
-    "JSON.stringify({t:document.title,c:document.body.innerText})".to_string()
-}
-
 fn eval_wrapper(js: &str) -> String {
     format!(
         "(function(){{ try {{ return JSON.stringify((function(){{ {js} }})()); }} catch(e) {{ return JSON.stringify({{__nav_error: String(e)}}); }} }})()",
@@ -243,13 +186,6 @@ impl std::fmt::Debug for Command {
 }
 
 fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<Command>) {
-    eprintln!("[navette][dbg] command: {}", match &cmd {
-        Command::GetOrCreate(n, _) => format!("GetOrCreate {n}"),
-        Command::Navigate(n, u) => format!("Navigate {n} -> {u}"),
-        Command::EvalJs(n, _, _) => format!("EvalJs {n}"),
-        Command::List(_) => "List".into(),
-        Command::Close(n) => format!("Close {n}"),
-    });
     match cmd {
         Command::GetOrCreate(name, tx) => {
             if let Some(s) = sessions().lock().unwrap().get(&name) {
@@ -286,8 +222,6 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                         let _ = tx.send(result);
                     };
                     let _ = wv.0.evaluate_script_with_callback(&script, cb);
-                } else {
-                    let _ = tx.send("__nav_error: webview gone".to_string());
                 }
             }
         }
@@ -318,7 +252,6 @@ fn create_session(
     name: &str,
     target: &tao::event_loop::EventLoopWindowTarget<Command>,
 ) -> Result<SessionRef, String> {
-    eprintln!("[navette][dbg] create_session: start");
     eprintln!("[navette][dbg] create_session: building window");
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
@@ -339,16 +272,16 @@ fn create_session(
 
     // Page-load handler: on Finished, fire the folded extraction through
     // evaluate_script_with_callback; its callback completes the pending
-    // navigate. Never blocks the main thread.
+    // navigate. Never blocks the main thread. On an empty first-tick result
+    // (seen on WebView2), retry ONCE through the event loop — WebView2
+    // requires its calls on the main thread, and the proxy schedules exactly
+    // there.
     let pl_pending = pending.clone();
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
+    let pl_name = name.to_string();
 
-    eprintln!("[navette][dbg] create_session: building webview (child of ghost window)");
     let webview = wry::WebViewBuilder::new()
-        // wry 0.57 crashes building a child webview with no URL; the
-        // about:blank load is safe now — its Finished event carries
-        // "about:blank" and never matches a pending navigate's target URL.
         .with_url("about:blank")
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
@@ -371,22 +304,27 @@ fn create_session(
                     js = js
                 );
                 let tx = p.tx.clone();
-                let slot2 = pl_slot.clone();
-                eprintln!("[navette][dbg] fold fired, evaluating extraction");
+                let name2 = p.name.clone();
                 let cb = move |result: String| {
-                    // A freshly loaded page can report an empty document on the
-                    // first tick (seen on WebView2) — retry once via the proxy
-                    // (which runs the retry on the main thread where WebView2
-                    // requires its calls).
-                    if result == "null" || result == "{\"t\":\"\",\"c\":\"\"}" {
+                    let empty = result == "null" || result == "{\"t\":\"\",\"c\":\"\"}"
+                        || result.contains("__nav_error");
+                    if empty {
+                        // Retry once through the event loop (main thread —
+                        // WebView2 requires its calls there).
                         let (tx2, rx2) = std::sync::mpsc::sync_channel(1);
                         let retry = "JSON.stringify({t:document.title,c:document.body?document.body.innerText:''})".to_string();
-                        let _ = proxy().send_event(Command::EvalJs(p.name.clone(), retry, tx2));
-                        if let Ok(second) = rx2.recv_timeout(Duration::from_secs(5)) {
-                            let _ = tx.send(Ok(second));
-                            return;
-                        }
-                        let _ = tx.send(Err("empty fold after retry".into()));
+                        let _ = proxy().send_event(Command::EvalJs(name2.clone(), retry, tx2));
+                        let tx3 = tx.clone();
+                        std::thread::spawn(move || {
+                            match rx2.recv_timeout(Duration::from_secs(5)) {
+                                Ok(second) => {
+                                    let _ = tx3.send(Ok(second));
+                                }
+                                Err(_) => {
+                                    let _ = tx3.send(Err("empty fold after retry".into()));
+                                }
+                            }
+                        });
                         return;
                     }
                     let _ = tx.send(Ok(result));
@@ -396,11 +334,10 @@ fn create_session(
         )
         .build_as_child(&window.0)
         .map_err(|e| e.to_string())?;
-        eprintln!("[navette][dbg] create_session: webview built");
-        eprintln!("[navette][dbg] create_session: webview built");
+    eprintln!("[navette][dbg] create_session: webview built");
 
     *webview_slot.lock().unwrap() = Some(GhostWebView(webview));
-        eprintln!("[navette][dbg] create_session: session ready");
+    eprintln!("[navette][dbg] create_session: session ready");
 
     Ok(Arc::new(Session {
         name: name.to_string(),
