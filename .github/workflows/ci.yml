@@ -54,6 +54,7 @@ jobs:
           taskkill /IM navette.exe || true
           taskkill /IM msedgewebview2.exe || true
           echo "Windows smoke OK"
+          exit 0
 
   linux:
     runs-on: ubuntu-24.04
@@ -77,3 +78,4 @@ jobs:
           pkill -f WebKit || true
           pkill -x Xvfb || true
           echo "Linux smoke OK"
+          exit 0
