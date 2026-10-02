@@ -33,8 +33,15 @@ jobs:
               -ex 'bt' \
               -ex 'info threads' \
               --args ./target/release/navette serve --port 8765 \
-            > gdb.log 2>&1 || true
-          sleep 20
+            > gdb.log 2>&1 &
+          GDB_PID=$!
+          sleep 3
+          curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+            -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}' || true
+          sleep 15
+          kill -INT $GDB_PID 2>/dev/null || true
+          wait $GDB_PID 2>/dev/null || true
+          cat gdb.log
       - name: upload evidence
         if: always()
         uses: actions/upload-artifact@v4
