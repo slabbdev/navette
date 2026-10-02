@@ -419,7 +419,7 @@ pub fn run_main_loop() {
     // the GTK/Win32 loop start.
     let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
     let _ = PROXY.set(event_loop.create_proxy());
-    crate::start_listener(crate::PORT());
+    crate::start_listener(crate::PORT.get().copied().unwrap_or(8765));
     eprintln!("[navette][dbg] event loop running");
     event_loop.run(move |event, target, control_flow| {
         *control_flow = ControlFlow::Wait;
