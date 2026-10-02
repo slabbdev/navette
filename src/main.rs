@@ -25,6 +25,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 static T0: OnceLock<Instant> = OnceLock::new();
+pub static PORT: OnceLock<u16> = OnceLock::new();
 static LOGGED_FIRST_NAV: AtomicBool = AtomicBool::new(false);
 
 // MARK: - JS snippets (shared across backends; keep in sync with the reference)
@@ -388,33 +389,36 @@ fn serve(args: &[String]) {
         eprintln!("[navette] +{} ms — appkit ready", t0.elapsed().as_millis());
     }
 
-    let listener = match TcpListener::bind(("127.0.0.1", port)) {
-        Ok(l) => l,
-        Err(e) => {
-            // Port busy: if another navette is already serving there, idle
-            // politely instead of dying — the MCP host only needs the API up.
-            if health_ok(port) {
-                eprintln!("[navette] port {port} already served by another navette — idling");
-                loop {
-                    thread::sleep(Duration::from_secs(3600));
-                }
-            }
-            eprintln!("[navette] cannot bind 127.0.0.1:{port} — {e}");
-            std::process::exit(1);
-        }
-    };
+    #[cfg(target_os = "macos")]
     {
-        let listener = listener;
-        thread::spawn(move || {
-            for stream in listener.incoming() {
-                match stream {
-                    Ok(s) => {
-                        thread::spawn(move || serve_fd(s));
+        // macOS: the listener starts here (the wry backends start their own
+        // listener inside run_main_loop, after the proxy is ready).
+        let listener = match TcpListener::bind(("127.0.0.1", port)) {
+            Ok(l) => l,
+            Err(e) => {
+                if health_ok(port) {
+                    eprintln!("[navette] port {port} already served by another navette — idling");
+                    loop {
+                        thread::sleep(Duration::from_secs(3600));
                     }
-                    Err(_) => continue,
                 }
+                eprintln!("[navette] cannot bind 127.0.0.1:{port} — {e}");
+                std::process::exit(1);
             }
-        });
+        };
+        {
+            let listener = listener;
+            thread::spawn(move || {
+                for stream in listener.incoming() {
+                    match stream {
+                        Ok(s) => {
+                            thread::spawn(move || serve_fd(s));
+                        }
+                        Err(_) => continue,
+                    }
+                }
+            });
+        }
     }
     eprintln!("[navette] +{} ms — listener ready", t0.elapsed().as_millis());
 

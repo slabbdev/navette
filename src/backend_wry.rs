@@ -64,13 +64,6 @@ static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
 static PROXY: OnceLock<EventLoopProxy<Command>> = OnceLock::new();
 static RPC_ID: AtomicU64 = AtomicU64::new(1);
 
-thread_local! {
-    // The tao EventLoop is !Send and lives only on the main thread;
-    // run_main_loop (called on main) takes it out and runs it.
-    static MAIN_EVENT_LOOP: std::cell::RefCell<Option<EventLoop<Command>>> =
-        std::cell::RefCell::new(None);
-}
-
 fn sessions() -> &'static Mutex<HashMap<String, SessionRef>> {
     SESSIONS.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -90,8 +83,6 @@ pub fn run_get_or_create(name: &str) -> SessionRef {
 }
 
 pub fn prewarm_default() {}
-
-pub fn init_main_loop() {}
 
 pub fn list_sessions() -> Value {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
@@ -422,16 +413,18 @@ fn create_session(
 }
 
 pub fn run_main_loop() {
-    eprintln!("[navette][dbg] run_main_loop starting");
-    MAIN_EVENT_LOOP.with(|cell| {
-        if let Some(event_loop) = cell.borrow_mut().take() {
-            eprintln!("[navette][dbg] event loop running");
-            event_loop.run(move |event, target, control_flow| {
-                *control_flow = ControlFlow::Wait;
-                if let Event::UserEvent(cmd) = event {
-                    handle_command(cmd, target);
-                }
-            });
+    // The WORKING pattern (verified in CI to +10 s of successful navigate):
+    // build the loop, expose the proxy, start the listener, then run — all on
+    // the main thread. Splitting init/run across main-thread calls deadlocks
+    // the GTK/Win32 loop start.
+    let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
+    let _ = PROXY.set(event_loop.create_proxy());
+    crate::start_listener(crate::PORT());
+    eprintln!("[navette][dbg] event loop running");
+    event_loop.run(move |event, target, control_flow| {
+        *control_flow = ControlFlow::Wait;
+        if let Event::UserEvent(cmd) = event {
+            handle_command(cmd, target);
         }
     });
 }
