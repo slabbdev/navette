@@ -50,7 +50,14 @@ jobs:
           python -m http.server 8901 -d test &
           curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
           PAGE_URL="file:///$(cygpath -m "$GITHUB_WORKSPACE")/test/smoke-page.html"
-          RESP=$(curl -sfS --max-time 35 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+          # wait for the pre-warmed default session (WebView2 first creation
+          # can take ~30 s on a GPU-less CI VM)
+          for i in $(seq 1 30); do
+            S=$(curl -sf --max-time 5 http://127.0.0.1:8765/sessions || true)
+            echo "$S" | grep -q '"url"' && { echo "PRE-WARMED after ${i} tries: $S"; break; }
+            sleep 2
+          done
+          RESP=$(curl -sfS --max-time 50 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d "{\"url\":\"$PAGE_URL\",\"with_content\":true}") || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           taskkill /IM navette.exe || true
@@ -75,7 +82,12 @@ jobs:
           cat serve.log
           python -m http.server 8901 -d test &
           curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
-          RESP=$(curl -sfS --max-time 35 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+          for i in $(seq 1 30); do
+            S=$(curl -sf --max-time 5 http://127.0.0.1:8765/sessions || true)
+            echo "$S" | grep -q '"url"' && { echo "PRE-WARMED after ${i} tries: $S"; break; }
+            sleep 2
+          done
+          RESP=$(curl -sfS --max-time 50 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           pkill -x navette || true
