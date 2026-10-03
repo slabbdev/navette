@@ -42,13 +42,15 @@ jobs:
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 sh -c 'powershell -Command "Start-Process -FilePath \"./target/release/navette.exe\" -ArgumentList \"serve\",\"--port\",\"8765\" -WindowStyle Hidden" ; exit 0' > serve.log 2>&1 &
+          # Launch navette from bash with redirected stdout so its breadcrumbs
+          # land in serve.log (Start-Process detached it into the void).
+          RUST_BACKTRACE=1 ./target/release/navette.exe serve --port 8765 > serve.log 2>&1 &
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
-          curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
+          curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
           PAGE_URL="file:///$(cygpath -m "$GITHUB_WORKSPACE")/test/smoke-page.html"
-          RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+          RESP=$(curl -sfS --max-time 35 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d "{\"url\":\"$PAGE_URL\",\"with_content\":true}") || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           taskkill /IM navette.exe || true
@@ -60,18 +62,20 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev glib-networking xvfb curl
+      - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev glib-networking xvfb curl dbus
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release
       - name: smoke
         shell: bash
         run: |
-          RUST_BACKTRACE=1 WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 setsid xvfb-run -a -s "-screen 0 1280x800x24" sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
+          # dbus-run-session: gtk_init blocks on the session bus without one
+          # (g_application_register -> g_dbus_proxy_new_sync, gdb-proven).
+          RUST_BACKTRACE=1 WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 setsid xvfb-run -a -s "-screen 0 1280x800x24" dbus-run-session -- sh -c './target/release/navette serve --port 8765; exit 0' > serve.log 2>&1 &
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
-          curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
-          RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
+          curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
+          RESP=$(curl -sfS --max-time 35 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           pkill -x navette || true
