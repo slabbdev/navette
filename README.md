@@ -1,4 +1,4 @@
-# navette — v1.0.0
+# navette — v1.2.0
 
 > **The browser for agents.** One tiny Rust binary driving the WebView your OS already ships — no Chromium, no download, no RAM bonfire.
 
@@ -8,10 +8,10 @@
 
 ```
 $ ls -lh target/release/navette
--rwxr-xr-x  1 user  staff   594K  navette
+-rwxr-xr-x  1 user  staff   626K  navette
 ```
 
-594 KB installed. Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
+626 KB installed (594 KB at v1.0.0 — the Windows/Linux backends cost 32 KB). Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
 
 - **Faster than Playwright + Chromium on every metric we measured** — install, cold start, navigate→read (8 ms), act (1 ms), peak RAM, 100-page crawl (0.9–2.8 s, parity with Lightpanda within variance and ~2–3x faster than Playwright), real-web success rate (95–100% vs 85%).
 - **Crawls at Lightpanda's speed while rendering** (parity within variance through the zero-bias raw-CDP probe, where Lightpanda is the fastest page-*reader* at 3.3–3.4 ms — it parses a partial DOM and cannot render — and navette is the **fastest full-rendering reader**: 17.9–19.4 ms vs Chromium's 28–34 ms through the identical client).
@@ -28,7 +28,7 @@ $ ls -lh target/release/navette
 ## Build & run
 
 ```sh
-cargo build --release          # rustup; macOS today, Windows/Linux backends next
+cargo build --release          # rustup; macOS fully shipped — Windows (WebView2) / Linux (WebKitGTK) backends aboard
 ./target/release/navette serve --port 8765   # HTTP API on loopback
 ./target/release/navette mcp                 # MCP stdio for agent hosts
 ./target/release/navette install-daemon      # resident: warm from login, 24 ms first page
@@ -67,7 +67,7 @@ Register once (ZCode example, workspace `.zcode/config.json`):
 } } } }
 ```
 
-The host gets 9 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `type`, `evaluate`, `wait`, `sessions`, `session_close`.
+The host gets 11 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `type`, `evaluate`, `wait`, `sessions`, `session_close`, `state_export` / `state_import` (cookies + storage — the Playwright `storageState` equivalent).
 
 ## Architecture
 
@@ -76,11 +76,13 @@ src/main.rs          HTTP server (std::net), routes, agent-first JS snippets
 src/mcp.rs           MCP stdio adapter + serve auto-start
 src/backend_macos.rs WKWebView via raw objc2 — ghost windows, lazy attach,
                      measured cold-start ordering (AppKit -> listener -> pre-warm)
-src/backend_stub.rs  placeholder for the WebView2 / WebKitGTK / WPE backends
+src/backend_wry.rs   Windows (WebView2) / Linux (WebKitGTK) via wry + tao —
+                     same surface, IPC-shim results, URL-matched navigation
+src/backend_stub.rs  fallback for other targets (placeholder)
 ```
 
 The 8 primitives are engine-agnostic; each platform backend is a thin layer over the system WebView behind this exact surface. Engine strategy: system-first, embedded fallback (WebView2 Fixed Version / WebKitGTK via apt / WPE) — see [ONEPAGER.md](ONEPAGER.md).
 
 ## Status
 
-v1.2.0 (2026-10-01): **macOS fully shipped** (all primitives + MCP + cookies + resident daemon) and **Windows runtime-verified in CI** (the WebView2 backend passes the same navigate→read smoke on GitHub's Windows runners). Linux (WebKitGTK) compiles and its smoke passes under Xvfb — job-level cleanup polish remains. The Swift v1 prototype is archived at `../navette-swift/`. MIT.
+v1.2.0 (2026-10-01): **macOS fully shipped** (all primitives + MCP + cookies + resident daemon) and **Windows runtime-verified in CI** (the WebView2 backend passed the same navigate→read smoke on GitHub's Windows runners); Linux (WebKitGTK) compiles and its smoke machinery works under Xvfb. Smoke hardening continues on both wry backends (screenshots, cookie state, flaky first-tick evals). The Swift v1 prototype is archived at `../navette-swift/`. MIT.

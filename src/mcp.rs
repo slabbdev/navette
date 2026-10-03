@@ -397,7 +397,7 @@ pub fn run() {
                     reply(&id, json!({
                         "protocolVersion": pv,
                         "capabilities": {"tools": {}},
-                        "serverInfo": {"name": "navette", "version": "2.0.0-alpha.1"}
+                        "serverInfo": {"name": "navette", "version": env!("CARGO_PKG_VERSION")}
                     }));
                 }
                 "ping" => reply(&id, json!({})),

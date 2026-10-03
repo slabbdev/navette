@@ -96,3 +96,11 @@ Apple shipped a Safari MCP server for coding agents this year. The thesis is bei
 Repo, benchmarks and the reproducible harness: **https://github.com/slabbdev/navette**
 
 If you run agents locally, I'd genuinely love your feedback — especially the failure cases.
+
+---
+
+**Update — v1.2.0 (Oct 2):**
+
+- Two new MCP tools shipped: `state_export` / `state_import` — cookies and storage out of the browser and back in, the Playwright `storageState` equivalent. Your agent can now save an authenticated session and resume it tomorrow. **11 tools total.**
+- The Windows (WebView2) and Linux (WebKitGTK) backends are aboard and in the v1.2.0 tag — same HTTP/MCP surface, same 8 primitives, +32 KB of binary. macOS remains the fully hardened, benchmark-carrying backend: Windows passed its first end-to-end runtime smoke on GitHub's runners; Linux works under headless X and is hardening.
+- Honest sizing update: the macOS binary is now **626 KB** (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download.
