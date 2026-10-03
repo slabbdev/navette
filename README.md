@@ -85,4 +85,4 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-v1.2.0 (2026-10-01): **macOS fully shipped** (all primitives + MCP + cookies + resident daemon) and **Windows runtime-verified in CI** (the WebView2 backend passed the same navigate→read smoke on GitHub's Windows runners); Linux (WebKitGTK) compiles and its smoke machinery works under Xvfb. Smoke hardening continues on both wry backends (screenshots, cookie state, flaky first-tick evals). The Swift v1 prototype is archived at `../navette-swift/`. MIT.
+v1.2.0 (2026-10-01): **macOS fully shipped** (all primitives + MCP + cookies + resident daemon) and **CI green on all three OSes** — the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners, pre-warmed at boot (first navigate 83 ms warm vs 38 s cold on the CI VM). Screenshots and cookie state on wry land next. The Swift v1 prototype is archived at `../navette-swift/`. MIT.

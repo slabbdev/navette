@@ -99,8 +99,8 @@ If you run agents locally, I'd genuinely love your feedback — especially the f
 
 ---
 
-**Update — v1.2.0 (Oct 2):**
+**Update — v1.2.0 (Oct 3):**
 
 - Two new MCP tools shipped: `state_export` / `state_import` — cookies and storage out of the browser and back in, the Playwright `storageState` equivalent. Your agent can now save an authenticated session and resume it tomorrow. **11 tools total.**
-- The Windows (WebView2) and Linux (WebKitGTK) backends are aboard and in the v1.2.0 tag — same HTTP/MCP surface, same 8 primitives, +32 KB of binary. macOS remains the fully hardened, benchmark-carrying backend: Windows passed its first end-to-end runtime smoke on GitHub's runners; Linux works under headless X and is hardening.
+- **CI is green on all three OSes**: the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners — same binary, same MCP surface, +32 KB. macOS remains the benchmark-carrying backend; screenshots and cookie state on wry land next.
 - Honest sizing update: the macOS binary is now **626 KB** (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download.
