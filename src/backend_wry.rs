@@ -127,7 +127,7 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
     proxy()
         .send_event(Command::Navigate(s.name.clone(), url.to_string()))
         .map_err(|_| "event loop gone")?;
-    rx.recv_timeout(Duration::from_secs(30))
+    rx.recv_timeout(Duration::from_secs(45))
         .unwrap_or_else(|_| Err("navigation timeout".into()))
 }
 
@@ -412,6 +412,16 @@ pub fn run_main_loop() {
     let event_loop = EventLoopBuilder::<Command>::with_user_event().build();
     let _ = PROXY.set(event_loop.create_proxy());
     crate::start_listener(crate::PORT.get().copied().unwrap_or(8765));
+    // Pre-warm the default session like the macOS backend does: WebView2's
+    // first Environment+Controller creation can take ~30 s on a GPU-less CI
+    // VM — it must not be paid inside the first navigate's 30 s timeout.
+    {
+        let (tx, _rx) = std::sync::mpsc::sync_channel(1);
+        let _ = event_loop
+            .create_proxy()
+            .send_event(Command::GetOrCreate("default".to_string(), tx));
+        eprintln!("[navette] pre-warm requested (default session)");
+    }
     eprintln!("[navette][dbg] event loop running");
     event_loop.run(move |event, target, control_flow| {
         *control_flow = ControlFlow::Wait;
