@@ -262,6 +262,39 @@ fn route(fd: &mut TcpStream, req: Req) {
                             }
                             Err(_) => payload["title"] = json!(out),
                         }
+                        // A fold can come back empty when it landed in a stale
+                        // page context (cold first navigate under headless CI,
+                        // WebKitGTK web-process swap) or on a Chromium error
+                        // page. Re-extract on the now-current page via the eval
+                        // shim before giving up.
+                        let t_empty = payload["title"].as_str().map(|s| s.is_empty()).unwrap_or(true);
+                        let c_empty = payload["content"].as_str().map(|s| s.is_empty()).unwrap_or(true);
+                        if t_empty && c_empty {
+                            let deadline = std::time::Instant::now() + Duration::from_secs(15);
+                            let snippet = combined_content_js(&format);
+                            while std::time::Instant::now() < deadline {
+                                std::thread::sleep(Duration::from_millis(250));
+                                let Ok(r) = backend::eval_js(&s, &snippet) else { continue };
+                                let decoded = serde_json::from_str::<Value>(&r).ok().and_then(|v| {
+                                    if v.is_string() {
+                                        serde_json::from_str::<Value>(v.as_str().unwrap()).ok()
+                                    } else {
+                                        Some(v)
+                                    }
+                                });
+                                if let Some(v2) = decoded {
+                                    let t = v2.get("t").and_then(|x| x.as_str()).unwrap_or("");
+                                    let c = v2.get("c").and_then(|x| x.as_str()).unwrap_or("");
+                                    if !t.is_empty() || !c.is_empty() {
+                                        payload["title"] = json!(t);
+                                        payload["content"] = json!(c);
+                                        payload["format"] = json!(format);
+                                        payload["retried"] = json!(true);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     } else if let Ok(t) = backend::eval_js(&s, "document.title") {
                         payload["title"] = json!(t);
                     }

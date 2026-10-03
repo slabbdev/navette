@@ -19,6 +19,10 @@ jobs:
           sleep 3
           cat serve.log
           python3 -m http.server 8901 -d test &
+          for i in $(seq 1 15); do
+            curl -sf --max-time 2 http://127.0.0.1:8901/smoke-page.html >/dev/null && break
+            sleep 1
+          done
           curl -sf http://127.0.0.1:8765/health | grep -q '"ok"'
           RESP=$(curl -sf -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
@@ -48,6 +52,10 @@ jobs:
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
+          for i in $(seq 1 15); do
+            curl -sf --max-time 2 http://127.0.0.1:8901/smoke-page.html >/dev/null && break
+            sleep 1
+          done
           curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
           # http:// loopback like the other platforms — the file:// URL stalls
           # ~45 s in WebView2 on the GPU-less CI VM (fold arrives 100 ms after
@@ -76,6 +84,10 @@ jobs:
           sleep 5
           cat serve.log
           python -m http.server 8901 -d test &
+          for i in $(seq 1 15); do
+            curl -sf --max-time 2 http://127.0.0.1:8901/smoke-page.html >/dev/null && break
+            sleep 1
+          done
           curl -sf --max-time 10 http://127.0.0.1:8765/health | grep -q '"ok"' || { echo "HEALTH FAILED"; cat serve.log; exit 1; }
           for i in $(seq 1 30); do
             S=$(curl -sf --max-time 5 http://127.0.0.1:8765/sessions || true)
