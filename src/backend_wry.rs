@@ -54,6 +54,10 @@ pub struct Session {
     pub webview_slot: Arc<Mutex<Option<GhostWebView>>>,
     pub evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>>,
     pub pending: Arc<Mutex<Option<PendingNav>>>,
+    // Once the URL-matched Finished takes the pending, the fold result still
+    // has to come back through ipc — it needs the route's tx, which pending
+    // no longer holds at that point.
+    pub fold_tx: Arc<Mutex<Option<SyncSender<Result<String, String>>>>>,
     pub current_url: Arc<Mutex<String>>,
     pub current_title: Arc<Mutex<String>>,
 }
@@ -188,8 +192,12 @@ pub fn wait_settle(s: &SessionRef) {
 // the ipc shim. Works identically on WebView2 and WebKitGTK — no callback
 // involvement, no main-thread blocking.
 pub fn fold_js_for(after: &str) -> String {
+    // `after` is a complete JS EXPRESSION (an IIFE, or a plain
+    // JSON.stringify(...)). Substitute it directly — wrapping it in another
+    // function would discard its return value and JSON.parse(undefined).
+    // A non-string result is stringified so the parse below always gets text.
     format!(
-        "(function(){{ var attempt = 0; var run = () => {{ try {{ var r = (function(){{ {js} }})(); var o = JSON.parse(r); if (o && (o.c || o.t)) {{ window.ipc.postMessage('__navette_fold:' + r); return; }} throw 'empty'; }} catch(e) {{ if (attempt < 10) {{ attempt++; setTimeout(run, 300); }} else {{ window.ipc.postMessage('__navette_fold:' + JSON.stringify({{t:document.title,c:'',__nav_error:String(e)}})); }} }} }}; run(); }})()",
+        "(function(){{ var attempt = 0; var run = () => {{ try {{ var r = ({js}); if (typeof r !== 'string') {{ r = JSON.stringify(r); }} var o = JSON.parse(r); if (o && (o.c || o.t)) {{ window.ipc.postMessage('__navette_fold:' + r); return; }} throw 'empty'; }} catch(e) {{ if (attempt < 10) {{ attempt++; setTimeout(run, 300); }} else {{ window.ipc.postMessage('__navette_fold:' + JSON.stringify({{t:document.title,c:'',__nav_error:String(e)}})); }} }} }}; run(); }})()",
         js = after
     )
 }
@@ -288,6 +296,8 @@ fn create_session(
 
     let evals: Arc<Mutex<HashMap<u64, SyncSender<String>>>> = Arc::new(Mutex::new(HashMap::new()));
     let pending: Arc<Mutex<Option<PendingNav>>> = Arc::new(Mutex::new(None));
+    let fold_tx: Arc<Mutex<Option<SyncSender<Result<String, String>>>>> =
+        Arc::new(Mutex::new(None));
     let current_url = Arc::new(Mutex::new(String::new()));
     let current_title = Arc::new(Mutex::new(String::new()));
     let webview_slot: Arc<Mutex<Option<GhostWebView>>> = Arc::new(Mutex::new(None));
@@ -295,11 +305,10 @@ fn create_session(
     // IPC: eval results (__navette_rpc id:...) and folded navigate results
     // (__navette_fold:...) both arrive here, on the main thread.
     let ipc_evals = evals.clone();
-    let ipc_pending = pending.clone();
-    let ipc_url = current_url.clone();
+    let ipc_fold = fold_tx.clone();
     let ipc_title = current_title.clone();
-    let ipc_slot = webview_slot.clone();
     let pl_pending = pending.clone();
+    let pl_fold = fold_tx.clone();
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
@@ -309,15 +318,17 @@ fn create_session(
         .with_ipc_handler(move |req: wry::http::Request<String>| {
             let body = req.body().to_string();
             if let Some(folded) = body.strip_prefix("__navette_fold:") {
-                // Folded navigate completion: value = {"t":…,"c":…}
+                // Folded navigate completion: value = {"t":…,"c":…}. The route's
+                // tx lives in fold_tx — the pending slot was already consumed by
+                // the URL-matched Finished that started this fold.
                 let v: Value = serde_json::from_str(folded).unwrap_or(json!({}));
                 *ipc_title.lock().unwrap() = v
                     .get("t")
                     .and_then(|x| x.as_str())
                     .unwrap_or("")
                     .to_string();
-                if let Some(p) = ipc_pending.lock().unwrap().take() {
-                    let _ = p.tx.send(Ok(folded.to_string()));
+                if let Some(tx) = ipc_fold.lock().unwrap().take() {
+                    let _ = tx.send(Ok(folded.to_string()));
                 }
                 return;
             }
@@ -335,14 +346,29 @@ fn create_session(
                 if !matches!(event, wry::PageLoadEvent::Finished) {
                     return;
                 }
-                *pl_url.lock().unwrap() = url;
-                let Some(p) = pl_pending.lock().unwrap().take() else { return };
-                let guard = pl_slot.lock().unwrap();
-                let Some(wv) = guard.as_ref() else { return };
+                *pl_url.lock().unwrap() = url.clone();
+                // URL-matched completion: the initial about:blank Finished (or
+                // any other in-flight load) must not swallow a pending navigate
+                // aimed at another URL — the CI cold start hits exactly that race.
+                let matched = {
+                    let mut g = pl_pending.lock().unwrap();
+                    match g.as_ref() {
+                        Some(p) if p.url == url.trim_end_matches('/') => g.take(),
+                        _ => None,
+                    }
+                };
+                let Some(p) = matched else {
+                    eprintln!("[navette][dbg] page-load Finished (no matching pending): {url}");
+                    return;
+                };
+                eprintln!("[navette][dbg] page-load Finished matched: {url} — folding");
                 let js = p
                     .after
                     .clone()
                     .unwrap_or_else(|| "JSON.stringify({t:document.title,c:''})".to_string());
+                *pl_fold.lock().unwrap() = Some(p.tx);
+                let guard = pl_slot.lock().unwrap();
+                let Some(wv) = guard.as_ref() else { return };
                 let _ = wv.0.evaluate_script(&fold_js_for(&js));
             },
         )
@@ -363,6 +389,7 @@ fn create_session(
         webview_slot,
         evals,
         pending,
+        fold_tx,
         current_url,
         current_title,
     }))
