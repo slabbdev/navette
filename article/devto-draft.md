@@ -99,8 +99,9 @@ If you run agents locally, I'd genuinely love your feedback — especially the f
 
 ---
 
-**Update — v1.2.0 (Oct 3):**
+**Update — v1.2.1 (Oct 3):**
 
-- Two new MCP tools shipped: `state_export` / `state_import` — cookies and storage out of the browser and back in, the Playwright `storageState` equivalent. Your agent can now save an authenticated session and resume it tomorrow. **11 tools total.**
-- **CI is green on all three OSes**: the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners — same binary, same MCP surface, +32 KB. macOS remains the benchmark-carrying backend; screenshots and cookie state on wry land next.
-- Honest sizing update: the macOS binary is now **626 KB** (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download.
+- **CI is green on all three OSes**: the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners — same binary, same MCP surface, +32 KB. Getting there surfaced five real root causes (fold-result routing, URL-matched completion, a missing D-Bus session bus in headless Linux, WebView2's file:// stall) — all fixed, each proven with a breadcrumb or a backtrace. macOS remains the benchmark-carrying backend; screenshots and cookie state on wry land next.
+- Two new MCP tools: `state_export` / `state_import` — cookies and storage out of the browser and back in, the Playwright `storageState` equivalent. Your agent can now save an authenticated session and resume it tomorrow. **11 tools total.**
+- Boot-time session pre-warm reached parity with macOS: first navigate on a cold CI VM went **38 s → 83 ms**.
+- Honest sizing update: the macOS binary is now **626 KB** (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download. Release notes: https://github.com/slabbdev/navette/releases/tag/v1.2.1
