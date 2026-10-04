@@ -11,7 +11,7 @@ $ ls -lh target/release/navette
 -rwxr-xr-x  1 user  staff   626K  navette
 ```
 
-626 KB installed (594 KB at v1.0.0 — the Windows/Linux backends cost 32 KB). Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
+626 KB installed on macOS (release binaries: 658 KB darwin-arm64, ~1.2 MB windows-x64 / linux-x64 — the wry backends carry their bindings). Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
 
 - **Faster than Playwright + Chromium on every metric we measured** — install, cold start, navigate→read (8 ms), act (1 ms), peak RAM, 100-page crawl (0.9–2.8 s, parity with Lightpanda within variance and ~2–3x faster than Playwright), real-web success rate (95–100% vs 85%).
 - **Crawls at Lightpanda's speed while rendering** (parity within variance through the zero-bias raw-CDP probe, where Lightpanda is the fastest page-*reader* at 3.3–3.4 ms — it parses a partial DOM and cannot render — and navette is the **fastest full-rendering reader**: 17.9–19.4 ms vs Chromium's 28–34 ms through the identical client).
