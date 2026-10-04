@@ -1223,7 +1223,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "navette"
+name = "navette-browser"
 version = "1.4.0"
 dependencies = [
  "base64",
