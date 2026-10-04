@@ -1,0 +1,12 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "name": "io.github.slabbdev/navette",
+  "title": "navette — the browser for agents",
+  "description": "One tiny Rust binary driving the WebView your OS already ships (WKWebView, WebView2, WebKitGTK) — no Chromium, no download. 16 MCP tools: navigate, read, screenshot, click, hover, type, key, evaluate, wait, scroll, upload, viewport, sessions, session_close, state_export, state_import.",
+  "version": "1.4.1",
+  "websiteUrl": "https://github.com/slabbdev/navette",
+  "repository": {
+    "url": "https://github.com/slabbdev/navette",
+    "source": "github"
+  }
+}
