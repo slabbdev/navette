@@ -8,11 +8,12 @@
 
 use objc2::define_class;
 use objc2::rc::Retained;
-use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol};
+use objc2::runtime::{AnyObject, NSObject, NSObjectProtocol, ProtocolObject};
 use objc2::{class, msg_send, ClassType};
 use objc2_foundation::{
-    NSHTTPCookieDomain, NSHTTPCookieExpires, NSHTTPCookieName, NSHTTPCookiePath,
-    NSHTTPCookieSecure, NSHTTPCookieValue, NSPoint, NSString, NSRect, NSSize,
+    NSMutableDictionary, NSHTTPCookie, NSHTTPCookieDomain, NSHTTPCookieExpires, NSHTTPCookieName,
+    NSHTTPCookiePath, NSHTTPCookiePropertyKey, NSHTTPCookieSecure, NSHTTPCookieValue, NSPoint,
+    NSString, NSRect, NSSize,
 };
 use serde_json::{json, Value};
 use std::cell::RefCell;
@@ -463,6 +464,7 @@ pub fn export_cookies(s: &Arc<Session>) -> Result<Value, String> {
 }
 
 pub fn import_cookies(s: &Arc<Session>, cookies: &Value) -> Result<usize, String> {
+    eprintln!("[navette][dbg] import_cookies: entered");
     let so = s.webview.clone();
     let list = cookies
         .get("cookies")
@@ -471,45 +473,44 @@ pub fn import_cookies(s: &Arc<Session>, cookies: &Value) -> Result<usize, String
         .unwrap_or_default();
     let n = list.len();
     run_on_main(move || unsafe {
+        eprintln!("[navette][dbg] import_cookies: block on main, {} cookies", n);
         let wv = &*so;
         let cstore = cookie_store(wv);
+        // Typed Foundation API — the raw dictionaryWithObjects:forKeys:count:
+        // msg_send deadlocked this WebKit build, do not bring it back.
+        let done = block2::RcBlock::new(|| {});
         for c in &list {
-            let objs_arr: *mut AnyObject = msg_send![class!(NSMutableArray), array];
-            let keys_arr: *mut AnyObject = msg_send![class!(NSMutableArray), array];
-            let add = |k: &AnyObject, v: &AnyObject| {
-                let _: () = msg_send![&*keys_arr, addObject: k];
-                let _: () = msg_send![&*objs_arr, addObject: v];
-            };
             let sval = |k: &str| -> Retained<NSString> {
                 NSString::from_str(c.get(k).and_then(|v| v.as_str()).unwrap_or(""))
             };
-            let name = sval("name");
-            add(NSHTTPCookieName, &name);
-            let value = sval("value");
-            add(NSHTTPCookieValue, &value);
-            let domain = sval("domain");
-            add(NSHTTPCookieDomain, &domain);
-            let path = sval("path");
-            add(NSHTTPCookiePath, &path);
+            let dict: Retained<NSMutableDictionary<NSHTTPCookiePropertyKey, AnyObject>> =
+                NSMutableDictionary::new();
+            let put = |d: &NSMutableDictionary<NSHTTPCookiePropertyKey, AnyObject>,
+                       key: &'static NSHTTPCookiePropertyKey,
+                       val: Retained<AnyObject>| {
+                unsafe { d.setObject_forKey(&val, ProtocolObject::from_ref(key)) };
+            };
+            put(&dict, NSHTTPCookieName, Retained::cast(sval("name")));
+            put(&dict, NSHTTPCookieValue, Retained::cast(sval("value")));
+            put(&dict, NSHTTPCookieDomain, Retained::cast(sval("domain")));
+            put(&dict, NSHTTPCookiePath, Retained::cast(sval("path")));
             if let Some(ts) = c.get("expires").and_then(|v| v.as_f64()) {
-                let d: Retained<AnyObject> = msg_send![class!(NSDate), dateWithTimeIntervalSince1970: ts];
-                add(NSHTTPCookieExpires, &d);
+                let d: Retained<AnyObject> =
+                    msg_send![class!(NSDate), dateWithTimeIntervalSince1970: ts];
+                put(&dict, NSHTTPCookieExpires, d);
             }
             if let Some(b) = c.get("secure").and_then(|v| v.as_bool()) {
-                let bnum: Retained<AnyObject> = msg_send![class!(NSNumber), numberWithBool: b];
-                add(NSHTTPCookieSecure, &bnum);
+                let n: Retained<AnyObject> = msg_send![class!(NSNumber), numberWithBool: b];
+                put(&dict, NSHTTPCookieSecure, n);
             }
-            let cnt: usize = msg_send![&*objs_arr, count];
-            let dict: *mut AnyObject = msg_send![class!(NSMutableDictionary),
-                dictionaryWithObjects: &*objs_arr
-                forKeys: &*keys_arr
-                count: cnt
-            ];
-            let cookie: *mut AnyObject = msg_send![class!(NSHTTPCookie), cookieWithProperties: &*dict];
-            if cookie.is_null() {
+            let Some(ck) = NSHTTPCookie::cookieWithProperties(&dict) else {
                 continue;
-            }
-            let _: () = msg_send![cstore, setCookie: cookie completionHandler: std::ptr::null::<AnyObject>()];
+            };
+            let _: () = msg_send![cstore, setCookie: &*ck completionHandler: &*done];
+            eprintln!(
+                "[navette][dbg] import_cookies: setCookie sent for {}",
+                c.get("name").and_then(|v| v.as_str()).unwrap_or("?")
+            );
         }
     });
     // Settle: give the store a beat to apply and sync the cookies.
