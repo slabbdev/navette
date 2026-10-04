@@ -5,6 +5,8 @@ published: false
 tags: showdev, rust, ai, webdev
 ---
 
+Houston, we deleted Chromium: your agent's browser is 594 KB and ships with your OS. Full WebKit, MCP-native, resident at 24 ms.
+
 **Houston, we deleted Chromium.**
 
 Every AI agent that touches the web today drags the same luggage: **headless Chromium**.
@@ -93,15 +95,28 @@ Headless Chromium is the Postgres of web automation. navette is trying to be the
 
 Apple shipped a Safari MCP server for coding agents this year. The thesis is being validated from above. navette is it from below: tiny, open, cross-platform-bound.
 
+##Update — v1.2.0 (Oct 2):
+
+Two new MCP tools shipped: state_export / state_import — cookies and storage out of the browser and back in, the Playwright storageState equivalent. Your agent can now save an authenticated session and resume it tomorrow. 11 tools total.
+The Windows (WebView2) and Linux (WebKitGTK) backends are aboard and in the v1.2.0 tag — same HTTP/MCP surface, same 8 primitives, +32 KB of binary. macOS remains the fully hardened, benchmark-carrying backend: Windows passed its first end-to-end runtime smoke on GitHub's runners; Linux works under headless X and is hardening.
+Honest sizing update: the macOS binary is now 626 KB (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download.
+
+##Update — v1.2.1 (Oct 3):
+
+- CI is green on all three OSes: the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners — same binary, same MCP surface, +32 KB. Getting there surfaced five real root causes (fold-result routing, URL-matched completion, a missing D-Bus session bus in headless Linux, WebView2's file:// stall) — all fixed, each proven with a breadcrumb or a backtrace. macOS remains the benchmark-carrying backend; screenshots and cookie state on wry land next.
+- Two new MCP tools: state_export / state_import — cookies and storage out of the browser and back in, the Playwright storageState equivalent. Your agent can now save an authenticated session and resume it tomorrow. 11 tools total.
+Boot-time session pre-warm reached parity with macOS: first navigate on a cold CI VM went 38 s → 83 ms.
+- Honest sizing update: the macOS binary is now 626 KB (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download. Release notes: https://github.com/slabbdev/navette/releases/tag/v1.2.1
+
+
+##Updates — v1.3.0 & v1.4.0 (Oct 4):
+
+- **Full platform parity**: screenshots (native capture per engine), cookie state export/import, viewport control, and the resident daemon now work on Windows and Linux too. CI verifies a valid PNG screenshot and a cookie round-trip on all three OSes. JS dialogs are auto-handled in-page — agents can no longer deadlock on a hidden modal.
+- **The agent loop is complete**: file upload (in-memory content through a page-side DataTransfer — no OS dialog, identical JS on all three engines) and scroll joined. **16 MCP tools** now. One bug worth mentioning: the eval wrapper on Windows/Linux silently discarded its value — every /evaluate and /read outside the fold path returned `undefined`; fixed, and CI tests it explicitly.
+- **Install it in one command**: `cargo install navette-browser` — or grab the release binaries (macOS arm64 658 KB, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's download): https://github.com/slabbdev/navette/releases/tag/v1.4.0
+- A bench workflow now measures navigate/read/screenshot on all three engines (median/p95, in the run summary). Still missing, stated plainly: OS-level keyboard/mouse input, request/response network interception, OS file-dialog automation.
+
+
 Repo, benchmarks and the reproducible harness: **https://github.com/slabbdev/navette**
 
 If you run agents locally, I'd genuinely love your feedback — especially the failure cases.
-
----
-
-**Update — v1.4.0 (Oct 4):**
-
-- The agent loop is complete on every OS: **file upload** (in-memory content through a page-side DataTransfer — no OS dialog, identical JS on all three engines) and **scroll** join the API. **16 MCP tools** now. CI proves the upload round-trip on macOS, Windows and Linux: upload a file, let the page's own JS read it, assert the result.
-- Worth the release on its own: the eval wrapper on Windows/Linux silently discarded its value — every `/evaluate` and `/read` outside the fold path returned `undefined`. Fixed, and CI tests it explicitly now.
-- **Release binaries attached** (macOS arm64 658 KB, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's download): https://github.com/slabbdev/navette/releases/tag/v1.4.0
-- Stated plainly, still missing: OS-level keyboard/mouse input (synthetic events today), request/response network interception, OS file-dialog automation.
