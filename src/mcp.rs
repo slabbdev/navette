@@ -219,6 +219,24 @@ fn tools() -> Value {
                  "session": p_string("Session name")
              }),
              &[]),
+        tool("scroll",
+             "Scroll the page to an absolute Y offset, or bring an element into view (scrollIntoView, centered).",
+             json!({
+                 "y": p_number("Absolute Y offset in pixels (ignored when selector is given)"),
+                 "selector": p_string("Optional CSS selector to scroll into view"),
+                 "session": p_string("Session name")
+             }),
+             &[]),
+        tool("upload",
+             "Fill a file input (<input type=file>) with in-memory content: builds a real File in the page and dispatches change. The page never sees an OS dialog.",
+             json!({
+                 "selector": p_string("CSS selector of the file input"),
+                 "filename": p_string("File name the page will see"),
+                 "content_base64": p_string("File content, base64-encoded"),
+                 "mime": p_string("MIME type (default application/octet-stream)"),
+                 "session": p_string("Session name")
+             }),
+             &["selector", "filename", "content_base64"]),
     ])
 }
 
@@ -309,6 +327,28 @@ fn run_tool(name: &str, a: &Value) -> Value {
             let (code, data) = http_call("/sessions/viewport", "POST", Some(&body));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("viewport failed ({}): {}", code, compact(data)), true) }
+        }
+        "scroll" => {
+            let body = json!({
+                "y": a.get("y").cloned().unwrap_or(json!(0)),
+                "selector": a.get("selector").cloned().unwrap_or(json!("")),
+                "session": session
+            });
+            let (code, data) = http_call("/scroll", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("scroll failed ({}): {}", code, compact(data)), true) }
+        }
+        "upload" => {
+            let body = json!({
+                "selector": a.get("selector").cloned().unwrap_or(json!("")),
+                "filename": a.get("filename").cloned().unwrap_or(json!("upload.bin")),
+                "content_base64": a.get("content_base64").cloned().unwrap_or(json!("")),
+                "mime": a.get("mime").cloned().unwrap_or(json!("application/octet-stream")),
+                "session": session
+            });
+            let (code, data) = http_call("/upload", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("upload failed ({}): {}", code, compact(data)), true) }
         }
         "type" => {
             let body = json!({

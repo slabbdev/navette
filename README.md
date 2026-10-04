@@ -55,6 +55,8 @@ The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if
 | `POST /sessions/viewport` | `{width, height, session?}` | `{ok, width, height}` set the viewport (default 1280x800) |
 | `POST /hover` | `{selector, session?}` | `{ok}` (mouseover/mousemove at the element's center) |
 | `POST /key` | `{key, selector?, session?}` | `{ok}` (keydown+keyup on the focused element) |
+| `POST /scroll` | `{y?, selector?, session?}` | `{ok, y}` absolute scroll or scrollIntoView |
+| `POST /upload` | `{selector, filename, content_base64, mime?, session?}` | `{ok, files}` — fills a file input with in-memory content (DataTransfer; no OS dialog) |
 | `POST /sessions/close` | `{session}` | `{ok}` |
 
 Sessions are created lazily; ghost windows are attached only when a screenshot needs them.
@@ -72,7 +74,7 @@ Register once (ZCode example, workspace `.zcode/config.json`):
 } } } }
 ```
 
-The host gets 14 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `viewport`, `sessions`, `session_close`, `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
+The host gets 16 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `scroll`, `upload`, `viewport`, `sessions`, `session_close`, `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
 
 ## Architecture
 
@@ -90,4 +92,4 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-v1.3.0 (2026-10-04): **feature parity on all three OSes** — screenshots (native capture: WKWebView snapshot / WebView2 `PrintWindow` / X11), cookie state export/import (wry cookie API), viewport control, resident daemon on every platform (LaunchAgent / schtasks / systemd user unit), hover + key events, auto-handled dialogs. v1.2.1 (2026-10-03) was the hardening release — five root-cause fixes behind the wry smoke failures plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM); **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). Known gaps: real (OS-level) keyboard input, file upload, network interception. MIT.
+v1.4.0 (2026-10-04): **file upload** (in-memory content through a page-side DataTransfer — no OS dialog, engine-agnostic) and **scroll** join the API; **16 MCP tools**; `navette` published on crates.io; `bench` workflow measures navigate/read/screenshot on all three OSes (workflow_dispatch). v1.3.0 (2026-10-04) brought feature parity: screenshots (native capture per engine), cookie state export/import, viewport control, resident daemon on every platform (LaunchAgent / schtasks / systemd user unit), hover + key events, auto-handled dialogs. v1.2.1 (2026-10-03) was the hardening release — five root-cause fixes plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM); **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). Known gaps: real (OS-level) keyboard/mouse input, request/response network interception, OS file-dialog automation. MIT.
