@@ -196,6 +196,29 @@ fn tools() -> Value {
              "Close a browser session and free its window.",
              json!({"session": p_string("Session name to close")}),
              &["session"]),
+        tool("hover",
+             "Hover an element matched by a CSS selector (dispatches mouseover/mousemove at its center — reveals hover menus and tooltips).",
+             json!({
+                 "selector": p_string("CSS selector of the element to hover"),
+                 "session": p_string("Session name")
+             }),
+             &["selector"]),
+        tool("key",
+             "Send a key press (keydown+keyup) to the focused element or to a given selector: Enter, Tab, Escape, ArrowDown, single characters…",
+             json!({
+                 "key": p_string("Key name, e.g. Enter, Tab, Escape, ArrowDown, a, 4"),
+                 "selector": p_string("Optional CSS selector to focus first"),
+                 "session": p_string("Session name")
+             }),
+             &["key"]),
+        tool("viewport",
+             "Set the session's viewport size in pixels (default 1280x800). Affects rendering and screenshots.",
+             json!({
+                 "width": p_number("Viewport width in pixels"),
+                 "height": p_number("Viewport height in pixels"),
+                 "session": p_string("Session name")
+             }),
+             &[]),
     ])
 }
 
@@ -257,6 +280,35 @@ fn run_tool(name: &str, a: &Value) -> Value {
             let (code, data) = http_call("/click", "POST", Some(&body));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("click failed ({}): {}", code, compact(data)), true) }
+        }
+        "hover" => {
+            let body = json!({
+                "selector": a.get("selector").cloned().unwrap_or(json!("")),
+                "session": session
+            });
+            let (code, data) = http_call("/hover", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("hover failed ({}): {}", code, compact(data)), true) }
+        }
+        "key" => {
+            let body = json!({
+                "key": a.get("key").cloned().unwrap_or(json!("")),
+                "selector": a.get("selector").cloned().unwrap_or(json!("")),
+                "session": session
+            });
+            let (code, data) = http_call("/key", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("key failed ({}): {}", code, compact(data)), true) }
+        }
+        "viewport" => {
+            let body = json!({
+                "width": a.get("width").cloned().unwrap_or(json!(1280)),
+                "height": a.get("height").cloned().unwrap_or(json!(800)),
+                "session": session
+            });
+            let (code, data) = http_call("/sessions/viewport", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("viewport failed ({}): {}", code, compact(data)), true) }
         }
         "type" => {
             let body = json!({

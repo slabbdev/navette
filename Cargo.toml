@@ -1,9 +1,14 @@
 [package]
 name = "navette"
-version = "1.2.1"
+version = "1.3.0"
 edition = "2021"
 description = "The browser for agents — one tiny binary driving the WebView your OS already ships."
 license = "MIT"
+repository = "https://github.com/slabbdev/navette"
+readme = "README.md"
+keywords = ["mcp", "agent", "webview", "browser", "automation"]
+categories = ["web-programming", "development-tools"]
+rust-version = "1.75"
 
 [dependencies]
 serde = "1"
@@ -23,6 +28,19 @@ core-graphics = "0.24"
 [target.'cfg(any(target_os = "windows", target_os = "linux"))'.dependencies]
 wry = "0.57"
 tao = "0.30"
+raw-window-handle = "0.6"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+x11rb = "0.13"
+gtk = "0.18"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Storage_Xps",
+] }
 
 [profile.release]
 opt-level = "z"

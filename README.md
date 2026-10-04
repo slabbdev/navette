@@ -52,9 +52,14 @@ The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if
 | `POST /wait` | `{selector, ms?, session?}` | `{ok}` |
 | `POST /sessions/state` | `{session}` | cookies JSON — the logged-in state |
 | `POST /sessions/load` | `{session, cookies}` | `{ok, imported}` restore a logged-in state |
+| `POST /sessions/viewport` | `{width, height, session?}` | `{ok, width, height}` set the viewport (default 1280x800) |
+| `POST /hover` | `{selector, session?}` | `{ok}` (mouseover/mousemove at the element's center) |
+| `POST /key` | `{key, selector?, session?}` | `{ok}` (keydown+keyup on the focused element) |
 | `POST /sessions/close` | `{session}` | `{ok}` |
 
 Sessions are created lazily; ghost windows are attached only when a screenshot needs them.
+
+JS dialogs (`alert`/`confirm`/`prompt`) are auto-handled in-page: alert logs and no-ops, confirm accepts, prompt returns its default — agents never deadlock on a hidden modal.
 
 ## MCP for agent hosts
 
@@ -67,7 +72,7 @@ Register once (ZCode example, workspace `.zcode/config.json`):
 } } } }
 ```
 
-The host gets 11 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `type`, `evaluate`, `wait`, `sessions`, `session_close`, `state_export` / `state_import` (cookies + storage — the Playwright `storageState` equivalent).
+The host gets 14 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `viewport`, `sessions`, `session_close`, `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
 
 ## Architecture
 
@@ -85,4 +90,4 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-v1.2.1 (2026-10-03): the cross-platform hardening release — five root-cause fixes behind the wry smoke failures (fold result routing, URL-matched completion, expression folding, the headless D-Bus session, the WebView2 file:// stall) plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM). **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). v1.2.0 (2026-10-01) shipped the backends; macOS remains the fully-featured platform (screenshots, cookie state, resident daemon — wry parity lands next). MIT.
+v1.3.0 (2026-10-04): **feature parity on all three OSes** — screenshots (native capture: WKWebView snapshot / WebView2 `PrintWindow` / X11), cookie state export/import (wry cookie API), viewport control, resident daemon on every platform (LaunchAgent / schtasks / systemd user unit), hover + key events, auto-handled dialogs. v1.2.1 (2026-10-03) was the hardening release — five root-cause fixes behind the wry smoke failures plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM); **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). Known gaps: real (OS-level) keyboard input, file upload, network interception. MIT.
