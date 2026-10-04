@@ -99,9 +99,9 @@ If you run agents locally, I'd genuinely love your feedback — especially the f
 
 ---
 
-**Update — v1.3.0 (Oct 4):**
+**Update — v1.4.0 (Oct 4):**
 
-- **Full platform parity**: screenshots, cookie state export/import, viewport control, and the resident daemon now work on Windows and Linux too — CI verifies a valid PNG screenshot and a cookie round-trip on all three OSes. JS dialogs are auto-handled in-page (confirm accepts, prompt returns its default), so agents can no longer deadlock on a hidden modal. **14 MCP tools** — `hover` and `key` events joined.
-- **Release binaries attached**: 658 KB on macOS arm64, ~1.2 MB on Windows and Linux x64 — still ~180× smaller than Playwright's browser download. https://github.com/slabbdev/navette/releases/tag/v1.3.0
-- Two new MCP tools earlier in v1.2.x: `state_export` / `state_import` — the Playwright `storageState` equivalent: an authenticated session saved on macOS restores on Linux.
-- Honest sizing update: the macOS binary is now 658 KB (the title's 594 KB was v1.0.0).
+- The agent loop is complete on every OS: **file upload** (in-memory content through a page-side DataTransfer — no OS dialog, identical JS on all three engines) and **scroll** join the API. **16 MCP tools** now. CI proves the upload round-trip on macOS, Windows and Linux: upload a file, let the page's own JS read it, assert the result.
+- Worth the release on its own: the eval wrapper on Windows/Linux silently discarded its value — every `/evaluate` and `/read` outside the fold path returned `undefined`. Fixed, and CI tests it explicitly now.
+- **Release binaries attached** (macOS arm64 658 KB, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's download): https://github.com/slabbdev/navette/releases/tag/v1.4.0
+- Stated plainly, still missing: OS-level keyboard/mouse input (synthetic events today), request/response network interception, OS file-dialog automation.
