@@ -1,4 +1,4 @@
-# navette — v1.2.0
+# navette — v1.2.1
 
 > **The browser for agents.** One tiny Rust binary driving the WebView your OS already ships — no Chromium, no download, no RAM bonfire.
 
@@ -85,4 +85,4 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-v1.2.0 (2026-10-01): **macOS fully shipped** (all primitives + MCP + cookies + resident daemon) and **CI green on all three OSes** — the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners, pre-warmed at boot (first navigate 83 ms warm vs 38 s cold on the CI VM). Screenshots and cookie state on wry land next. The Swift v1 prototype is archived at `../navette-swift/`. MIT.
+v1.2.1 (2026-10-03): the cross-platform hardening release — five root-cause fixes behind the wry smoke failures (fold result routing, URL-matched completion, expression folding, the headless D-Bus session, the WebView2 file:// stall) plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM). **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). v1.2.0 (2026-10-01) shipped the backends; macOS remains the fully-featured platform (screenshots, cookie state, resident daemon — wry parity lands next). MIT.
