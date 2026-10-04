@@ -1,4 +1,6 @@
-# navette — v1.2.1
+# navette — v1.4.0
+
+![navette — the browser for agents](assets/banner.png)
 
 > **The browser for agents.** One tiny Rust binary driving the WebView your OS already ships — no Chromium, no download, no RAM bonfire.
 
