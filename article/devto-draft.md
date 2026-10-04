@@ -5,7 +5,7 @@ published: false
 tags: showdev, rust, ai, webdev
 ---
 
-Houston, we deleted Chromium: your agent's browser is 594 KB and ships with your OS. Full WebKit, MCP-native, resident at 24 ms.
+![navette — the browser for agents](https://raw.githubusercontent.com/slabbdev/navette/main/assets/banner.png)
 
 **Houston, we deleted Chromium.**
 
