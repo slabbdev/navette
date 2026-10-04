@@ -28,6 +28,15 @@ $ ls -lh target/release/navette
 ## Build & run
 
 ```sh
+cargo install navette-browser   # gives you the `navette` binary
+navette serve --port 8765       # HTTP API on loopback
+navette mcp                     # MCP stdio for agent hosts
+navette install-daemon          # resident: warm from login
+```
+
+Or build from source:
+
+```sh
 cargo build --release          # rustup; macOS fully shipped — Windows (WebView2) / Linux (WebKitGTK) backends aboard
 ./target/release/navette serve --port 8765   # HTTP API on loopback
 ./target/release/navette mcp                 # MCP stdio for agent hosts
@@ -92,4 +101,4 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-v1.4.0 (2026-10-04): **file upload** (in-memory content through a page-side DataTransfer — no OS dialog, engine-agnostic) and **scroll** join the API; **16 MCP tools**; `bench` workflow measures navigate/read/screenshot on all three OS engines (workflow_dispatch). v1.3.0 (2026-10-04) brought feature parity: screenshots (native capture per engine), cookie state export/import, viewport control, resident daemon on every platform (LaunchAgent / schtasks / systemd user unit), hover + key events, auto-handled dialogs. v1.2.1 (2026-10-03) was the hardening release — five root-cause fixes plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM); **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). Known gaps: real (OS-level) keyboard/mouse input, request/response network interception, OS file-dialog automation. MIT.
+v1.4.0 (2026-10-04): **file upload** (in-memory content through a page-side DataTransfer — no OS dialog, engine-agnostic) and **scroll** join the API; **16 MCP tools**; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); `bench` workflow measures navigate/read/screenshot on all three OS engines (workflow_dispatch). v1.3.0 (2026-10-04) brought feature parity: screenshots (native capture per engine), cookie state export/import, viewport control, resident daemon on every platform (LaunchAgent / schtasks / systemd user unit), hover + key events, auto-handled dialogs. v1.2.1 (2026-10-03) was the hardening release — five root-cause fixes plus boot-time session pre-warm (first navigate 38 s → 83 ms on the CI VM); **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK). Known gaps: real (OS-level) keyboard/mouse input, request/response network interception, OS file-dialog automation. MIT.
