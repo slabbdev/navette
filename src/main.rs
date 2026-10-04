@@ -318,10 +318,15 @@ fn route(fd: &mut TcpStream, req: Req) {
             };
             match backend::eval_js(&s, &js) {
                 Ok(text) => {
-                    let body = if text.len() > 3_000_000 {
-                        json!({"ok": true, "content": text.chars().take(1_000_000).collect::<String>(), "truncated": true})
+                    // eval_js returns the value JSON-encoded — unwrap strings
+                    let content = serde_json::from_str::<Value>(&text)
+                        .ok()
+                        .and_then(|v| v.as_str().map(|s| s.to_string()))
+                        .unwrap_or(text);
+                    let body = if content.len() > 3_000_000 {
+                        json!({"ok": true, "content": content.chars().take(1_000_000).collect::<String>(), "truncated": true})
                     } else {
-                        json!({"ok": true, "format": format, "content": text})
+                        json!({"ok": true, "format": format, "content": content})
                     };
                     respond(fd, 200, "OK", "application/json", &json_bytes(&body));
                 }
@@ -349,8 +354,13 @@ fn route(fd: &mut TcpStream, req: Req) {
                 }
             }
             match clicked {
-                Ok(v) => respond(fd, 200, "OK", "application/json",
-                                 &json_bytes(&json!({"ok": v == "OK", "result": v}))),
+                // eval_js returns the value JSON-encoded ("OK" arrives quoted)
+                Ok(v) => {
+                    let dec: Value = serde_json::from_str(&v).unwrap_or(json!(v));
+                    let hit = dec.as_str() == Some("OK");
+                    respond(fd, 200, "OK", "application/json",
+                             &json_bytes(&json!({"ok": hit, "result": v})))
+                }
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
@@ -360,8 +370,12 @@ fn route(fd: &mut TcpStream, req: Req) {
             let val = j.get("value").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let s = { let n = name.clone(); backend::run_get_or_create(&n) };
             match backend::eval_js(&s, &type_js(&jstr(&sel), &jstr(&val))) {
-                Ok(v) => respond(fd, 200, "OK", "application/json",
-                                 &json_bytes(&json!({"ok": v == "OK", "result": v}))),
+                Ok(v) => {
+                    let dec: Value = serde_json::from_str(&v).unwrap_or(json!(v));
+                    let hit = dec.as_str() == Some("OK");
+                    respond(fd, 200, "OK", "application/json",
+                             &json_bytes(&json!({"ok": hit, "result": v})))
+                }
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
@@ -420,6 +434,54 @@ fn route(fd: &mut TcpStream, req: Req) {
             match backend::set_viewport(&s, w, h) {
                 Ok(()) => respond(fd, 200, "OK", "application/json",
                                   &json_bytes(&json!({"ok": true, "width": w, "height": h}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/upload") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
+            let filename = j.get("filename").and_then(|v| v.as_str()).unwrap_or("upload.bin");
+            let mime = j.get("mime").and_then(|v| v.as_str()).unwrap_or("application/octet-stream");
+            let b64 = j.get("content_base64").and_then(|v| v.as_str()).unwrap_or("");
+            if sel.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("selector is required")));
+                return;
+            }
+            let sel_esc = jstr(sel);
+            let name_esc = jstr(filename);
+            let mime_esc = jstr(mime);
+            // A FileList cannot be forged directly, but input.files IS
+            // assignable from a DataTransfer built in the page — the one
+            // engine-agnostic way to fill a file input without OS dialogs.
+            let js = format!(
+                "(function(){{var el=document.querySelector({sel});if(!el)return JSON.stringify({{ok:false,err:'no element'}});if(String(el.type).toLowerCase()!=='file')return JSON.stringify({{ok:false,err:'element is not an <input type=file>'}});var bin=atob('{b64}');var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var f=new File([bytes],{name},{{type:{mime}}});var dt=new DataTransfer();dt.items.add(f);el.files=dt.files;el.dispatchEvent(new Event('input',{{bubbles:true}}));el.dispatchEvent(new Event('change',{{bubbles:true}}));var names=Array.prototype.map.call(el.files,function(x){{return x.name+':'+x.size}}).join(',');return JSON.stringify({{ok:true,files:names}})}})()",
+                sel = sel_esc, b64 = b64, name = name_esc, mime = mime_esc
+            );
+            match backend::eval_js(&s, &js) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/scroll") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
+            let y = j.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0);
+            let js = if !sel.is_empty() {
+                let sel_esc = jstr(sel);
+                format!(
+                    "(function(){{var el=document.querySelector({sel});if(!el)return JSON.stringify({{ok:false,err:'no element'}});el.scrollIntoView({{block:'center'}});return JSON.stringify({{ok:true,y:window.scrollY}})}})()",
+                    sel = sel_esc
+                )
+            } else {
+                format!(
+                    "(function(){{window.scrollTo(0,{y});return JSON.stringify({{ok:true,y:window.scrollY,max:document.documentElement.scrollHeight-window.innerHeight}})}})()",
+                    y = y
+                )
+            };
+            match backend::eval_js(&s, &js) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }

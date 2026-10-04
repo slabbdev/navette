@@ -1,4 +1,14 @@
 <!DOCTYPE html>
 <html><head><title>Example Domain</title></head>
 <body><h1>Example Domain</h1><p>This domain is for use in illustrative examples in documents.</p>
-<p>More information...</p></body></html>
+<p>More information...</p>
+<form><input type="file" id="f"><input type="text" id="t"><button type="button" id="go">Go</button></form>
+<script>
+  document.getElementById('go').addEventListener('click', function () {
+    var fi = document.getElementById('f');
+    var f = fi.files && fi.files[0];
+    var t = document.getElementById('t');
+    t.value = f ? f.name + ':' + f.size : 'no-file';
+  });
+</script>
+</body></html>

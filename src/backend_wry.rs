@@ -141,8 +141,10 @@ pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     let id = next_rpc_id();
     // The script POSTS its result through the ipc shim (the with_callback
     // path returns empty on WebKitGTK — the ipc path is the reliable one).
+    // `js` is substituted as an EXPRESSION — wrapping it in a function body
+    // would silently discard its value (the fold_js_for lesson, again).
     let script = format!(
-        "(function(){{ try {{ var r = JSON.stringify((function(){{ {js} }})()); window.ipc.postMessage('{id}:' + r); }} catch(e) {{ window.ipc.postMessage('{id}:' + JSON.stringify({{__nav_error: String(e)}})); }} }})()",
+        "(function(){{ try {{ var v = ({js}); var r = (v === undefined) ? 'null' : JSON.stringify(v); window.ipc.postMessage('{id}:' + r); }} catch(e) {{ window.ipc.postMessage('{id}:' + JSON.stringify({{__nav_error: String(e)}})); }} }})()",
         id = id,
         js = js
     );

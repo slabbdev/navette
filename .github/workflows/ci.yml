@@ -34,6 +34,17 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/upload -H 'Content-Type: application/json' \
+            -d '{"selector":"#f","filename":"up.txt","mime":"text/plain","content_base64":"aGVsbG8="}' >/dev/null
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/click -H 'Content-Type: application/json' \
+            -d '{"selector":"#go"}' >/dev/null
+          RESP2=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
+            -d '{"js":"document.getElementById(\"t\").value"}')
+          echo "$RESP2" | grep -q 'up.txt:5' || { echo "UPLOAD ROUND-TRIP FAILED: $RESP2"; cat serve.log; exit 1; }
+          echo "upload round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/scroll -H 'Content-Type: application/json' \
+            -d '{"y":50}' | grep -q '"ok"' || { echo "SCROLL FAILED"; cat serve.log; exit 1; }
+          echo "scroll OK"
           echo "macOS smoke OK"
 
   windows:
@@ -77,6 +88,17 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/upload -H 'Content-Type: application/json' \
+            -d '{"selector":"#f","filename":"up.txt","mime":"text/plain","content_base64":"aGVsbG8="}' >/dev/null
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/click -H 'Content-Type: application/json' \
+            -d '{"selector":"#go"}' >/dev/null
+          RESP2=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
+            -d '{"js":"document.getElementById(\"t\").value"}')
+          echo "$RESP2" | grep -q 'up.txt:5' || { echo "UPLOAD ROUND-TRIP FAILED: $RESP2"; cat serve.log; exit 1; }
+          echo "upload round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/scroll -H 'Content-Type: application/json' \
+            -d '{"y":50}' | grep -q '"ok"' || { echo "SCROLL FAILED"; cat serve.log; exit 1; }
+          echo "scroll OK"
           taskkill /IM navette.exe || true
           taskkill /IM msedgewebview2.exe || true
           echo "Windows smoke OK"
@@ -118,6 +140,17 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/upload -H 'Content-Type: application/json' \
+            -d '{"selector":"#f","filename":"up.txt","mime":"text/plain","content_base64":"aGVsbG8="}' >/dev/null
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/click -H 'Content-Type: application/json' \
+            -d '{"selector":"#go"}' >/dev/null
+          RESP2=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
+            -d '{"js":"document.getElementById(\"t\").value"}')
+          echo "$RESP2" | grep -q 'up.txt:5' || { echo "UPLOAD ROUND-TRIP FAILED: $RESP2"; cat serve.log; exit 1; }
+          echo "upload round-trip OK"
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/scroll -H 'Content-Type: application/json' \
+            -d '{"y":50}' | grep -q '"ok"' || { echo "SCROLL FAILED"; cat serve.log; exit 1; }
+          echo "scroll OK"
           pkill -x navette || true
           pkill -f WebKit || true
           pkill -x Xvfb || true
