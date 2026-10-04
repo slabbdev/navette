@@ -34,7 +34,12 @@ pub const HEIGHT: f64 = 800.0;
 
 // Injected at webview creation: eval results and fold completions both post
 // through window.ipc (the with_callback path returns empty on WebKitGTK).
-const RPC_SHIM: &str = r#"window.__navette_rpc = (id, value) => { window.ipc.postMessage(id + ':' + JSON.stringify(value === undefined ? null : value)); };"#;
+const RPC_SHIM: &str = r#"window.__navette_rpc = (id, value) => { window.ipc.postMessage(id + ':' + JSON.stringify(value === undefined ? null : value)); };
+try { var __nav_dlg = function(o) { try { window.ipc.postMessage('__navette_dialog:' + JSON.stringify(o)); } catch(e) {} };
+window.alert = function(m) { __nav_dlg({kind:'alert', message:String(m)}); };
+window.confirm = function(m) { __nav_dlg({kind:'confirm', message:String(m)}); return true; };
+window.prompt = function(m, d) { __nav_dlg({kind:'prompt', message:String(m)}); return d === undefined ? null : d; };
+} catch(e) {}"#;
 
 unsafe impl Send for GhostWindow {}
 unsafe impl Sync for GhostWindow {}
@@ -154,16 +159,40 @@ pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     }
 }
 
-pub fn screenshot(_s: &SessionRef) -> Result<Vec<u8>, String> {
-    Err("screenshots on Windows/Linux land in the next release — macOS ships them today".into())
+pub fn screenshot(s: &SessionRef) -> Result<Vec<u8>, String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::Screenshot(s.name.clone(), tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(30))
+        .unwrap_or_else(|_| Err("screenshot timeout".into()))
 }
 
-pub fn export_cookies(_s: &SessionRef) -> Result<Value, String> {
-    Err("cookie state on Windows/Linux lands in the next release".into())
+pub fn export_cookies(s: &SessionRef) -> Result<Value, String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::ExportCookies(s.name.clone(), tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(30))
+        .unwrap_or_else(|_| Err("cookie export timeout".into()))
 }
 
-pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String> {
-    Err("cookie state on Windows/Linux lands in the next release".into())
+pub fn import_cookies(s: &SessionRef, cookies: &Value) -> Result<usize, String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::ImportCookies(s.name.clone(), cookies.clone(), tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(30))
+        .unwrap_or_else(|_| Err("cookie import timeout".into()))
+}
+
+pub fn set_viewport(s: &SessionRef, width: u32, height: u32) -> Result<(), String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::Viewport(s.name.clone(), width, height, tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(10))
+        .unwrap_or_else(|_| Err("viewport timeout".into()))
 }
 
 // After a click that may have triggered a form-POST navigation: wait for the
@@ -183,6 +212,263 @@ pub fn wait_settle(s: &SessionRef) {
         }
         std::thread::sleep(Duration::from_millis(10));
     }
+}
+
+// ---------- Cookie state (same JSON schema as the macOS backend)
+
+fn cookies_json(wv: &GhostWebView) -> Result<Value, String> {
+    let list = wv.0.cookies().map_err(|e| e.to_string())?;
+    let out: Vec<Value> = list
+        .iter()
+        .map(|c| {
+            json!({
+                "name": c.name(),
+                "value": c.value(),
+                "domain": c.domain().unwrap_or(""),
+                "path": c.path().unwrap_or(""),
+                "expires": match c.expires() {
+                    Some(wry::cookie::Expiration::DateTime(dt)) => json!(dt.unix_timestamp() as f64),
+                    _ => Value::Null,
+                },
+                "secure": c.secure().unwrap_or(false),
+                "httpOnly": c.http_only().unwrap_or(false),
+            })
+        })
+        .collect();
+    Ok(json!({ "cookies": out }))
+}
+
+fn cookies_from_json(wv: &GhostWebView, v: &Value) -> Result<usize, String> {
+    let list = v
+        .get("cookies")
+        .and_then(|c| c.as_array())
+        .ok_or("expected {\"cookies\": [...]}")?;
+    let mut n = 0;
+    for c in list {
+        let name = c.get("name").and_then(|x| x.as_str()).unwrap_or("");
+        let value = c.get("value").and_then(|x| x.as_str()).unwrap_or("");
+        if name.is_empty() {
+            continue;
+        }
+        let mut b = wry::cookie::Cookie::build((name.to_string(), value.to_string()));
+        if let Some(d) = c.get("domain").and_then(|x| x.as_str()) {
+            if !d.is_empty() {
+                b = b.domain(d.to_string());
+            }
+        }
+        if let Some(p) = c.get("path").and_then(|x| x.as_str()) {
+            if !p.is_empty() {
+                b = b.path(p.to_string());
+            }
+        }
+        if c.get("secure").and_then(|x| x.as_bool()).unwrap_or(false) {
+            b = b.secure(true);
+        }
+        if c.get("httpOnly").and_then(|x| x.as_bool()).unwrap_or(false) {
+            b = b.http_only(true);
+        }
+        if let Some(e) = c.get("expires").and_then(|x| x.as_f64()) {
+            if let Ok(dt) = wry::cookie::time::OffsetDateTime::from_unix_timestamp(e as i64) {
+                b = b.expires(wry::cookie::Expiration::DateTime(dt));
+            }
+        }
+        wv.0.set_cookie(&b.build()).map_err(|e| e.to_string())?;
+        n += 1;
+    }
+    Ok(n)
+}
+
+// ---------- Screenshot (native capture of the ghost window)
+
+fn encode_png(rgba: &[u8], w: u32, h: u32) -> Result<Vec<u8>, String> {
+    let mut out = Vec::new();
+    {
+        let mut enc = png::Encoder::new(&mut out, w, h);
+        enc.set_color(png::ColorType::Rgba);
+        enc.set_depth(png::BitDepth::Eight);
+        let mut writer = enc.write_header().map_err(|e| e.to_string())?;
+        writer.write_image_data(rgba).map_err(|e| e.to_string())?;
+    }
+    Ok(out)
+}
+
+fn screenshot_on_main(s: &SessionRef) -> Result<Vec<u8>, String> {
+    let size = s.window.0.inner_size();
+    if size.width == 0 || size.height == 0 {
+        return Err("window has zero size".into());
+    }
+    s.window.0.set_visible(true);
+    let old = s.window.0.outer_position().ok();
+    // Bring the ghost to the origin: off-screen windows are never composited
+    // on X11 (no compositor under Xvfb), and GDI/X capture reads the
+    // framebuffer. At (0,0) the capture rect stays inside the root window —
+    // GetImage raises BadMatch for any rect crossing the screen edge.
+    s.window
+        .0
+        .set_outer_position(tao::dpi::PhysicalPosition::new(0i32, 0));
+    #[cfg(target_os = "linux")]
+    {
+        // pump the GTK loop so the move + expose actually repaint
+        for _ in 0..12 {
+            gtk::main_iteration();
+        }
+        std::thread::sleep(Duration::from_millis(120));
+        for _ in 0..6 {
+            gtk::main_iteration();
+        }
+        let shot = capture_x11(size.width, size.height);
+        if let Some(p) = old {
+            s.window
+                .0
+                .set_outer_position(tao::dpi::PhysicalPosition::new(p.x, p.y));
+        }
+        for _ in 0..4 {
+            gtk::main_iteration();
+        }
+        shot
+    }
+    #[cfg(target_os = "windows")]
+    {
+        let shot = capture_gdi(&s.window.0, size.width, size.height);
+        if let Some(p) = old {
+            s.window
+                .0
+                .set_outer_position(tao::dpi::PhysicalPosition::new(p.x, p.y));
+        }
+        shot
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn capture_x11(w: u32, h: u32) -> Result<Vec<u8>, String> {
+    use x11rb::connection::Connection;
+    use x11rb::protocol::xproto::{ConnectionExt, ImageFormat};
+    let (conn, screen) = x11rb::connect(None).map_err(|e| e.to_string())?;
+    let root = conn.setup().roots[screen].root;
+    // clamp the rect to the screen — GetImage BadMatches past the edge
+    let sw = u32::from(conn.setup().roots[screen].width_in_pixels);
+    let sh = u32::from(conn.setup().roots[screen].height_in_pixels);
+    let w = w.min(sw);
+    let h = h.min(sh);
+    let img = conn
+        .get_image(ImageFormat::Z_PIXMAP, root, 0, 0, w as u16, h as u16, !0u32)
+        .map_err(|e| e.to_string())?
+        .reply()
+        .map_err(|e| e.to_string())?;
+    let data = img.data;
+    let px = (w as usize) * (h as usize);
+    if data.len() < px * 4 {
+        return Err("short X image".into());
+    }
+    // ZPixmap on 24/32-bpp little-endian X servers is BGRX per pixel
+    let mut rgba = vec![0u8; px * 4];
+    for i in 0..px {
+        rgba[i * 4] = data[i * 4 + 2];
+        rgba[i * 4 + 1] = data[i * 4 + 1];
+        rgba[i * 4 + 2] = data[i * 4];
+        rgba[i * 4 + 3] = 255;
+    }
+    encode_png(&rgba, w, h)
+}
+
+#[cfg(target_os = "windows")]
+fn window_hwnd(window: &tao::window::Window) -> Result<isize, String> {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    let raw = window.window_handle().map_err(|e| e.to_string())?.as_raw();
+    match raw {
+        RawWindowHandle::Win32(h) => Ok(h.hwnd.get() as isize),
+        _ => Err("not a win32 window".into()),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn capture_gdi(window: &tao::window::Window, w: u32, h: u32) -> Result<Vec<u8>, String> {
+    use windows_sys::Win32::Foundation::{HWND, RECT};
+    use windows_sys::Win32::Graphics::Gdi::{
+        CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, GdiFlush, ReleaseDC,
+        SelectObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
+    };
+    use windows_sys::Win32::Storage::Xps::PrintWindow;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        EnumChildWindows, GetWindowRect, PW_RENDERFULLCONTENT,
+    };
+
+    unsafe extern "system" fn enum_child(hwnd: HWND, lparam: isize) -> i32 {
+        let p = lparam as *mut (isize, i64);
+        let mut rc: RECT = std::mem::zeroed();
+        unsafe { GetWindowRect(hwnd, &mut rc) };
+        let area = ((rc.right - rc.left) as i64) * ((rc.bottom - rc.top) as i64);
+        if area > (*p).1 {
+            (*p).0 = hwnd as isize;
+            (*p).1 = area;
+        }
+        1
+    }
+
+    unsafe {
+        let parent = window_hwnd(window)?;
+        // PW_RENDERFULLCONTENT on the parent may not reach the DirectComposition
+        // surface of the WebView2 render widget — prefer the largest child.
+        let mut best: (isize, i64) = (0, 0);
+        EnumChildWindows(parent as HWND, Some(enum_child), &mut best as *mut _ as isize);
+        let target = if best.0 != 0 { best.0 } else { parent };
+
+        let hdc = GetDC(parent as HWND);
+        if hdc.is_null() {
+            return Err("GetDC failed".into());
+        }
+        let mem = CreateCompatibleDC(hdc);
+        let mut bih: BITMAPINFOHEADER = std::mem::zeroed();
+        bih.biSize = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
+        bih.biWidth = w as i32;
+        bih.biHeight = -(h as i32); // top-down
+        bih.biPlanes = 1;
+        bih.biBitCount = 32;
+        bih.biCompression = BI_RGB;
+        let mut bmi: BITMAPINFO = std::mem::zeroed();
+        bmi.bmiHeader = bih;
+        let mut bits: *mut core::ffi::c_void = std::ptr::null_mut();
+        let hbmp = CreateDIBSection(mem, &bmi, DIB_RGB_COLORS, &mut bits, std::ptr::null_mut(), 0);
+        if hbmp.is_null() {
+            DeleteDC(mem);
+            ReleaseDC(parent as HWND, hdc);
+            return Err("CreateDIBSection failed".into());
+        }
+        let oldbmp = SelectObject(mem, hbmp);
+        let ok = PrintWindow(target as HWND, mem, PW_RENDERFULLCONTENT);
+        GdiFlush();
+        if ok == 0 {
+            SelectObject(mem, oldbmp);
+            DeleteObject(hbmp);
+            DeleteDC(mem);
+            ReleaseDC(parent as HWND, hdc);
+            return Err("PrintWindow failed (PW_RENDERFULLCONTENT)".into());
+        }
+        let out = finish_gdi(bits, w, h);
+        SelectObject(mem, oldbmp);
+        DeleteObject(hbmp);
+        DeleteDC(mem);
+        ReleaseDC(parent as HWND, hdc);
+        out
+    }
+}
+
+#[cfg(target_os = "windows")]
+unsafe fn finish_gdi(bits: *mut core::ffi::c_void, w: u32, h: u32) -> Result<Vec<u8>, String> {
+    if bits.is_null() {
+        return Err("no DIB bits".into());
+    }
+    let px = (w as usize) * (h as usize);
+    let data = std::slice::from_raw_parts(bits as *const u8, px * 4);
+    // 32-bpp BI_RGB DIB memory order is BGRX
+    let mut rgba = vec![0u8; px * 4];
+    for i in 0..px {
+        rgba[i * 4] = data[i * 4 + 2];
+        rgba[i * 4 + 1] = data[i * 4 + 1];
+        rgba[i * 4 + 2] = data[i * 4];
+        rgba[i * 4 + 3] = 255; // DIB alpha is often 0 for opaque windows
+    }
+    encode_png(&rgba, w, h)
 }
 
 // ---------- Event loop (main thread)
@@ -208,6 +494,10 @@ pub enum Command {
     EvalJs(String, String),
     List(SyncSender<Value>),
     Close(String),
+    Viewport(String, u32, u32, SyncSender<Result<(), String>>),
+    ExportCookies(String, SyncSender<Result<Value, String>>),
+    ImportCookies(String, Value, SyncSender<Result<usize, String>>),
+    Screenshot(String, SyncSender<Result<Vec<u8>, String>>),
 }
 
 impl std::fmt::Debug for Command {
@@ -274,6 +564,58 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 let _ = s.window.0.set_visible(false);
             }
         }
+        Command::Viewport(name, w, h, tx) => {
+            let r = (|| -> Result<(), String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                // Take the webview out of the slot for the duration: wry's
+                // set_bounds runs on the UI thread and some paths pump nested
+                // events — nested handlers must see None and skip, not deadlock.
+                let wv = s.webview_slot.lock().unwrap().take();
+                let Some(wv) = wv else { return Err("session not ready".into()) };
+                let r = wv
+                    .0
+                    .set_bounds(wry::Rect {
+                        position: wry::dpi::LogicalPosition::new(0.0, 0.0).into(),
+                        size: wry::dpi::LogicalSize::new(f64::from(w), f64::from(h)).into(),
+                    })
+                    .map_err(|e| e.to_string());
+                if r.is_ok() {
+                    s.window
+                        .0
+                        .set_inner_size(tao::dpi::LogicalSize::new(f64::from(w), f64::from(h)));
+                }
+                *s.webview_slot.lock().unwrap() = Some(wv);
+                r
+            })();
+            let _ = tx.send(r);
+        }
+        Command::ExportCookies(name, tx) => {
+            let r = (|| -> Result<Value, String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                let wv = s.webview_slot.lock().unwrap().take().ok_or("session not ready")?;
+                let r = cookies_json(&wv);
+                *s.webview_slot.lock().unwrap() = Some(wv);
+                r
+            })();
+            let _ = tx.send(r);
+        }
+        Command::ImportCookies(name, cookies, tx) => {
+            let r = (|| -> Result<usize, String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                let wv = s.webview_slot.lock().unwrap().take().ok_or("session not ready")?;
+                let r = cookies_from_json(&wv, &cookies);
+                *s.webview_slot.lock().unwrap() = Some(wv);
+                r
+            })();
+            let _ = tx.send(r);
+        }
+        Command::Screenshot(name, tx) => {
+            let r = (|| -> Result<Vec<u8>, String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                screenshot_on_main(&s)
+            })();
+            let _ = tx.send(r);
+        }
     }
 }
 
@@ -284,6 +626,7 @@ fn create_session(
     eprintln!("[navette][dbg] create_session: building window");
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
+        .with_decorations(false)
         .with_inner_size(tao::dpi::LogicalSize::new(WIDTH, HEIGHT))
         .with_position(tao::dpi::Position::Logical(tao::dpi::LogicalPosition::new(
             -WIDTH - 120.0,
@@ -317,6 +660,12 @@ fn create_session(
         .with_initialization_script(RPC_SHIM)
         .with_ipc_handler(move |req: wry::http::Request<String>| {
             let body = req.body().to_string();
+            if let Some(rest) = body.strip_prefix("__navette_dialog:") {
+                // Dialogs are auto-handled in-page by RPC_SHIM (alert no-ops,
+                // confirm accepts, prompt returns its default) — log and move on.
+                eprintln!("[navette][dialog] {rest}");
+                return;
+            }
             if let Some(folded) = body.strip_prefix("__navette_fold:") {
                 // Folded navigate completion: value = {"t":…,"c":…}. The route's
                 // tx lives in fold_tx — the pending slot was already consumed by

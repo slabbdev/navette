@@ -520,6 +520,23 @@ pub fn import_cookies(s: &Arc<Session>, cookies: &Value) -> Result<usize, String
 // After a click that may trigger a navigation: settle briefly. If the click
 // started a navigation, wait for it to finish; if nothing happened within
 // 300 ms, return immediately (opt-in via wait_navigation on /click).
+pub fn set_viewport(s: &Arc<Session>, width: u32, height: u32) -> Result<(), String> {
+    let win = {
+        let guard = s.window.lock().unwrap();
+        match guard.as_ref() {
+            Some(w) => w.clone(),
+            None => return Err("session has no window yet — take a screenshot first".into()),
+        }
+    };
+    run_on_main(move || unsafe {
+        let win = &*win;
+        let frame: NSRect = msg_send![win, frame];
+        let new = NSRect::new(frame.origin, NSSize::new(width as f64, height as f64));
+        let _: () = msg_send![win, setFrame: new display: true];
+    });
+    Ok(())
+}
+
 pub fn wait_settle(s: &Arc<Session>) {
     let start = Instant::now();
     let mut saw_loading = false;

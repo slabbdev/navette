@@ -413,6 +413,66 @@ fn route(fd: &mut TcpStream, req: Req) {
             }
         }
 
+        ("POST", "/sessions/viewport") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let w = j.get("width").and_then(|v| v.as_u64()).unwrap_or(1280) as u32;
+            let h = j.get("height").and_then(|v| v.as_u64()).unwrap_or(800) as u32;
+            match backend::set_viewport(&s, w, h) {
+                Ok(()) => respond(fd, 200, "OK", "application/json",
+                                  &json_bytes(&json!({"ok": true, "width": w, "height": h}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/hover") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
+            let sel_esc = jstr(sel);
+            let js = format!(
+                "(function(){{var el=document.querySelector({sel});if(!el)return JSON.stringify({{ok:false,err:'no element'}});var r=el.getBoundingClientRect();var o={{clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true,view:window,buttons:0}};['mouseover','mousemove'].forEach(function(t){{el.dispatchEvent(new MouseEvent(t,o))}});return JSON.stringify({{ok:true}})}})()",
+                sel = sel_esc
+            );
+            match backend::eval_js(&s, &js) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/key") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let k = j.get("key").and_then(|v| v.as_str()).unwrap_or("");
+            let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
+            if k.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("key is required")));
+                return;
+            }
+            let code = if k.len() == 1 {
+                let c = k.chars().next().unwrap();
+                if c.is_ascii_alphabetic() { format!("Key{}", c.to_ascii_uppercase()) }
+                else if c.is_ascii_digit() { format!("Digit{}", c) }
+                else { "Unidentified".to_string() }
+            } else { k.to_string() };
+            let k_esc = jstr(k);
+            let code_esc = jstr(&code);
+            // dispatch on the focused element, or on the given selector
+            let js = if sel.is_empty() {
+                format!(
+                    "(function(){{var el=document.activeElement||document.body;var o={{key:{k},code:{c},bubbles:true,cancelable:true}};var r=true;['keydown','keyup'].forEach(function(t){{r=el.dispatchEvent(new KeyboardEvent(t,o))&&r}});return JSON.stringify({{ok:true,defaultPrevented:!r}})}})()",
+                    k = k_esc, c = code_esc
+                )
+            } else {
+                let sel_esc = jstr(sel);
+                format!(
+                    "(function(){{var el=document.querySelector({s});if(!el)return JSON.stringify({{ok:false,err:'no element'}});el.focus();var o={{key:{k},code:{c},bubbles:true,cancelable:true}};var r=true;['keydown','keyup'].forEach(function(t){{r=el.dispatchEvent(new KeyboardEvent(t,o))&&r}});return JSON.stringify({{ok:true,defaultPrevented:!r}})}})()",
+                    s = sel_esc, k = k_esc, c = code_esc
+                )
+            };
+            match backend::eval_js(&s, &js) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
         _ => {
             respond(fd, 404, "Not Found", "application/json",
                     &json_bytes(&err_data(&format!("unknown route {} {}", req.method, path))));
@@ -544,15 +604,24 @@ pub fn start_listener(port: u16) {
     });
 }
 
-// MARK: - resident daemon (LaunchAgent)
+// MARK: - resident daemon (LaunchAgent / scheduled task / systemd user unit)
 
 const DAEMON_LABEL: &str = "dev.navette.daemon";
 
+fn daemon_exe() -> std::path::PathBuf {
+    std::env::current_exe().unwrap_or_else(|_| {
+        eprintln!("[navette] cannot resolve current executable");
+        std::process::exit(1);
+    })
+}
+
+#[cfg(target_os = "macos")]
 fn daemon_plist_path() -> std::path::PathBuf {
     let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
     std::path::Path::new(&home).join("Library/LaunchAgents/dev.navette.daemon.plist")
 }
 
+#[cfg(target_os = "macos")]
 fn install_daemon() {
     let exe = std::env::current_exe().unwrap_or_else(|_| {
         eprintln!("[navette] cannot resolve current executable");
@@ -613,11 +682,82 @@ fn install_daemon() {
     }
 }
 
+#[cfg(target_os = "macos")]
 fn uninstall_daemon() {
     let plist_path = daemon_plist_path();
     let _ = Command::new("launchctl").args(["unload", &plist_path.to_string_lossy()]).status();
     match std::fs::remove_file(&plist_path) {
         Ok(()) => println!("[navette] resident daemon removed."),
+        Err(e) => println!("[navette] nothing to remove ({e})"),
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn install_daemon() {
+    let exe = daemon_exe();
+    let tr = format!("\"{}\" serve --port 8765", exe.display());
+    let st = Command::new("schtasks")
+        .args(["/Create", "/TN", "navette", "/TR", &tr, "/SC", "ONLOGON", "/F"])
+        .status();
+    match st {
+        Ok(s) if s.success() => {
+            println!("[navette] resident daemon installed — scheduled task 'navette', warm from login.");
+            println!("  uninstall with: navette uninstall-daemon");
+        }
+        other => {
+            println!("[navette] schtasks returned {other:?} — create a scheduled task for \"{} serve --port 8765\" manually.", exe.display());
+        }
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn uninstall_daemon() {
+    let st = Command::new("schtasks").args(["/Delete", "/TN", "navette", "/F"]).status();
+    match st {
+        Ok(s) if s.success() => println!("[navette] resident daemon removed."),
+        _ => println!("[navette] no scheduled task named 'navette'."),
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn install_daemon() {
+    let exe = daemon_exe();
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+    let dir = std::path::Path::new(&home).join(".config/systemd/user");
+    let _ = std::fs::create_dir_all(&dir);
+    let unit = format!(
+        "[Unit]\nDescription=navette — the browser for agents\n\n[Service]\nExecStart={} serve --port 8765\nRestart=always\n\n[Install]\nWantedBy=default.target\n",
+        exe.display()
+    );
+    let unit_path = dir.join("navette.service");
+    std::fs::write(&unit_path, unit).unwrap_or_else(|e| {
+        eprintln!("[navette] cannot write {}: {e}", unit_path.display());
+        std::process::exit(1);
+    });
+    let reload = Command::new("systemctl").args(["--user", "daemon-reload"]).status();
+    let enable = Command::new("systemctl").args(["--user", "enable", "--now", "navette.service"]).status();
+    match (reload, enable) {
+        (Ok(r), Ok(e)) if r.success() && e.success() => {
+            println!("[navette] resident daemon installed — systemd user unit, warm from login.");
+            println!("  unit: {}", unit_path.display());
+            println!("  uninstall with: navette uninstall-daemon");
+        }
+        _ => {
+            println!("[navette] unit written but systemctl --user failed (no user session?) — start it with: systemctl --user start navette.service");
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn uninstall_daemon() {
+    let _ = Command::new("systemctl").args(["--user", "disable", "--now", "navette.service"]).status();
+    let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+    let unit_path = std::path::Path::new(&home).join(".config/systemd/user/navette.service");
+    match std::fs::remove_file(&unit_path) {
+        Ok(()) => {
+            let _ = Command::new("systemctl").args(["--user", "daemon-reload"]).status();
+            println!("[navette] resident daemon removed.");
+        }
         Err(e) => println!("[navette] nothing to remove ({e})"),
     }
 }
