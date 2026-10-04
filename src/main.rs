@@ -827,6 +827,23 @@ fn uninstall_daemon() {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
+        Some("--help") | Some("-h") => {
+            println!("navette {} — the browser for agents", env!("CARGO_PKG_VERSION"));
+            println!();
+            println!("USAGE:");
+            println!("  navette serve [--port N]    HTTP API on 127.0.0.1 (default 8765)");
+            println!("  navette mcp                 MCP stdio server for agent hosts");
+            println!("  navette install-daemon      resident: warm from login");
+            println!("  navette uninstall-daemon    remove the resident daemon");
+            println!("  navette --version           print the version");
+            println!();
+            println!("HTTP routes: /health /sessions /navigate /read /screenshot /click /hover");
+            println!("/type /key /evaluate /wait /scroll /upload /sessions/viewport /sessions/state");
+            println!("/sessions/load /sessions/close — full docs: https://github.com/slabbdev/navette");
+        }
+        Some("--version") | Some("-V") | Some("version") => {
+            println!("navette {}", env!("CARGO_PKG_VERSION"));
+        }
         Some("mcp") => mcp::run(),
         Some("install-daemon") => install_daemon(),
         Some("uninstall-daemon") => uninstall_daemon(),
