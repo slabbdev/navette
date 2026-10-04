@@ -30,7 +30,8 @@ $ ls -lh target/release/navette
 ## Build & run
 
 ```sh
-cargo install navette-browser   # gives you the `navette` binary
+brew install slabbdev/navette/navette   # macOS arm64
+cargo install navette-browser   # any platform, from source
 navette serve --port 8765       # HTTP API on loopback
 navette mcp                     # MCP stdio for agent hosts
 navette install-daemon          # resident: warm from login
