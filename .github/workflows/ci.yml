@@ -28,7 +28,7 @@ jobs:
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/screenshot -o shot.png || { echo "SCREENSHOT REQUEST FAILED"; cat serve.log; exit 1; }
-          head -c 4 shot.png | od -An -tx1 | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
+          head -c 4 shot.png | od -An -tx1 | tr -s " " | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
           echo "screenshot: $(wc -c < shot.png) bytes"
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
@@ -71,7 +71,7 @@ jobs:
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/screenshot -o shot.png || { echo "SCREENSHOT REQUEST FAILED"; cat serve.log; exit 1; }
-          head -c 4 shot.png | od -An -tx1 | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
+          head -c 4 shot.png | od -An -tx1 | tr -s " " | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
           echo "screenshot: $(wc -c < shot.png) bytes"
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
@@ -112,7 +112,7 @@ jobs:
             -d '{"url":"http://127.0.0.1:8901/smoke-page.html","with_content":true}') || RESP="CURL_FAILED"
           echo "$RESP" | grep -q 'Example Domain' || { echo "NAV RESPONSE: $RESP"; echo "--- serve.log ---"; cat serve.log; exit 1; }
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/screenshot -o shot.png || { echo "SCREENSHOT REQUEST FAILED"; cat serve.log; exit 1; }
-          head -c 4 shot.png | od -An -tx1 | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
+          head -c 4 shot.png | od -An -tx1 | tr -s " " | grep -q "89 50 4e 47" || { echo "SCREENSHOT NOT PNG"; ls -la shot.png; cat serve.log; exit 1; }
           echo "screenshot: $(wc -c < shot.png) bytes"
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
