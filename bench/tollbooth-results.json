@@ -1,0 +1,4128 @@
+[
+ {
+  "category": "docs",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+  "outcome": "ok",
+  "ms": 2636,
+  "http_status": null,
+  "title": "JavaScript | MDN",
+  "content_chars": 11262,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/CSS",
+  "outcome": "ok",
+  "ms": 151,
+  "http_status": null,
+  "title": "CSS: Cascading Style Sheets | MDN",
+  "content_chars": 10359,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://developer.mozilla.org/en-US/docs/Web/API",
+  "outcome": "ok",
+  "ms": 321,
+  "http_status": null,
+  "title": "Web APIs | MDN",
+  "content_chars": 27856,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.python.org/3/tutorial/",
+  "outcome": "ok",
+  "ms": 856,
+  "http_status": null,
+  "title": "The Python Tutorial \u2014 Python 3.14.8 documentation",
+  "content_chars": 7426,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.python.org/3/library/asyncio.html",
+  "outcome": "ok",
+  "ms": 76,
+  "http_status": null,
+  "title": "asyncio \u2014 Asynchronous I/O \u2014 Python 3.14.8 documentation",
+  "content_chars": 4380,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.python.org/3/reference/datamodel.html",
+  "outcome": "ok",
+  "ms": 392,
+  "http_status": null,
+  "title": "3. Data model \u2014 Python 3.14.8 documentation",
+  "content_chars": 146245,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://react.dev/learn",
+  "outcome": "ok",
+  "ms": 701,
+  "http_status": null,
+  "title": "Quick Start \u2013 React",
+  "content_chars": 15417,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 14476
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://react.dev/reference/react/useState",
+  "outcome": "ok",
+  "ms": 454,
+  "http_status": null,
+  "title": "useState \u2013 React",
+  "content_chars": 26546,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 14476
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://nextjs.org/docs",
+  "outcome": "ok",
+  "ms": 1928,
+  "http_status": null,
+  "title": "Next.js Docs | Next.js",
+  "content_chars": 16535,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 13581
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://vuejs.org/guide/introduction.html",
+  "outcome": "ok",
+  "ms": 4494,
+  "http_status": null,
+  "title": "Introduction | Vue.js",
+  "content_chars": 17739,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 7415
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://svelte.dev/docs/kit",
+  "outcome": "ok",
+  "ms": 547,
+  "http_status": null,
+  "title": "Introduction \u2022 SvelteKit Docs",
+  "content_chars": 4425,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 1674
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://astro.build/docs/basics/project-structure/",
+  "outcome": "ok",
+  "ms": 692,
+  "http_status": null,
+  "title": "Page not found | Astro",
+  "content_chars": 2609,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://vitejs.dev/guide/",
+  "outcome": "ok",
+  "ms": 1208,
+  "http_status": null,
+  "title": "Getting Started | Vite",
+  "content_chars": 12762,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 3507
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://www.rust-lang.org/learn",
+  "outcome": "ok",
+  "ms": 763,
+  "http_status": null,
+  "title": "Learn Rust - Rust Programming Language",
+  "content_chars": 3805,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://doc.rust-lang.org/book/ch01-01-installation.html",
+  "outcome": "ok",
+  "ms": 705,
+  "http_status": null,
+  "title": "Installation - The Rust Programming Language",
+  "content_chars": 10427,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://go.dev/doc/",
+  "outcome": "ok",
+  "ms": 1419,
+  "http_status": null,
+  "title": "Documentation - The Go Programming Language",
+  "content_chars": 13000,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://go.dev/tour/basics/1",
+  "outcome": "ok",
+  "ms": 2391,
+  "http_status": null,
+  "title": "A Tour of Go",
+  "content_chars": 2813,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://nodejs.org/api/fs.html",
+  "outcome": "ok",
+  "ms": 754,
+  "http_status": null,
+  "title": "File system | Node.js v26.10.0 Documentation",
+  "content_chars": 218125,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 15008
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+  "outcome": "ok",
+  "ms": 818,
+  "http_status": null,
+  "title": "TypeScript: Handbook - The TypeScript Handbook",
+  "content_chars": 8936,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.docker.com/get-started/",
+  "outcome": "ok",
+  "ms": 1157,
+  "http_status": null,
+  "title": "Get started | Docker Docs",
+  "content_chars": 5182,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 5584
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://kubernetes.io/docs/home/",
+  "outcome": "ok",
+  "ms": 782,
+  "http_status": null,
+  "title": "Kubernetes Documentation | Kubernetes",
+  "content_chars": 4134,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://www.postgresql.org/docs/current/tutorial.html",
+  "outcome": "ok",
+  "ms": 1271,
+  "http_status": null,
+  "title": "PostgreSQL: Documentation: 18: Part\u00a0I.\u00a0Tutorial",
+  "content_chars": 5845,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://redis.io/docs/latest/",
+  "outcome": "ok",
+  "ms": 2584,
+  "http_status": null,
+  "title": "Docs",
+  "content_chars": 7152,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 46830
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://www.sqlite.org/docs.html",
+  "outcome": "ok",
+  "ms": 1702,
+  "http_status": null,
+  "title": "SQLite Documentation",
+  "content_chars": 17043,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://nginx.org/en/docs/",
+  "outcome": "ok",
+  "ms": 307,
+  "http_status": null,
+  "title": "nginx documentation",
+  "content_chars": 3907,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://git-scm.com/book/en/v2",
+  "outcome": "ok",
+  "ms": 445,
+  "http_status": null,
+  "title": "Git",
+  "content_chars": 4839,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.github.com/en/actions",
+  "outcome": "ok",
+  "ms": 1782,
+  "http_status": null,
+  "title": "GitHub Actions documentation - GitHub Docs",
+  "content_chars": 3653,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 28634
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html",
+  "outcome": "ok",
+  "ms": 2506,
+  "http_status": null,
+  "title": "What is AWS Lambda? - AWS Lambda",
+  "content_chars": 7262,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 417581
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://cloud.google.com/docs",
+  "outcome": "ok",
+  "ms": 2320,
+  "http_status": null,
+  "title": "Documentation Google Cloud \u00a0|\u00a0 Google Cloud Documentation",
+  "content_chars": 10968,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 40904
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://learn.microsoft.com/en-us/dotnet/",
+  "outcome": "ok",
+  "ms": 2357,
+  "http_status": null,
+  "title": ".NET documentation - .NET | Microsoft Learn",
+  "content_chars": 8235,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://getbootstrap.com/docs/5.3/getting-started/introduction/",
+  "outcome": "ok",
+  "ms": 779,
+  "http_status": null,
+  "title": "Get started with Bootstrap \u00b7 Bootstrap v5.3",
+  "content_chars": 9160,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://tailwindcss.com/docs/installation",
+  "outcome": "ok",
+  "ms": 1340,
+  "http_status": null,
+  "title": "Installing Tailwind CSS with Vite - Tailwind CSS",
+  "content_chars": 6202,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://webpack.js.org/concepts/",
+  "outcome": "ok",
+  "ms": 4041,
+  "http_status": null,
+  "title": "Concepts | webpack",
+  "content_chars": 25049,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://jestjs.io/docs/getting-started",
+  "outcome": "ok",
+  "ms": 2048,
+  "http_status": null,
+  "title": "Getting Started \u00b7 Jest",
+  "content_chars": 9434,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://docs.pytest.org/en/stable/",
+  "outcome": "ok",
+  "ms": 1146,
+  "http_status": null,
+  "title": "pytest documentation",
+  "content_chars": 4290,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://numpy.org/doc/stable/",
+  "outcome": "ok",
+  "ms": 2096,
+  "http_status": null,
+  "title": "NumPy documentation \u2014 NumPy v2.5 Manual",
+  "content_chars": 3979,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://pandas.pydata.org/docs/user_guide/index.html",
+  "outcome": "ok",
+  "ms": 2467,
+  "http_status": null,
+  "title": "User Guide \u2014 pandas 3.0.6 documentation",
+  "content_chars": 10501,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene",
+  "outcome": "ok",
+  "ms": 827,
+  "http_status": null,
+  "title": "three.js docs",
+  "content_chars": 30758,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 274
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://www.php.net/manual/en/index.php",
+  "outcome": "ok",
+  "ms": 1816,
+  "http_status": null,
+  "title": "PHP: Preface - Manual",
+  "content_chars": 9957,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "docs",
+  "url": "https://guides.rubyonrails.org/getting_started.html",
+  "outcome": "ok",
+  "ms": 3785,
+  "http_status": null,
+  "title": "Getting Started with Rails \u2014 Ruby on Rails Guides",
+  "content_chars": 98411,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.reuters.com/",
+  "outcome": "empty-js-gate",
+  "ms": 5401,
+  "http_status": null,
+  "title": "reuters.com",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://apnews.com/",
+  "outcome": "ok",
+  "ms": 24795,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 442,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.bbc.com/news",
+  "outcome": "ok",
+  "ms": 10554,
+  "http_status": null,
+  "title": "BBC News - Breaking news, video and the latest top stories from the U.S. and around the world",
+  "content_chars": 14322,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.nytimes.com/",
+  "outcome": "ok",
+  "ms": 6268,
+  "http_status": null,
+  "title": "The New York Times - Breaking News, US News, World News and Videos",
+  "content_chars": 11414,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.washingtonpost.com/",
+  "outcome": "ok",
+  "ms": 29336,
+  "http_status": null,
+  "title": "The Washington Post - Breaking news and latest headlines, U.S. news, world news, and video",
+  "content_chars": 24907,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.theguardian.com/international",
+  "outcome": "ok",
+  "ms": 1251,
+  "http_status": null,
+  "title": "Latest news, sport and opinion from the Guardian",
+  "content_chars": 21193,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.lemonde.fr/",
+  "outcome": "ok",
+  "ms": 1008,
+  "http_status": null,
+  "title": "Le Monde.fr - Actualit\u00e9s et Infos en France et dans le monde",
+  "content_chars": 64341,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 3036
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.lefigaro.fr/",
+  "outcome": "ok",
+  "ms": 665,
+  "http_status": null,
+  "title": "Le Figaro - Avant de poursuivre votre lecture ...",
+  "content_chars": 563,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.cbc.ca/news",
+  "outcome": "ok",
+  "ms": 3129,
+  "http_status": null,
+  "title": "CBC News - Latest Canada, World, Entertainment and Business News",
+  "content_chars": 194494,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.aljazeera.com/",
+  "outcome": "challenge",
+  "ms": 1871,
+  "http_status": null,
+  "title": "Breaking News, World News and Video from Al Jazeera",
+  "content_chars": 9657,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.cnbc.com/world/?region=world",
+  "outcome": "ok",
+  "ms": 9176,
+  "http_status": null,
+  "title": "International Business, World News & Global Stock Market Analysis",
+  "content_chars": 46649,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.bloomberg.com/",
+  "outcome": "ok",
+  "ms": 23713,
+  "http_status": null,
+  "title": "Bloomberg Europe",
+  "content_chars": 50696,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.ft.com/",
+  "outcome": "ok",
+  "ms": 632,
+  "http_status": null,
+  "title": "Access error | Financial Times",
+  "content_chars": 547,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.economist.com/",
+  "outcome": "ok",
+  "ms": 1166,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 456,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.wsj.com/",
+  "outcome": "empty-js-gate",
+  "ms": 3345,
+  "http_status": null,
+  "title": "wsj.com",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [
+   "GPTBot"
+  ],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.npr.org/sections/news/",
+  "outcome": "ok",
+  "ms": 5599,
+  "http_status": null,
+  "title": "News: U.S. and World News Headlines : NPR",
+  "content_chars": 36242,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.politico.com/",
+  "outcome": "challenge",
+  "ms": 10272,
+  "http_status": null,
+  "title": "Politics, Policy, Political News - POLITICO",
+  "content_chars": 11241,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.theatlantic.com/",
+  "outcome": "challenge",
+  "ms": 3579,
+  "http_status": null,
+  "title": "World Edition - The Atlantic",
+  "content_chars": 9668,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.wired.com/",
+  "outcome": "ok",
+  "ms": 9197,
+  "http_status": null,
+  "title": "WIRED - The Latest in Technology, Science, Culture and Business | WIRED",
+  "content_chars": 54042,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://techcrunch.com/",
+  "outcome": "ok",
+  "ms": 16033,
+  "http_status": null,
+  "title": "TechCrunch | Startup and Technology News",
+  "content_chars": 99948,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.theverge.com/",
+  "outcome": "ok",
+  "ms": 8693,
+  "http_status": null,
+  "title": "The Verge",
+  "content_chars": 64589,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://arstechnica.com/",
+  "outcome": "ok",
+  "ms": 3205,
+  "http_status": null,
+  "title": "Ars Technica - Serving the Technologist since 1998. News, reviews, and analysis.",
+  "content_chars": 62703,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.engadget.com/",
+  "outcome": "ok",
+  "ms": 2593,
+  "http_status": null,
+  "title": "Engadget | Technology News & Expert Reviews",
+  "content_chars": 7093,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 108056
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://variety.com/",
+  "outcome": "ok",
+  "ms": 4685,
+  "http_status": null,
+  "title": "Variety - Entertainment news, film reviews, awards, film festivals, box office, entertainment industry conferences",
+  "content_chars": 30994,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.hollywoodreporter.com/",
+  "outcome": "ok",
+  "ms": 7582,
+  "http_status": null,
+  "title": "The Hollywood Reporter \u2013 Movie news, TV news, awards news, lifestyle news, business news and more from The Hollywood Rep",
+  "content_chars": 26215,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.espn.com/",
+  "outcome": "ok",
+  "ms": 4121,
+  "http_status": null,
+  "title": "ESPN United Kingdom - Serving Sports Fans. Anytime. Anywhere.",
+  "content_chars": 10979,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "Bytespider"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.cnn.com/",
+  "outcome": "ok",
+  "ms": 9478,
+  "http_status": null,
+  "title": "Breaking News, Latest News and Videos | CNN",
+  "content_chars": 31617,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://abcnews.go.com/",
+  "outcome": "ok",
+  "ms": 9400,
+  "http_status": null,
+  "title": "ABC News - Breaking News, Latest News and Videos",
+  "content_chars": 29419,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "Bytespider"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.cbsnews.com/us/",
+  "outcome": "ok",
+  "ms": 2056,
+  "http_status": null,
+  "title": "U.S. News: Latest news, breaking news, today's news stories updated daily from CBS News",
+  "content_chars": 8231,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.nbcnews.com/",
+  "outcome": "ok",
+  "ms": 19849,
+  "http_status": null,
+  "title": "NBC News - Breaking Headlines and Video Reports on World, U.S. and Local Angles | NBC News",
+  "content_chars": 54114,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://time.com/",
+  "outcome": "challenge",
+  "ms": 2603,
+  "http_status": null,
+  "title": "TIME | Current & Breaking News | National & World Updates",
+  "content_chars": 10437,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 716
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.newsweek.com/",
+  "outcome": "ok",
+  "ms": 13449,
+  "http_status": null,
+  "title": "Newsweek - Latest Breaking News, US, World, Politics, Business, Tech and Videos.",
+  "content_chars": 58098,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.forbes.com/",
+  "outcome": "ok",
+  "ms": 1199,
+  "http_status": null,
+  "title": "Forbes",
+  "content_chars": 45176,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 4945
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.inc.com/",
+  "outcome": "ok",
+  "ms": 2515,
+  "http_status": null,
+  "title": "Inc. | Tech and Business News for Entrepreneurs and Leaders",
+  "content_chars": 69387,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.fastcompany.com/",
+  "outcome": "ok",
+  "ms": 7970,
+  "http_status": null,
+  "title": "Fast Company | Business News, Innovation, Technology, Work Life and Design",
+  "content_chars": 34768,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://axios.com/",
+  "outcome": "ok",
+  "ms": 7569,
+  "http_status": null,
+  "title": "Axios - Breaking news, U.S. news and politics, and local news",
+  "content_chars": 4029,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.semafor.com/",
+  "outcome": "ok",
+  "ms": 2608,
+  "http_status": null,
+  "title": "Semafor - An intelligent, transparent global news platform for breaking stories, analysis and video",
+  "content_chars": 23680,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://theintercept.com/",
+  "outcome": "ok",
+  "ms": 708,
+  "http_status": null,
+  "title": "The Intercept",
+  "content_chars": 8871,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Amazonbot"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.propublica.org/",
+  "outcome": "ok",
+  "ms": 5179,
+  "http_status": null,
+  "title": "ProPublica \u2014 Investigative Journalism and News in the Public Interest",
+  "content_chars": 22063,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "news",
+  "url": "https://www.rtbf.be/en",
+  "outcome": "ok",
+  "ms": 1512,
+  "http_status": null,
+  "title": "RTBF le site de la Radio T\u00e9l\u00e9vision Belge Francophone",
+  "content_chars": 4614,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.amazon.com/",
+  "outcome": "ok",
+  "ms": 1641,
+  "http_status": null,
+  "title": "Amazon.com",
+  "content_chars": 337,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.ebay.com/",
+  "outcome": "ok",
+  "ms": 811,
+  "http_status": null,
+  "title": "Error Page | eBay",
+  "content_chars": 218,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.etsy.com/",
+  "outcome": "ok",
+  "ms": 5078,
+  "http_status": null,
+  "title": "Etsy - Achetez des cadeaux faits main, vintage, personnalis\u00e9s et uniques pour tout le monde",
+  "content_chars": 9487,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 26705
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.walmart.com/",
+  "outcome": "ok",
+  "ms": 6114,
+  "http_status": null,
+  "title": "Walmart | Save Money. Live better.",
+  "content_chars": 5737,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.target.com/",
+  "outcome": "ok",
+  "ms": 16055,
+  "http_status": null,
+  "title": "Target : Expect More. Pay Less.",
+  "content_chars": 8780,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 6158
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.bestbuy.com/",
+  "outcome": "ok",
+  "ms": 2119,
+  "http_status": null,
+  "title": "Best Buy International: Select your Country - Best Buy",
+  "content_chars": 933,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.wayfair.com/",
+  "outcome": "ok",
+  "ms": 3485,
+  "http_status": null,
+  "title": "Wayfair.com - Online Home Store for Furniture, Decor, Outdoors & More",
+  "content_chars": 68059,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.ikea.com/us/en/",
+  "outcome": "challenge",
+  "ms": 1628,
+  "http_status": null,
+  "title": "Attention Required! | Cloudflare",
+  "content_chars": 726,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.homedepot.com/",
+  "outcome": "challenge",
+  "ms": 135,
+  "http_status": null,
+  "title": "Access Denied",
+  "content_chars": 121,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.lowes.com/",
+  "outcome": "ok",
+  "ms": 20402,
+  "http_status": null,
+  "title": "Lowe\u2019s Home Improvement",
+  "content_chars": 10207,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.costco.com/",
+  "outcome": "ok",
+  "ms": 11544,
+  "http_status": null,
+  "title": "Welcome to Costco Wholesale",
+  "content_chars": 19309,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.newegg.com/",
+  "outcome": "ok",
+  "ms": 9483,
+  "http_status": null,
+  "title": "PC Parts, Computers, Workstations & AI PCs | Newegg",
+  "content_chars": 74895,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 11960
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.bhphotovideo.com/",
+  "outcome": "ok",
+  "ms": 988,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 462,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.apple.com/shop/buy-iphone",
+  "outcome": "ok",
+  "ms": 2396,
+  "http_status": null,
+  "title": "Buy iPhone - Apple",
+  "content_chars": 164986,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.microsoft.com/en-us/store/b/shop-all-microsoft",
+  "outcome": "ok",
+  "ms": 714,
+  "http_status": null,
+  "title": "Page cannot be found",
+  "content_chars": 8703,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.samsung.com/us/",
+  "outcome": "ok",
+  "ms": 4033,
+  "http_status": null,
+  "title": "Samsung US | Mobile | TV | Home Electronics | Home Appliances | Samsung US",
+  "content_chars": 9262,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 4597
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://shop.nordstrom.com/",
+  "outcome": "ok",
+  "ms": 2165,
+  "http_status": null,
+  "title": "Nordstrom Online & in Store: Shoes, Jewelry, Clothing, Makeup, Dresses",
+  "content_chars": 20058,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.macys.com/",
+  "outcome": "empty-js-gate",
+  "ms": 2142,
+  "http_status": null,
+  "title": "",
+  "content_chars": 66,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.zappos.com/",
+  "outcome": "ok",
+  "ms": 7028,
+  "http_status": null,
+  "title": "Shoes, Sneakers, Boots, & Clothing + FREE SHIPPING | Zappos.com",
+  "content_chars": 41392,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.asos.com/us/",
+  "outcome": "ok",
+  "ms": 7204,
+  "http_status": null,
+  "title": "ASOS | Online shopping for the Latest Clothes & Fashion",
+  "content_chars": 24104,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.zalando.fr/",
+  "outcome": "empty-js-gate",
+  "ms": 30077,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://fr.shein.com/",
+  "outcome": "ok",
+  "ms": 3144,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 446,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.temu.com/",
+  "outcome": "ok",
+  "ms": 3827,
+  "http_status": null,
+  "title": "Temu France | Explore the Latest Clothing, Beauty, Home, Jewelry & More",
+  "content_chars": 1822,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 2889
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.aliexpress.com/",
+  "outcome": "empty-js-gate",
+  "ms": 1217,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 13830
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.banggood.com/",
+  "outcome": "ok",
+  "ms": 3772,
+  "http_status": null,
+  "title": "Banggood : Global Leading Online Shop for Gadgets and Fashion",
+  "content_chars": 11997,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.flipkart.com/",
+  "outcome": "ok",
+  "ms": 4707,
+  "http_status": null,
+  "title": "Online Shopping India Mobile, Cameras, Lifestyle & more Online @ Flipkart.com",
+  "content_chars": 58876,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.myntra.com/",
+  "outcome": "ok",
+  "ms": 4133,
+  "http_status": null,
+  "title": "Online Shopping for Women, Men, Kids Fashion & Lifestyle - Myntra",
+  "content_chars": 29208,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.noon.com/uae-en/",
+  "outcome": "empty-js-gate",
+  "ms": 978,
+  "http_status": null,
+  "title": "",
+  "content_chars": 66,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.jumia.ma/",
+  "outcome": "ok",
+  "ms": 667,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 446,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "CCBot",
+   "Google-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.mercadolibre.com.mx/",
+  "outcome": "ok",
+  "ms": 3629,
+  "http_status": null,
+  "title": "Mercado Libre M\u00e9xico - Env\u00edos Gratis en el d\u00eda",
+  "content_chars": 20133,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "PerplexityBot",
+   "Amazonbot"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.alibaba.com/",
+  "outcome": "ok",
+  "ms": 9615,
+  "http_status": null,
+  "title": "Alibaba - la plus grande plateforme de commerce B2B en ligne au monde",
+  "content_chars": 30842,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 269775
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://stockx.com/",
+  "outcome": "ok",
+  "ms": 2060,
+  "http_status": null,
+  "title": "StockX: Sneakers, Streetwear, Trading Cards, Handbags, Watches",
+  "content_chars": 3044,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.fanatics.com/",
+  "outcome": "challenge",
+  "ms": 800,
+  "http_status": null,
+  "title": "Access Denied",
+  "content_chars": 126,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.guitarguitar.co.uk/",
+  "outcome": "ok",
+  "ms": 2640,
+  "http_status": null,
+  "title": "GUITARGUITAR | Guitar Shop & Musical Instrument Store",
+  "content_chars": 6842,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.thomann.de/fr/index.html",
+  "outcome": "ok",
+  "ms": 2051,
+  "http_status": null,
+  "title": "Acheter des instruments de musique en ligne chez le leader du march\u00e9 \u2013 Thomann France",
+  "content_chars": 16355,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.pccasegear.com/",
+  "outcome": "ok",
+  "ms": 980,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 458,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.mouser.com/",
+  "outcome": "empty-js-gate",
+  "ms": 2026,
+  "http_status": null,
+  "title": "mouser.com",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 13897
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.digikey.com/",
+  "outcome": "ok",
+  "ms": 548,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 452,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.grainger.com/",
+  "outcome": "ok",
+  "ms": 5154,
+  "http_status": null,
+  "title": "Grainger Industrial Supply - MRO Products, Equipment and Tools",
+  "content_chars": 8452,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 18271
+  }
+ },
+ {
+  "category": "e-commerce",
+  "url": "https://www.webstaurantstore.com/",
+  "outcome": "ok",
+  "ms": 3188,
+  "http_status": null,
+  "title": "WebstaurantStore: Commercial Supplies & Restaurant Equipment",
+  "content_chars": 12323,
+  "fold_error": null,
+  "stance": "partial",
+  "ai_blocked": [],
+  "ai_partial": [
+   "GPTBot",
+   "ClaudeBot",
+   "CCBot",
+   "Amazonbot"
+  ],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://github.com/",
+  "outcome": "ok",
+  "ms": 2109,
+  "http_status": null,
+  "title": "GitHub \u00b7 Le changement est constant. GitHub vous permet de garder une longueur d\u2019avance. \u00b7 GitHub",
+  "content_chars": 7760,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "anthropic-ai",
+   "PerplexityBot",
+   "Bytespider"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 28650
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://github.com/trending",
+  "outcome": "ok",
+  "ms": 1650,
+  "http_status": null,
+  "title": "Trending repositories on GitHub today \u00b7 GitHub",
+  "content_chars": 71843,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "anthropic-ai",
+   "PerplexityBot",
+   "Bytespider"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 28650
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://gitlab.com/",
+  "outcome": "ok",
+  "ms": 1333,
+  "http_status": null,
+  "title": "GitLab\u00a0: l'ing\u00e9nierie logicielle agentique ma\u00eetris\u00e9e",
+  "content_chars": 11517,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.npmjs.com/",
+  "outcome": "ok",
+  "ms": 1093,
+  "http_status": null,
+  "title": "npm | Home",
+  "content_chars": 1617,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://pypi.org/",
+  "outcome": "ok",
+  "ms": 503,
+  "http_status": null,
+  "title": "PyPI \u00b7 L'Index des paquets Python",
+  "content_chars": 2888,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://crates.io/",
+  "outcome": "ok",
+  "ms": 428,
+  "http_status": null,
+  "title": "crates.io: Rust Package Registry",
+  "content_chars": 1142,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://rubygems.org/",
+  "outcome": "ok",
+  "ms": 765,
+  "http_status": null,
+  "title": "RubyGems.org | your community gem host",
+  "content_chars": 2267,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://packagist.org/",
+  "outcome": "ok",
+  "ms": 463,
+  "http_status": null,
+  "title": "Packagist.org",
+  "content_chars": 4131,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://central.sonatype.com/",
+  "outcome": "ok",
+  "ms": 1997,
+  "http_status": null,
+  "title": "Maven Central",
+  "content_chars": 1949,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://stackoverflow.com/questions",
+  "outcome": "challenge",
+  "ms": 347,
+  "http_status": null,
+  "title": "Just a moment...",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://serverfault.com/",
+  "outcome": "ok",
+  "ms": 2628,
+  "http_status": null,
+  "title": "Server Fault",
+  "content_chars": 11878,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://stackexchange.com/",
+  "outcome": "ok",
+  "ms": 1958,
+  "http_status": null,
+  "title": "Hot Questions - Stack Exchange",
+  "content_chars": 18858,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://hub.docker.com/",
+  "outcome": "ok",
+  "ms": 5545,
+  "http_status": null,
+  "title": "Docker Hub Container Image Library | App Containerization",
+  "content_chars": 13753,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 8071
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://readthedocs.org/",
+  "outcome": "ok",
+  "ms": 1798,
+  "http_status": null,
+  "title": "Full featured documentation deployment platform - Read the Docs",
+  "content_chars": 6432,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://dev.to/",
+  "outcome": "ok",
+  "ms": 4131,
+  "http_status": null,
+  "title": "DEV Community",
+  "content_chars": 25219,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 2835
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://medium.com/tag/programming",
+  "outcome": "ok",
+  "ms": 7015,
+  "http_status": null,
+  "title": "The most insightful stories about Programming - Medium",
+  "content_chars": 25200,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://hashnode.com/",
+  "outcome": "ok",
+  "ms": 3038,
+  "http_status": null,
+  "title": "Hashnode \u2014 The Best Blogging Platform for Builders in Tech",
+  "content_chars": 12510,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 71333
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://news.ycombinator.com/",
+  "outcome": "ok",
+  "ms": 1050,
+  "http_status": null,
+  "title": "Hacker News",
+  "content_chars": 16293,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://codepen.io/trending",
+  "outcome": "challenge",
+  "ms": 1139,
+  "http_status": null,
+  "title": "CodePen: Online Code Editor and Front End Web Developer Community",
+  "content_chars": 3066,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://jsfiddle.net/",
+  "outcome": "ok",
+  "ms": 3233,
+  "http_status": null,
+  "title": "JSFiddle - React, Tailwind, and code Playground",
+  "content_chars": 9942,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://replit.com/",
+  "outcome": "ok",
+  "ms": 876,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 442,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 20191
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://codesandbox.io/",
+  "outcome": "ok",
+  "ms": 2143,
+  "http_status": null,
+  "title": "CodeSandbox: Instant Cloud Development Environments",
+  "content_chars": 5424,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://vercel.com/docs",
+  "outcome": "challenge",
+  "ms": 1144,
+  "http_status": null,
+  "title": "Vercel Documentation",
+  "content_chars": 11077,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 4868
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.netlify.com/docs/",
+  "outcome": "ok",
+  "ms": 2760,
+  "http_status": null,
+  "title": "Netlify Documentation | Netlify Docs",
+  "content_chars": 8509,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 2816
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://railway.app/docs",
+  "outcome": "ok",
+  "ms": 2773,
+  "http_status": null,
+  "title": "Railway Docs",
+  "content_chars": 3365,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 6657
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://render.com/docs",
+  "outcome": "challenge",
+  "ms": 3352,
+  "http_status": null,
+  "title": "Docs + Quickstarts | Render",
+  "content_chars": 5601,
+  "fold_error": null,
+  "stance": "partial",
+  "ai_blocked": [],
+  "ai_partial": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "llms_txt": {
+   "present": true,
+   "bytes": 46744
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://fly.io/docs/",
+  "outcome": "ok",
+  "ms": 1599,
+  "http_status": null,
+  "title": "Fly.io developer documentation - Fly.io",
+  "content_chars": 2982,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 4951
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.heroku.com/platform",
+  "outcome": "ok",
+  "ms": 3415,
+  "http_status": null,
+  "title": "Heroku | Platform as a Service (PaaS) & App Hosting Platform",
+  "content_chars": 12966,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 9206
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.digitalocean.com/products",
+  "outcome": "challenge",
+  "ms": 1280,
+  "http_status": null,
+  "title": "AI-Native Cloud | DigitalOcean",
+  "content_chars": 10736,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.jetbrains.com/idea/",
+  "outcome": "ok",
+  "ms": 16515,
+  "http_status": null,
+  "title": "The Java and Kotlin IDE for You and Your Agents",
+  "content_chars": 23438,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://code.visualstudio.com/docs",
+  "outcome": "ok",
+  "ms": 2713,
+  "http_status": null,
+  "title": "Documentation for Visual Studio Code",
+  "content_chars": 5543,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 67787
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://marketplace.visualstudio.com/VSCode",
+  "outcome": "ok",
+  "ms": 4139,
+  "http_status": null,
+  "title": "Extensions for Visual Studio family of products | Visual Studio Marketplace",
+  "content_chars": 5291,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://caniuse.com/",
+  "outcome": "ok",
+  "ms": 2884,
+  "http_status": null,
+  "title": "Can I use... Support tables for HTML5, CSS3, etc",
+  "content_chars": 3082,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 8722
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://developer.apple.com/documentation/",
+  "outcome": "ok",
+  "ms": 2313,
+  "http_status": null,
+  "title": "Featured | Apple Developer Documentation",
+  "content_chars": 3051,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://developer.android.com/docs",
+  "outcome": "ok",
+  "ms": 4237,
+  "http_status": null,
+  "title": "D\u00e9velopper pour Android \u00a0|\u00a0 Android Developers",
+  "content_chars": 19096,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://docs.rs/serde/latest/serde/",
+  "outcome": "ok",
+  "ms": 1089,
+  "http_status": null,
+  "title": "serde - Rust",
+  "content_chars": 4888,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://pkg.go.dev/std",
+  "outcome": "ok",
+  "ms": 1994,
+  "http_status": null,
+  "title": "Standard library - Go Packages",
+  "content_chars": 76949,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://libraries.io/",
+  "outcome": "ok",
+  "ms": 3350,
+  "http_status": null,
+  "title": "Libraries.io - security & maintenance data for open source software",
+  "content_chars": 4903,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://www.jsdelivr.com/",
+  "outcome": "ok",
+  "ms": 1097,
+  "http_status": null,
+  "title": "jsDelivr - A free, fast, and reliable CDN for JS and open source",
+  "content_chars": 7464,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "dev-tools",
+  "url": "https://unpkg.com/",
+  "outcome": "ok",
+  "ms": 977,
+  "http_status": null,
+  "title": "UNPKG",
+  "content_chars": 9914,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://x.com/",
+  "outcome": "ok",
+  "ms": 3347,
+  "http_status": null,
+  "title": "X. C'est ce qu'il se passe / X",
+  "content_chars": 1213,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.facebook.com/",
+  "outcome": "empty-js-gate",
+  "ms": 2117,
+  "http_status": null,
+  "title": "Facebook",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 419413
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.instagram.com/",
+  "outcome": "ok",
+  "ms": 3876,
+  "http_status": null,
+  "title": "Instagram",
+  "content_chars": 1388,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 629874
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.linkedin.com/",
+  "outcome": "ok",
+  "ms": 2347,
+  "http_status": null,
+  "title": "LinkedIn\u00a0: s\u2019identifier ou s\u2019inscrire",
+  "content_chars": 7060,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.tiktok.com/",
+  "outcome": "empty-js-gate",
+  "ms": 4978,
+  "http_status": null,
+  "title": "TikTok - Make Your Day",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 33589
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.pinterest.com/",
+  "outcome": "empty-js-gate",
+  "ms": 3006,
+  "http_status": null,
+  "title": "Pinterest - France",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 1140219
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.reddit.com/",
+  "outcome": "empty-js-gate",
+  "ms": 389,
+  "http_status": null,
+  "title": "Reddit",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 8405
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.youtube.com/",
+  "outcome": "empty-js-gate",
+  "ms": 7117,
+  "http_status": null,
+  "title": "YouTube",
+  "content_chars": 82,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.twitch.tv/",
+  "outcome": "empty-js-gate",
+  "ms": 2654,
+  "http_status": null,
+  "title": "Twitch",
+  "content_chars": 99,
+  "fold_error": null,
+  "stance": "partial",
+  "ai_blocked": [],
+  "ai_partial": [
+   "Amazonbot"
+  ],
+  "llms_txt": {
+   "present": true,
+   "bytes": 198739
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://discord.com/",
+  "outcome": "ok",
+  "ms": 5619,
+  "http_status": null,
+  "title": "Discord - Group Chat That\u2019s All Fun & Games",
+  "content_chars": 5359,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://telegram.org/",
+  "outcome": "ok",
+  "ms": 962,
+  "http_status": null,
+  "title": "Telegram Messenger",
+  "content_chars": 2328,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 19848
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.threads.net/",
+  "outcome": "empty-js-gate",
+  "ms": 2391,
+  "http_status": null,
+  "title": "Threads \u2022 Se connecter",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 328663
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://bsky.app/",
+  "outcome": "empty-js-gate",
+  "ms": 3054,
+  "http_status": null,
+  "title": "Bluesky",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://mastodon.social/",
+  "outcome": "empty-js-gate",
+  "ms": 1259,
+  "http_status": null,
+  "title": "Mastodon",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://lemmy.world/",
+  "outcome": "ok",
+  "ms": 739,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 444,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.tumblr.com/",
+  "outcome": "ok",
+  "ms": 2675,
+  "http_status": null,
+  "title": "Tumblr",
+  "content_chars": 716,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.flickr.com/",
+  "outcome": "ok",
+  "ms": 3318,
+  "http_status": null,
+  "title": "Flickr | The best place to be a photographer online.",
+  "content_chars": 7527,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://vk.com/",
+  "outcome": "empty-js-gate",
+  "ms": 30089,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://weibo.com/",
+  "outcome": "empty-js-gate",
+  "ms": 4369,
+  "http_status": null,
+  "title": "Sina Visitor System",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 9086
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.quora.com/",
+  "outcome": "ok",
+  "ms": 6992,
+  "http_status": null,
+  "title": "Quora - Un lieu pour partager le savoir et mieux comprendre le monde",
+  "content_chars": 843,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.goodreads.com/",
+  "outcome": "ok",
+  "ms": 6347,
+  "http_status": null,
+  "title": "Goodreads | Meet your next favorite book",
+  "content_chars": 10228,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "CCBot"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://letterboxd.com/",
+  "outcome": "ok",
+  "ms": 883,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 450,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "CCBot",
+   "Google-Extended",
+   "Bytespider",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://bandcamp.com/",
+  "outcome": "ok",
+  "ms": 9093,
+  "http_status": null,
+  "title": "Bandcamp",
+  "content_chars": 21910,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://soundcloud.com/discover",
+  "outcome": "ok",
+  "ms": 19045,
+  "http_status": null,
+  "title": "Discover the top streamed music and songs online on Soundcloud",
+  "content_chars": 17774,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://open.spotify.com/",
+  "outcome": "ok",
+  "ms": 6499,
+  "http_status": null,
+  "title": "Spotify\u00a0- Lecteur web\u00a0: de la musique pour tout le monde",
+  "content_chars": 8926,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "Bytespider",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.mixcloud.com/",
+  "outcome": "ok",
+  "ms": 1592,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 454,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.strava.com/",
+  "outcome": "ok",
+  "ms": 9754,
+  "http_status": null,
+  "title": "Strava | Application running, v\u00e9lo et randonn\u00e9e - Entra\u00eenement, suivi et partage",
+  "content_chars": 32564,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Google-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.behance.net/",
+  "outcome": "ok",
+  "ms": 3209,
+  "http_status": null,
+  "title": "Search Projects :: Photos, videos, logos, illustrations and branding :: Behance",
+  "content_chars": 16024,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "Google-Extended",
+   "Bytespider",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://dribbble.com/shots",
+  "outcome": "ok",
+  "ms": 2190,
+  "http_status": null,
+  "title": "Dribbble - Discover the World\u2019s Top Designers & Creative Professionals",
+  "content_chars": 4184,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://imgur.com/",
+  "outcome": "ok",
+  "ms": 4603,
+  "http_status": null,
+  "title": "Imgur: The magic of the Internet",
+  "content_chars": 96853,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 6675
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://9gag.com/",
+  "outcome": "ok",
+  "ms": 3130,
+  "http_status": null,
+  "title": "9GAG - Best Funny Memes and Breaking News",
+  "content_chars": 3174,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 60835
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://knowyourmeme.com/",
+  "outcome": "ok",
+  "ms": 1333,
+  "http_status": null,
+  "title": "Un instant\u2026",
+  "content_chars": 454,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.boredpanda.com/",
+  "outcome": "ok",
+  "ms": 13449,
+  "http_status": null,
+  "title": "Bored Panda - The Only Magazine For Pandas",
+  "content_chars": 72483,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "Bytespider"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 1320
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.duolingo.com/learn",
+  "outcome": "ok",
+  "ms": 5749,
+  "http_status": null,
+  "title": "Duolingo",
+  "content_chars": 3124,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 11568
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.meetup.com/",
+  "outcome": "ok",
+  "ms": 5128,
+  "http_status": null,
+  "title": "Meetup | Trouvez des groupes locaux, des \u00e9v\u00e9nements et des activit\u00e9s pr\u00e8s de chez vous",
+  "content_chars": 18015,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": true,
+   "bytes": 9414
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.eventbrite.com/",
+  "outcome": "ok",
+  "ms": 4522,
+  "http_status": null,
+  "title": "Eventbrite - Discover the Best Local Events & Things to Do",
+  "content_chars": 6531,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.yelp.com/",
+  "outcome": "empty-js-gate",
+  "ms": 15355,
+  "http_status": null,
+  "title": "",
+  "content_chars": 0,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://www.trustpilot.com/",
+  "outcome": "ok",
+  "ms": 583,
+  "http_status": null,
+  "title": "Verifying Connection",
+  "content_chars": 168,
+  "fold_error": null,
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://stackshare.io/",
+  "outcome": "ok",
+  "ms": 167,
+  "http_status": null,
+  "title": "Vercel Security Checkpoint",
+  "content_chars": 186,
+  "fold_error": null,
+  "stance": "no-robots",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ },
+ {
+  "category": "social",
+  "url": "https://alternativeto.net/",
+  "outcome": "ok",
+  "ms": 4415,
+  "http_status": null,
+  "title": "AlternativeTo - Crowdsourced software recommendations | AlternativeTo",
+  "content_chars": 119179,
+  "fold_error": null,
+  "stance": "no-rules",
+  "ai_blocked": [],
+  "ai_partial": [],
+  "llms_txt": {
+   "present": false,
+   "bytes": 0
+  }
+ }
+]
