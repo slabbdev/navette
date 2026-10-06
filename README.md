@@ -1,4 +1,4 @@
-# navette — v1.4.0
+# navette — v1.5.0
 
 ![navette — the browser for agents](assets/banner.png)
 
@@ -24,6 +24,8 @@ $ ls -lh target/release/navette
 **Why not Apple's Safari MCP server (2026)?** Same thesis, different scope: navette is agent-first (8 primitives, ghost windows, resident daemon), open source, and cross-platform by design (WebView2 on Windows *is* Chromium — preinstalled). Apple's is macOS-and-Safari-shaped.
 
 **Why not just fetch + readability?** For static pages, do that — it beats everyone. navette exists for what fetch can't do: JS-built pages, logins, sessions, forms, screenshots, acting like a human.
+
+**Why not an ML extraction model?** Two trades, not a ranking. Trained extraction models survive hostile HTML — agency templates, mangled CMS output — where a DOM walk picks the wrong node, at roughly **~600 ms of compute per page**. navette's native DOM walk costs **~10 ms per page** and wins wherever the markup is sane, which is most documentation, news and dev-tool pages — most of what agents actually read. The layers compose: when one target's markup is hostile enough that native extraction picks garbage, hand *that* page's raw HTML to an ML pass.
 
 **Security?** The server binds 127.0.0.1 only, has no auth (do not expose it), and sessions use a non-persistent store — no cookies leak between runs. The agent's JS executes in the OS WebKit sandbox, not in your terminal.
 
@@ -105,8 +107,8 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-**v1.4.0 (2026-10-04)** — current. **16 MCP tools** including file upload (page-side DataTransfer — no OS dialog) and scroll; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
+**v1.5.0 (2026-10-05)** — current. **Idle-release watchdog**: `navette serve --idle-release 15` drops WebKit sessions after 15 minutes without requests — daemon stays resident, memory comes back, the next request re-warms on demand (validated on macOS and Linux). **16 MCP tools** including file upload (page-side DataTransfer — no OS dialog) and scroll; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
 
-Recent releases: [v1.3.0](https://github.com/slabbdev/navette/releases/tag/v1.3.0) — full platform parity (native screenshots per engine, cookie state export/import, viewport control, resident daemon everywhere, hover + key, auto-handled dialogs) · [v1.2.1](https://github.com/slabbdev/navette/releases/tag/v1.2.1) — hardening (five root-cause fixes, boot-time session pre-warm: first navigate 38 s → 83 ms on a cold CI VM).
+Recent releases: [v1.4.1](https://github.com/slabbdev/navette/releases/tag/v1.4.1) — container image (ghcr, amd64+arm64), --help/--version, brew tap, official MCP registry listing · [v1.3.0](https://github.com/slabbdev/navette/releases/tag/v1.3.0) — full platform parity (native screenshots per engine, cookie state export/import, viewport control, resident daemon everywhere, hover + key, auto-handled dialogs) · [v1.2.1](https://github.com/slabbdev/navette/releases/tag/v1.2.1) — hardening (five root-cause fixes, boot-time session pre-warm: first navigate 38 s → 83 ms on a cold CI VM).
 
 Known gaps, stated plainly: real (OS-level) keyboard/mouse input, request/response network interception, OS file-dialog automation. MIT.

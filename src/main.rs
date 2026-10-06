@@ -566,6 +566,16 @@ fn serve(args: &[String]) {
         .and_then(|v| v.parse().ok())
         .unwrap_or(8765);
 
+    // Idle watchdog: drop WebKit sessions after N minutes without any HTTP
+    // request. The daemon stays alive; the next request re-warms on demand.
+    // 0 (default) keeps sessions forever — the original always-warm promise.
+    let idle_release_min: f64 = args
+        .iter()
+        .position(|a| a == "--idle-release")
+        .and_then(|i| args.get(i + 1))
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(0.0);
+
     let t0 = Instant::now();
     #[cfg(target_os = "macos")]
     {
@@ -593,6 +603,22 @@ fn serve(args: &[String]) {
                 std::process::exit(1);
             }
         };
+    // Idle-watchdog thread: every 30 s, drop sessions idle for longer than
+    // the --idle-release threshold. Started late enough that the backend's
+    // event-loop proxy exists (wry sets it inside run_main_loop startup).
+    if idle_release_min > 0.0 {
+        let idle_secs = (idle_release_min * 60.0) as u64;
+        thread::spawn(move || loop {
+            thread::sleep(Duration::from_secs(30));
+            let n = backend::reap_idle(idle_secs);
+            let _ = n;
+        });
+        eprintln!(
+            "[navette] idle-release enabled: sessions drop after {} min without requests",
+            idle_release_min
+        );
+    }
+
         {
             let listener = listener;
             thread::spawn(move || {
@@ -621,7 +647,20 @@ fn serve(args: &[String]) {
     #[cfg(target_os = "macos")]
     backend::app_run();
     #[cfg(any(target_os = "windows", target_os = "linux"))]
-    backend::run_main_loop(); // tao event loop — owns main, never returns
+    {
+        if idle_release_min > 0.0 {
+            let idle_secs = (idle_release_min * 60.0) as u64;
+            thread::spawn(move || loop {
+                thread::sleep(Duration::from_secs(30));
+                let _ = backend::reap_idle(idle_secs);
+            });
+            eprintln!(
+                "[navette] idle-release enabled: sessions drop after {} min without requests",
+                idle_release_min
+            );
+        }
+        backend::run_main_loop(); // tao event loop — owns main, never returns
+    } // tao event loop — owns main, never returns
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {
         println!("[navette] no engine backend on this platform yet — HTTP skeleton only");
