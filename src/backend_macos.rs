@@ -136,6 +136,8 @@ unsafe fn attach_window(webview: &AnyObject) -> SendObj {
 pub struct Session {
     pub webview: SendObj,
     pub window: Mutex<Option<SendObj>>,
+    // Idle-watchdog bookkeeping: updated on every run_get_or_create.
+    pub last_used: Mutex<Instant>,
 }
 
 static SESSIONS: Mutex<Option<HashMap<String, Arc<Session>>>> = Mutex::new(None);
@@ -151,6 +153,7 @@ pub fn get_or_create(name: &str) -> Arc<Session> {
     let s = Arc::new(Session {
         webview: unsafe { make_webview() },
         window: Mutex::new(None),
+        last_used: Mutex::new(Instant::now()),
     });
     map.insert(name.to_string(), s.clone());
     s
@@ -626,5 +629,41 @@ pub fn app_run() {
 // HTTP thread once app.run() is active.
 pub fn run_get_or_create(name: &str) -> Arc<Session> {
     let n = name.to_string();
-    run_on_main(move || get_or_create(&n))
+    let s = run_on_main(move || get_or_create(&n));
+    *s.last_used.lock().unwrap() = Instant::now();
+    s
+}
+
+// Idle watchdog: drop whole idle sessions on the main thread so the
+// WKWebView deallocates where AppKit expects it. The daemon stays alive;
+// the next request re-creates and re-pre-warms on demand.
+pub fn reap_idle(max_idle_secs: u64) -> usize {
+    let now = Instant::now();
+    let idle: Vec<String> = {
+        let map = SESSIONS.lock().unwrap();
+        match map.as_ref() {
+            Some(m) => m
+                .iter()
+                .filter(|(_, s)| now.duration_since(*s.last_used.lock().unwrap()).as_secs() >= max_idle_secs)
+                .map(|(n, _)| n.clone())
+                .collect(),
+            None => Vec::new(),
+        }
+    };
+    for n in &idle {
+        let n2 = n.clone();
+        run_on_main(move || {
+            let mut map = SESSIONS.lock().unwrap();
+            if let Some(m) = map.as_mut() {
+                if let Some(s) = m.remove(&n2) {
+                    let _: () = unsafe { msg_send![&*s.webview, stopLoading] };
+                    // s drops here, on the main thread
+                }
+            }
+        });
+    }
+    if !idle.is_empty() {
+        eprintln!("[navette] idle-release: dropped {} session(s) (idle >= {}s)", idle.len(), max_idle_secs);
+    }
+    idle.len()
 }

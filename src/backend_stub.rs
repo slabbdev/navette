@@ -45,6 +45,10 @@ pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String
     Err("platform not supported yet".into())
 }
 
+pub fn reap_idle(_max_idle_secs: u64) -> usize {
+    0
+}
+
 pub fn set_viewport(_s: &SessionRef, _width: u32, _height: u32) -> Result<(), String> {
     Err("platform not supported yet".into())
 }

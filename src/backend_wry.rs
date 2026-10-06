@@ -63,6 +63,8 @@ pub struct Session {
     // has to come back through ipc — it needs the route's tx, which pending
     // no longer holds at that point.
     pub fold_tx: Arc<Mutex<Option<SyncSender<Result<String, String>>>>>,
+    // Idle-watchdog bookkeeping: updated on every run_get_or_create.
+    pub last_used: Mutex<std::time::Instant>,
     pub current_url: Arc<Mutex<String>>,
     pub current_title: Arc<Mutex<String>>,
 }
@@ -100,7 +102,9 @@ pub fn run_get_or_create(name: &str) -> SessionRef {
     proxy()
         .send_event(Command::GetOrCreate(name.to_string(), tx))
         .expect("event loop gone");
-    rx.recv().expect("event loop dropped session request")
+    let s: SessionRef = rx.recv().expect("event loop dropped session request");
+    *s.last_used.lock().unwrap() = std::time::Instant::now();
+    s
 }
 
 pub fn prewarm_default() {}
@@ -186,6 +190,15 @@ pub fn import_cookies(s: &SessionRef, cookies: &Value) -> Result<usize, String> 
         .map_err(|_| "event loop gone")?;
     rx.recv_timeout(Duration::from_secs(30))
         .unwrap_or_else(|_| Err("cookie import timeout".into()))
+}
+
+pub fn reap_idle(max_idle_secs: u64) -> usize {
+    let Some(p) = PROXY.get() else { return 0 }; // event loop not up yet — nothing to reap
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    if p.send_event(Command::Reap(max_idle_secs, tx)).is_err() {
+        return 0;
+    }
+    rx.recv_timeout(Duration::from_secs(10)).unwrap_or(0)
 }
 
 pub fn set_viewport(s: &SessionRef, width: u32, height: u32) -> Result<(), String> {
@@ -500,6 +513,7 @@ pub enum Command {
     ExportCookies(String, SyncSender<Result<Value, String>>),
     ImportCookies(String, Value, SyncSender<Result<usize, String>>),
     Screenshot(String, SyncSender<Result<Vec<u8>, String>>),
+    Reap(u64, SyncSender<usize>),
 }
 
 impl std::fmt::Debug for Command {
@@ -617,6 +631,29 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 screenshot_on_main(&s)
             })();
             let _ = tx.send(r);
+        }
+        Command::Reap(max_idle_secs, tx) => {
+            // Idle watchdog: drop whole sessions (window + WebKit processes
+            // follow) that no HTTP request has touched for max_idle_secs.
+            // The next request re-creates and re-pre-warms on demand.
+            let now = std::time::Instant::now();
+            let idle: Vec<String> = sessions()
+                .lock()
+                .unwrap()
+                .iter()
+                .filter(|(_, s)| now.duration_since(*s.last_used.lock().unwrap()).as_secs() >= max_idle_secs)
+                .map(|(n, _)| n.clone())
+                .collect();
+            for name in &idle {
+                let removed = sessions().lock().unwrap().remove(name);
+                if let Some(s) = removed {
+                    let _ = s.window.0.set_visible(false);
+                }
+            }
+            if !idle.is_empty() {
+                eprintln!("[navette] idle-release: dropped {} session(s) (idle >= {}s)", idle.len(), max_idle_secs);
+            }
+            let _ = tx.send(idle.len());
         }
     }
 }
@@ -741,6 +778,7 @@ fn create_session(
         evals,
         pending,
         fold_tx,
+        last_used: Mutex::new(std::time::Instant::now()),
         current_url,
         current_title,
     }))
