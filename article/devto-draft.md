@@ -35,7 +35,7 @@ Under the hood on macOS: a WKWebView per session living in a **ghost window** (r
 
 ## The numbers
 
-Same machine (M1, 8 GB), same corpus (100 local pages + 20 real URLs), reproducible with one command (`python3 navbench.py`). macOS numbers; cross-engine medians and p95s run in CI (see the repo):
+Same machine (M1, 8 GB), same corpus (100 local pages + 20 real URLs), reproducible with one command (`python3 bench/navbench.py`). macOS numbers; cross-engine medians and p95s run in CI (see the repo):
 
 | Metric | navette | Playwright + Chromium | Lightpanda |
 |---|---|---|---|
@@ -67,7 +67,9 @@ Full walkthrough with the verbatim tool calls and screenshots is in [`demo/JOURN
 ## Try it
 
 ```sh
-cargo install navette-browser
+brew install slabbdev/navette/navette     # macOS arm64
+cargo install navette-browser             # any platform
+docker run -i --rm ghcr.io/slabbdev/navette navette mcp   # container, stdio MCP
 
 # or from source:
 cargo build --release
@@ -89,7 +91,7 @@ Then just talk to your agent: *"open this dashboard, check if the deploy banner 
 ## The honest limits
 
 - **Three engines, one fully hardened.** Windows (WebView2) and Linux (WebKitGTK) reached platform parity in v1.4 — screenshots, cookie state, viewport, resident daemon, CI-verified on all three OSes — but macOS remains the benchmark-carrying backend. The engine strategy is written down: system-first, official embed (WebView2 Fixed Version) or distro packages as fallback. Never vendor a browser the way Playwright does.
-- **The automation long tail is still long.** Still missing, stated plainly: OS-level keyboard/mouse input, request/response network interception, hover, OS file-dialog automation — Playwright has twenty years of API surface. The core agent loop (navigate, read, see, act, wait, sessions, state) is complete; the tail is the roadmap.
+- **The automation long tail is still long.** Still missing, stated plainly: OS-level keyboard/mouse input, request/response network interception, OS file-dialog automation — Playwright has twenty years of API surface. The core agent loop (navigate, read, see, act, wait, sessions, state) is complete; the tail is the roadmap.
 - **Fresh-process cold start can't beat a blind engine.** A full WebKit spawns three helper processes; Lightpanda spawns none because it renders nothing. That's why navette ships a resident mode: warm from login, 24 ms forever.
 
 ## Why this matters
