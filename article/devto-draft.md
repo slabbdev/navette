@@ -1,7 +1,7 @@
 ---
-title: 594 KB to orbit: a browser for AI agents with no Chromium attached
-description: Houston, we deleted Chromium: your agent's browser is 594 KB and ships with your OS. Full WebKit, MCP-native, resident at 24 ms.
-published: false
+title: ~1 MB to orbit: your agent's browser ships with your OS
+published: true
+description: A single Rust binary that drives the WebView your OS already ships — 0.6–1.2 MB, no Chromium, MCP-native.
 tags: showdev, rust, ai, webdev
 ---
 
@@ -17,7 +17,7 @@ Meanwhile, your computer **already ships a full browser engine**. macOS has WebK
 
 So I built **navette** (French for *shuttle*): a single Rust binary that drives the WebView your OS already ships, and speaks MCP — the protocol agents already speak.
 
-**594 KB installed. No Chromium. No download.**
+**≤ 1.2 MB installed. No Chromium. No download.**
 
 ## What it is
 
@@ -29,17 +29,17 @@ navette mcp                   # MCP stdio server for agent hosts
 navette install-daemon        # resident: warm from login
 ```
 
-Nine MCP tools: `navigate`, `read`, `screenshot`, `click`, `type`, `evaluate`, `wait`, `sessions`, `session_close`. The screenshot comes back as MCP image content — your agent literally **sees** the page.
+Sixteen MCP tools as of v1.4. The core loop: `navigate`, `read`, `screenshot`, `click`, `type`, `evaluate`, `wait`, `sessions`, `session_close` — since joined by scroll, file upload, viewport control, in-page dialog handling, and session state export/import. The screenshot comes back as MCP image content — your agent literally **sees** the page. Full tool list in the repo.
 
-Under the hood: a WKWebView per session living in a **ghost window** (real pixels, parked off-screen so it renders but nobody sees it). Navigation completion is event-driven — I implemented `WKNavigationDelegate` in Rust with raw `objc2` message sends, and the content extraction runs *inside* the `didFinish` callback, so a warm navigate + full markdown read costs **8 ms**.
+Under the hood on macOS: a WKWebView per session living in a **ghost window** (real pixels, parked off-screen so it renders but nobody sees it). Navigation completion is event-driven — I implemented `WKNavigationDelegate` in Rust with raw `objc2` message sends, and the content extraction runs *inside* the `didFinish` callback, so a warm navigate + full markdown read costs **8 ms**.
 
 ## The numbers
 
-Same machine (M1, 8 GB), same corpus (100 local pages + 20 real URLs), reproducible with one command (`python3 navbench.py`):
+Same machine (M1, 8 GB), same corpus (100 local pages + 20 real URLs), reproducible with one command (`python3 navbench.py`). macOS numbers; cross-engine medians and p95s run in CI (see the repo):
 
 | Metric | navette | Playwright + Chromium | Lightpanda |
 |---|---|---|---|
-| Install size | **0.6 MB** | 216 MB | 80 MB |
+| Install size (per-OS binary) | **0.6–1.2 MB** | 216 MB | 80 MB |
 | Cold start (resident daemon) | **24–37 ms** | n/a | ~320 ms boot / launch |
 | Cold start (fresh process) | 531–984 ms | 934–1539 ms | ~320 ms |
 | Navigate → readable content | **8–11 ms** | 12–33 ms | 3–16 ms |
@@ -53,7 +53,7 @@ Two honest disclosures, because benchmark posts die without them:
 1. **Lightpanda is the fastest page-*reader*** (3.3 ms through a zero-bias raw-CDP probe — I measured it through a fair minimal client, not just through Playwright). It parses a partial DOM and cannot render, screenshot, or act. If your agent only reads static pages, use it — or plain fetch + readability.
 2. **The two rows Lightpanda wins (fresh boot, peak RAM) are the price of rendering.** Three WebKit helper processes and a backing store are what buy screenshots and full fidelity. That tax *is* the product.
 
-The claim I'll defend: **nobody else combines 0.6 MB + 1 ms actions + a 0.9 s hundred-page crawl + full WebKit rendering + a resident 24 ms mode.**
+The claim I'll defend: **nobody else combines ≤ 1.2 MB + 1 ms actions + a 0.9 s hundred-page crawl + full WebKit-class rendering + a resident 24 ms mode.**
 
 ## The demo that sold me on it
 
@@ -67,6 +67,9 @@ Full walkthrough with the verbatim tool calls and screenshots is in [`demo/JOURN
 ## Try it
 
 ```sh
+cargo install navette-browser
+
+# or from source:
 cargo build --release
 ./target/release/navette serve --port 8765
 
@@ -85,37 +88,22 @@ Then just talk to your agent: *"open this dashboard, check if the deploy banner 
 
 ## The honest limits
 
-- **macOS today.** Windows (WebView2) and Linux (WebKitGTK/WPE) are the next backends — the 8 primitives are engine-agnostic by design, and the engine strategy is written down: system-first, official embed (WebView2 Fixed Version) or distro packages as fallback. Never vendor a browser the way Playwright does.
-- **The automation long tail is missing.** Network interception, file uploads, hover, dialogs — Playwright has twenty years of API surface. The core agent loop (navigate, read, see, act, wait, sessions) is complete; the tail is the roadmap.
+- **Three engines, one fully hardened.** Windows (WebView2) and Linux (WebKitGTK) reached platform parity in v1.4 — screenshots, cookie state, viewport, resident daemon, CI-verified on all three OSes — but macOS remains the benchmark-carrying backend. The engine strategy is written down: system-first, official embed (WebView2 Fixed Version) or distro packages as fallback. Never vendor a browser the way Playwright does.
+- **The automation long tail is still long.** Still missing, stated plainly: OS-level keyboard/mouse input, request/response network interception, hover, OS file-dialog automation — Playwright has twenty years of API surface. The core agent loop (navigate, read, see, act, wait, sessions, state) is complete; the tail is the roadmap.
 - **Fresh-process cold start can't beat a blind engine.** A full WebKit spawns three helper processes; Lightpanda spawns none because it renders nothing. That's why navette ships a resident mode: warm from login, 24 ms forever.
 
 ## Why this matters
 
 Headless Chromium is the Postgres of web automation. navette is trying to be the embedded SQLite — the browser agents *bring with them*, for the fastest-growing half of the agent world: agents that run **locally**, on machines that already have an engine.
 
-Apple shipped a Safari MCP server for coding agents this year. The thesis is being validated from above. navette is it from below: tiny, open, cross-platform-bound.
+Apple shipped a Safari MCP server for coding agents this year. The thesis is being validated from above. navette is it from below: tiny, open, cross-platform.
 
-##Update — v1.2.0 (Oct 2):
+## Changelog
 
-Two new MCP tools shipped: state_export / state_import — cookies and storage out of the browser and back in, the Playwright storageState equivalent. Your agent can now save an authenticated session and resume it tomorrow. 11 tools total.
-The Windows (WebView2) and Linux (WebKitGTK) backends are aboard and in the v1.2.0 tag — same HTTP/MCP surface, same 8 primitives, +32 KB of binary. macOS remains the fully hardened, benchmark-carrying backend: Windows passed its first end-to-end runtime smoke on GitHub's runners; Linux works under headless X and is hardening.
-Honest sizing update: the macOS binary is now 626 KB (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download.
-
-##Update — v1.2.1 (Oct 3):
-
-- CI is green on all three OSes: the Windows (WebView2) and Linux (WebKitGTK) backends pass the same navigate→read smoke on GitHub's runners — same binary, same MCP surface, +32 KB. Getting there surfaced five real root causes (fold-result routing, URL-matched completion, a missing D-Bus session bus in headless Linux, WebView2's file:// stall) — all fixed, each proven with a breadcrumb or a backtrace. macOS remains the benchmark-carrying backend; screenshots and cookie state on wry land next.
-- Two new MCP tools: state_export / state_import — cookies and storage out of the browser and back in, the Playwright storageState equivalent. Your agent can now save an authenticated session and resume it tomorrow. 11 tools total.
-Boot-time session pre-warm reached parity with macOS: first navigate on a cold CI VM went 38 s → 83 ms.
-- Honest sizing update: the macOS binary is now 626 KB (the title's 594 KB was v1.0.0) — still ~350× smaller than Playwright's browser download. Release notes: https://github.com/slabbdev/navette/releases/tag/v1.2.1
-
-
-##Updates — v1.3.0 & v1.4.0 (Oct 4):
-
-- **Full platform parity**: screenshots (native capture per engine), cookie state export/import, viewport control, and the resident daemon now work on Windows and Linux too. CI verifies a valid PNG screenshot and a cookie round-trip on all three OSes. JS dialogs are auto-handled in-page — agents can no longer deadlock on a hidden modal.
-- **The agent loop is complete**: file upload (in-memory content through a page-side DataTransfer — no OS dialog, identical JS on all three engines) and scroll joined. **16 MCP tools** now. One bug worth mentioning: the eval wrapper on Windows/Linux silently discarded its value — every /evaluate and /read outside the fold path returned `undefined`; fixed, and CI tests it explicitly.
-- **Install it in one command**: `cargo install navette-browser` — or grab the release binaries (macOS arm64 658 KB, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's download): https://github.com/slabbdev/navette/releases/tag/v1.4.0
-- A bench workflow now measures navigate/read/screenshot on all three engines (median/p95, in the run summary). Still missing, stated plainly: OS-level keyboard/mouse input, request/response network interception, OS file-dialog automation.
-
+- **v1.2.0 — Oct 2**: Windows (WebView2) and Linux (WebKitGTK) backends aboard; `state_export` / `state_import` — cookies and storage out of the browser and back in, the Playwright `storageState` equivalent. 11 tools. [Release](https://github.com/slabbdev/navette/releases/tag/v1.2.0)
+- **v1.2.1 — Oct 3**: CI green on all three OSes (same navigate→read smoke). Getting there surfaced five real root causes — fold-result routing, URL-matched completion, a missing D-Bus session bus in headless Linux, WebView2's `file://` stall — each fixed and proven with a breadcrumb or backtrace. Boot-time pre-warm parity: first navigate on a cold CI VM went 38 s → 83 ms. [Release](https://github.com/slabbdev/navette/releases/tag/v1.2.1)
+- **v1.3.0 & v1.4.0 — Oct 4**: full platform parity (native screenshots per engine, cookie round-trip, viewport control, resident daemon — CI verifies a valid PNG and a cookie round-trip on all three OSes); JS dialogs auto-handled in-page; the agent loop completed with file upload (in-memory DataTransfer, no OS dialog) and scroll — **16 tools**; fixed an eval-wrapper bug where every `/evaluate` and `/read` outside the fold path returned `undefined` on Windows/Linux (CI now tests it); one-command install `cargo install navette-browser`. [Release](https://github.com/slabbdev/navette/releases/tag/v1.4.0)
+- **Sizing, honestly**: the title's 594 KB was v1.0. macOS arm64 is 658 KB today, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's browser download.
 
 Repo, benchmarks and the reproducible harness: **https://github.com/slabbdev/navette**
 
