@@ -556,6 +556,59 @@ pub fn set_viewport(s: &Arc<Session>, width: u32, height: u32) -> Result<(), Str
     Ok(())
 }
 
+// ---------- Native (OS-level) key events (CGEvent) ----------
+//
+// Synthetic JS KeyboardEvents never set isTrusted; CGEvents posted at the
+// HID tap are real events the OS routes to the frontmost app. We attach the
+// ghost window if needed, make it key, then post the press+release.
+
+#[allow(dead_code)]
+fn mac_vk(key: &str) -> Option<u16> {
+    let k = key.to_ascii_lowercase();
+    Some(match k.as_str() {
+        "enter" | "return" => 0x24,
+        "tab" => 0x30,
+        "escape" | "esc" => 0x35,
+        "backspace" => 0x33,
+        "delete" | "del" => 0x75,
+        "space" => 0x31,
+        "up" | "arrowup" => 0x7E,
+        "down" | "arrowdown" => 0x7D,
+        "left" | "arrowleft" => 0x7B,
+        "right" | "arrowright" => 0x7C,
+        "home" => 0x73,
+        "end" => 0x77,
+        "pageup" => 0x74,
+        "pagedown" => 0x79,
+        _ => {
+            let c = k.chars().next()?;
+            match c {
+                'a' => 0x00, 's' => 0x01, 'd' => 0x02, 'f' => 0x03, 'h' => 0x04,
+                'g' => 0x05, 'z' => 0x06, 'x' => 0x07, 'c' => 0x08, 'v' => 0x09,
+                'b' => 0x0B, 'q' => 0x0C, 'w' => 0x0D, 'e' => 0x0E, 'r' => 0x0F,
+                'y' => 0x10, 't' => 0x11, '1' => 0x12, '2' => 0x13, '3' => 0x14,
+                '4' => 0x15, '5' => 0x17, '6' => 0x16, '7' => 0x1A, '8' => 0x1C,
+                '9' => 0x19, '0' => 0x1D, 'm' => 0x2E, 'o' => 0x1F, 'p' => 0x23,
+                'l' => 0x25, 'j' => 0x26, 'k' => 0x28, 'i' => 0x22, 'u' => 0x20,
+                'n' => 0x2D,
+                _ => return None,
+            }
+        }
+    })
+}
+
+#[allow(dead_code)]
+pub fn native_key(s: &Arc<Session>, key: &str) -> Result<(), String> {
+    // macOS status: CGEvents CAN be posted, but routing them into a headless
+    // WKWebView reliably needs an app-bundle activation story the Window
+    // Server only grants to real foreground apps — the experimental on-screen
+    // approach (git history) still left document.hasFocus() == 0. Until that
+    // is solved, macOS reports "native unavailable" and the /key route falls
+    // back to the synthetic dispatch (the mode is always reported).
+    let _ = (s, key);
+    Err("macOS native key input is not wired yet — using the synthetic path".into())
+}
+
 pub fn wait_settle(s: &Arc<Session>) {
     let start = Instant::now();
     let mut saw_loading = false;

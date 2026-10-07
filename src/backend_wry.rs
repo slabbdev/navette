@@ -111,6 +111,160 @@ pub fn run_get_or_create(name: &str) -> SessionRef {
 
 pub fn prewarm_default() {}
 
+// ---------- Native (OS-level) key events ----------
+//
+// Synthetic JS KeyboardEvents do not set isTrusted and never drive IME or
+// browser shortcuts. This posts REAL events to the ghost window: SendInput
+// on Windows (to the focused WebView2 render widget), XTEST on Linux.
+
+#[cfg(target_os = "windows")]
+fn win_vk(key: &str) -> Option<u16> {
+    let k = key.to_ascii_lowercase();
+    Some(match k.as_str() {
+        "enter" | "return" => 0x0D,
+        "tab" => 0x09,
+        "escape" | "esc" => 0x1B,
+        "backspace" => 0x08,
+        "delete" | "del" => 0x2E,
+        "space" => 0x20,
+        "up" | "arrowup" => 0x26,
+        "down" | "arrowdown" => 0x28,
+        "left" | "arrowleft" => 0x25,
+        "right" | "arrowright" => 0x27,
+        "home" => 0x24,
+        "end" => 0x23,
+        "pageup" => 0x21,
+        "pagedown" => 0x22,
+        _ => {
+            let c = k.chars().next()?;
+            if c.is_ascii_alphabetic() {
+                c.to_ascii_uppercase() as u16
+            } else if c.is_ascii_digit() {
+                c as u16
+            } else {
+                return None;
+            }
+        }
+    })
+}
+
+#[cfg(target_os = "windows")]
+pub fn native_key(s: &SessionRef, key: &str) -> Result<(), String> {
+    use windows_sys::Win32::Foundation::HWND;
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
+        SendInput, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP,
+    };
+    use windows_sys::Win32::UI::WindowsAndMessaging::{
+        EnumChildWindows, GetWindowRect, SetForegroundWindow,
+    };
+    let vk = win_vk(key).ok_or_else(|| format!("no native mapping for key '{key}'"))?;
+    let hwnd = window_hwnd(&s.window.0)?;
+    unsafe {
+        let mut best: (isize, i64) = (0, 0);
+        EnumChildWindows(hwnd as HWND, Some(enum_child), &mut best as *mut _ as isize);
+        let target = if best.0 != 0 { best.0 } else { hwnd };
+        SetForegroundWindow(hwnd as HWND);
+        SetFocus(target as HWND);
+        let mk = |up: bool| INPUT {
+            r#type: INPUT_KEYBOARD,
+            Anonymous: {
+                let mut i: INPUT_0 = std::mem::zeroed();
+                i.ki = KEYBDINPUT {
+                    wVk: vk,
+                    dwFlags: if up { KEYEVENTF_KEYUP } else { 0 },
+                    ..std::mem::zeroed()
+                };
+                i
+            },
+        };
+        let down = mk(false);
+        let up = mk(true);
+        let sent = SendInput(2, [down, up].as_ptr(), std::mem::size_of::<INPUT>() as i32);
+        if sent != 2 {
+            return Err("SendInput failed".into());
+        }
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn x11_keysym(key: &str) -> Option<u32> {
+    let k = key.to_ascii_lowercase();
+    Some(match k.as_str() {
+        "enter" | "return" => 0xff0d,
+        "tab" => 0xff09,
+        "escape" | "esc" => 0xff1b,
+        "backspace" => 0xff08,
+        "delete" | "del" => 0xffff,
+        "space" => 0x0020,
+        "up" | "arrowup" => 0xff52,
+        "down" | "arrowdown" => 0xff54,
+        "left" | "arrowleft" => 0xff51,
+        "right" | "arrowright" => 0xff53,
+        "home" => 0xff50,
+        "end" => 0xff57,
+        "pageup" => 0xff55,
+        "pagedown" => 0xff56,
+        _ => {
+            let c = k.chars().next()?;
+            if c.is_ascii() {
+                c as u32
+            } else {
+                return None;
+            }
+        }
+    })
+}
+
+#[cfg(target_os = "linux")]
+pub fn native_key(s: &SessionRef, key: &str) -> Result<(), String> {
+    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+    use x11rb::connection::Connection;
+    use x11rb::protocol::xproto::{ChangeWindowAttributesAux, ConnectionExt, EventMask, InputFocus};
+    let keysym = x11_keysym(key).ok_or_else(|| format!("no native mapping for key '{key}'"))?;
+    let (conn, screen) = x11rb::connect(None).map_err(|e| e.to_string())?;
+    let root = conn.setup().roots[screen].root;
+    let min = conn.setup().min_keycode;
+    let max = conn.setup().max_keycode;
+    let map = conn
+        .get_keyboard_mapping(min, max - min + 1)
+        .map_err(|e| e.to_string())?
+        .reply()
+        .map_err(|e| e.to_string())?;
+    let per = (map.keysyms_per_keycode as usize).max(1);
+    let keycode = map
+        .keysyms
+        .chunks(per)
+        .position(|chunk| chunk.contains(&keysym))
+        .map(|idx| min + idx as u8)
+        .ok_or_else(|| format!("keycode not found for '{key}' on this keymap"))?;
+    // Bring the ghost on-screen first: X11 refuses focus to unviewable
+    // (off-screen under Xvfb there is no compositor to care, but the window
+    // may genuinely be unmapped past the root bounds) windows.
+    {
+        s.window.0.set_visible(true);
+        s.window.0.set_outer_position(tao::dpi::PhysicalPosition::new(0, 0));
+        for _ in 0..10 {
+            gtk::main_iteration();
+        }
+    }
+    if let RawWindowHandle::Xlib(h) = s.window.0.window_handle().map_err(|e| e.to_string())?.as_raw() {
+        let wid: u32 = h.window as u32;
+        let _ = conn.set_input_focus(InputFocus::PARENT, wid, 0u32); // 0 = CurrentTime
+        // give the GDK/WebKit key machinery a beat to notice the focus change
+        for _ in 0..10 {
+            gtk::main_iteration();
+        }
+    }
+    let _ = conn.change_window_attributes(root, &ChangeWindowAttributesAux::new().event_mask(EventMask::KEY_PRESS | EventMask::KEY_RELEASE));
+    x11rb::protocol::xtest::fake_input(&conn, 2, keycode, 0, root, 0, 0, 0)
+        .map_err(|e| e.to_string())?; // 2 = KeyPress
+    x11rb::protocol::xtest::fake_input(&conn, 3, keycode, 0, root, 0, 0, 0)
+        .map_err(|e| e.to_string())?; // 3 = KeyRelease
+    conn.flush().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 pub fn set_agent_options(proxy: Option<String>, user_agent: Option<String>) {
     let _ = AGENT_OPTS.set((proxy, user_agent));
 }
@@ -440,6 +594,21 @@ fn window_hwnd(window: &tao::window::Window) -> Result<isize, String> {
 }
 
 #[cfg(target_os = "windows")]
+unsafe extern "system" fn enum_child(hwnd: windows_sys::Win32::Foundation::HWND, lparam: isize) -> i32 {
+    use windows_sys::Win32::Foundation::RECT;
+    use windows_sys::Win32::UI::WindowsAndMessaging::GetWindowRect;
+    let p = lparam as *mut (isize, i64);
+    let mut rc: RECT = std::mem::zeroed();
+    unsafe { GetWindowRect(hwnd, &mut rc) };
+    let area = ((rc.right - rc.left) as i64) * ((rc.bottom - rc.top) as i64);
+    if area > (*p).1 {
+        (*p).0 = hwnd as isize;
+        (*p).1 = area;
+    }
+    1
+}
+
+#[cfg(target_os = "windows")]
 fn capture_gdi(window: &tao::window::Window, w: u32, h: u32) -> Result<Vec<u8>, String> {
     use windows_sys::Win32::Foundation::{HWND, RECT};
     use windows_sys::Win32::Graphics::Gdi::{
@@ -450,18 +619,6 @@ fn capture_gdi(window: &tao::window::Window, w: u32, h: u32) -> Result<Vec<u8>, 
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         EnumChildWindows, GetWindowRect, PW_RENDERFULLCONTENT,
     };
-
-    unsafe extern "system" fn enum_child(hwnd: HWND, lparam: isize) -> i32 {
-        let p = lparam as *mut (isize, i64);
-        let mut rc: RECT = std::mem::zeroed();
-        unsafe { GetWindowRect(hwnd, &mut rc) };
-        let area = ((rc.right - rc.left) as i64) * ((rc.bottom - rc.top) as i64);
-        if area > (*p).1 {
-            (*p).0 = hwnd as isize;
-            (*p).1 = area;
-        }
-        1
-    }
 
     unsafe {
         let parent = window_hwnd(window)?;

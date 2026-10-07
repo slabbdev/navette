@@ -47,6 +47,10 @@ pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String
 
 pub fn set_agent_options(_proxy: Option<String>, _user_agent: Option<String>) {}
 
+pub fn native_key(_s: &SessionRef, _key: &str) -> Result<(), String> {
+    Err("no native input on this platform".into())
+}
+
 pub fn reap_idle(_max_idle_secs: u64) -> usize {
     0
 }
