@@ -14,6 +14,7 @@ mod backend;
 mod backend;
 
 mod mcp;
+mod webviewkit;
 
 use serde_json::{json, Value};
 use std::io::{Read, Write};
@@ -23,6 +24,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::OnceLock;
 use std::thread;
 use std::time::{Duration, Instant};
+
+// The active backend's kit handle — every engine call in the product layer
+// goes through the WebviewKit trait (surface compile-enforced per backend).
+// Only the boot lifecycle stays on backend::* free functions: it genuinely
+// differs per platform (app_init/app_run vs run_main_loop).
+static KIT: backend::Kit = backend::Kit;
+use webviewkit::WebviewKit;
 
 static T0: OnceLock<Instant> = OnceLock::new();
 pub static PORT: OnceLock<u16> = OnceLock::new();
@@ -242,11 +250,11 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("GET", "/sessions") => {
-            respond(fd, 200, "OK", "application/json", &json_bytes(&backend::list_sessions()));
+            respond(fd, 200, "OK", "application/json", &json_bytes(&KIT.list_sessions()));
         }
 
         ("POST", "/sessions/close") => {
-            backend::close_session(&name);
+            KIT.close_session(&name);
             respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true})));
         }
 
@@ -259,7 +267,7 @@ fn route(fd: &mut TcpStream, req: Req) {
             let with_content = j.get("with_content").and_then(|v| v.as_bool()).unwrap_or(false);
             let format = j.get("format").and_then(|v| v.as_str()).unwrap_or("markdown").to_string();
 
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             // with_content: the extraction is FOLDED into the didFinish
             // callback — one main-loop hop total, zero after the load.
             let after = if with_content {
@@ -267,7 +275,7 @@ fn route(fd: &mut TcpStream, req: Req) {
             } else {
                 None
             };
-            match backend::navigate(&s, &url, after) {
+            match KIT.navigate(&s, &url, after) {
                 Err(e) => respond(fd, 502, "Bad Gateway", "application/json", &json_bytes(&err_data(&e))),
                 Ok(out) => {
                     let mut payload = json!({"ok": true, "session": name, "url": url, "title": ""});
@@ -309,7 +317,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                             let snippet = combined_content_js(&format);
                             while std::time::Instant::now() < deadline {
                                 std::thread::sleep(Duration::from_millis(250));
-                                let Ok(r) = backend::eval_js(&s, &snippet) else { continue };
+                                let Ok(r) = KIT.eval_js(&s, &snippet) else { continue };
                                 let decoded = serde_json::from_str::<Value>(&r).ok().and_then(|v| {
                                     if v.is_string() {
                                         serde_json::from_str::<Value>(v.as_str().unwrap()).ok()
@@ -330,7 +338,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                                 }
                             }
                         }
-                    } else if let Ok(t) = backend::eval_js(&s, "document.title") {
+                    } else if let Ok(t) = KIT.eval_js(&s, "document.title") {
                         payload["title"] = json!(t);
                     }
                     respond(fd, 200, "OK", "application/json", &json_bytes(&payload));
@@ -345,13 +353,13 @@ fn route(fd: &mut TcpStream, req: Req) {
 
         ("POST", "/read") => {
             let format = j.get("format").and_then(|v| v.as_str()).unwrap_or("markdown").to_string();
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let js: String = match format.as_str() {
                 "text" => "document.body.innerText".into(),
                 "html" => "document.documentElement.outerHTML".into(),
                 _ => MARKDOWN_JS.into(),
             };
-            match backend::eval_js(&s, &js) {
+            match KIT.eval_js(&s, &js) {
                 Ok(text) => {
                     // eval_js returns the value JSON-encoded — unwrap strings
                     let content = serde_json::from_str::<Value>(&text)
@@ -370,8 +378,8 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/screenshot") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::screenshot(&s) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.screenshot(&s) {
                 Ok(png) => respond(fd, 200, "OK", "image/png", &png),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
@@ -380,12 +388,12 @@ fn route(fd: &mut TcpStream, req: Req) {
         ("POST", "/click") => {
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let wait_nav = j.get("wait_navigation").and_then(|v| v.as_bool()).unwrap_or(false);
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            let clicked = backend::eval_js(&s, &click_js(&jstr(&sel)));
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            let clicked = KIT.eval_js(&s, &click_js(&jstr(&sel)));
             if wait_nav {
                 // The click may have started a form-POST navigation: settle.
                 if clicked.is_ok() {
-                    backend::wait_settle(&s);
+                    KIT.wait_settle(&s);
                 }
             }
             match clicked {
@@ -403,8 +411,8 @@ fn route(fd: &mut TcpStream, req: Req) {
         ("POST", "/type") => {
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let val = j.get("value").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::eval_js(&s, &type_js(&jstr(&sel), &jstr(&val))) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.eval_js(&s, &type_js(&jstr(&sel), &jstr(&val))) {
                 Ok(v) => {
                     let dec: Value = serde_json::from_str(&v).unwrap_or(json!(v));
                     let hit = dec.as_str() == Some("OK");
@@ -417,8 +425,8 @@ fn route(fd: &mut TcpStream, req: Req) {
 
         ("POST", "/evaluate") => {
             let js = j.get("js").and_then(|v| v.as_str()).unwrap_or("").to_string();
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::eval_js(&s, &js) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.eval_js(&s, &js) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
@@ -427,7 +435,7 @@ fn route(fd: &mut TcpStream, req: Req) {
         ("POST", "/wait") => {
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let ms = j.get("ms").and_then(|v| v.as_u64()).unwrap_or(10_000);
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             // String() coerces the bool: the macOS bridge stringifies an
             // NSNumber bool as "1"/"0" (description), the wry IPC path as
             // "true"/"false" — accept both shapes.
@@ -435,7 +443,7 @@ fn route(fd: &mut TcpStream, req: Req) {
             let deadline = Instant::now() + Duration::from_millis(ms);
             let mut found = false;
             while Instant::now() < deadline {
-                if let Ok(v) = backend::eval_js(&s, &probe) {
+                if let Ok(v) = KIT.eval_js(&s, &probe) {
                     if v == "true" || v == "1" {
                         found = true;
                         break;
@@ -449,16 +457,16 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/sessions/state") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::export_cookies(&s) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.export_cookies(&s) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
 
         ("POST", "/sessions/load") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::import_cookies(&s, &j) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.import_cookies(&s, &j) {
                 Ok(n_cookies) => respond(fd, 200, "OK", "application/json",
                                          &json_bytes(&json!({"ok": true, "imported": n_cookies}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
@@ -466,10 +474,10 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/sessions/viewport") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let w = j.get("width").and_then(|v| v.as_u64()).unwrap_or(1280) as u32;
             let h = j.get("height").and_then(|v| v.as_u64()).unwrap_or(800) as u32;
-            match backend::set_viewport(&s, w, h) {
+            match KIT.set_viewport(&s, w, h) {
                 Ok(()) => respond(fd, 200, "OK", "application/json",
                                   &json_bytes(&json!({"ok": true, "width": w, "height": h}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
@@ -477,8 +485,8 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/sessions/show") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::show_window(&s) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.show_window(&s) {
                 Ok(()) => respond(fd, 200, "OK", "application/json",
                                   &json_bytes(&json!({"ok": true, "visible": true}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
@@ -486,8 +494,8 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/sessions/hide") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            match backend::hide_window(&s) {
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            match KIT.hide_window(&s) {
                 Ok(()) => respond(fd, 200, "OK", "application/json",
                                   &json_bytes(&json!({"ok": true, "visible": false}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
@@ -495,7 +503,7 @@ fn route(fd: &mut TcpStream, req: Req) {
         }
 
         ("POST", "/upload") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
             let filename = j.get("filename").and_then(|v| v.as_str()).unwrap_or("upload.bin");
             let mime = j.get("mime").and_then(|v| v.as_str()).unwrap_or("application/octet-stream");
@@ -514,14 +522,14 @@ fn route(fd: &mut TcpStream, req: Req) {
                 "(function(){{var el=document.querySelector({sel});if(!el)return JSON.stringify({{ok:false,err:'no element'}});if(String(el.type).toLowerCase()!=='file')return JSON.stringify({{ok:false,err:'element is not an <input type=file>'}});var bin=atob('{b64}');var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var f=new File([bytes],{name},{{type:{mime}}});var dt=new DataTransfer();dt.items.add(f);el.files=dt.files;el.dispatchEvent(new Event('input',{{bubbles:true}}));el.dispatchEvent(new Event('change',{{bubbles:true}}));var names=Array.prototype.map.call(el.files,function(x){{return x.name+':'+x.size}}).join(',');return JSON.stringify({{ok:true,files:names}})}})()",
                 sel = sel_esc, b64 = b64, name = name_esc, mime = mime_esc
             );
-            match backend::eval_js(&s, &js) {
+            match KIT.eval_js(&s, &js) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
 
         ("POST", "/scroll") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
             let y = j.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0);
             let js = if !sel.is_empty() {
@@ -536,28 +544,28 @@ fn route(fd: &mut TcpStream, req: Req) {
                     y = y
                 )
             };
-            match backend::eval_js(&s, &js) {
+            match KIT.eval_js(&s, &js) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
 
         ("POST", "/hover") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
             let sel_esc = jstr(sel);
             let js = format!(
                 "(function(){{var el=document.querySelector({sel});if(!el)return JSON.stringify({{ok:false,err:'no element'}});var r=el.getBoundingClientRect();var o={{clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true,view:window,buttons:0}};['mouseover','mousemove'].forEach(function(t){{el.dispatchEvent(new MouseEvent(t,o))}});return JSON.stringify({{ok:true}})}})()",
                 sel = sel_esc
             );
-            match backend::eval_js(&s, &js) {
+            match KIT.eval_js(&s, &js) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
 
         ("POST", "/key") => {
-            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             let k = j.get("key").and_then(|v| v.as_str()).unwrap_or("");
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("");
             if k.is_empty() {
@@ -571,12 +579,12 @@ fn route(fd: &mut TcpStream, req: Req) {
             let mut mode = "synthetic";
             if !sel.is_empty() {
                 let sel_esc = jstr(sel);
-                let _ = backend::eval_js(&s, &format!(
+                let _ = KIT.eval_js(&s, &format!(
                     "(function(){{var el=document.querySelector({s});if(el)el.focus();}})()",
                     s = sel_esc
                 ));
             }
-            match backend::native_key(&s, k) {
+            match KIT.native_key(&s, k) {
                 Ok(()) => {
                     // Real event posted — the synthetic dispatch must NOT also
                     // fire (it would double the keystroke and mask the native
@@ -613,7 +621,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                     s = sel_esc, k = k_esc, c = code_esc
                 )
             };
-            match backend::eval_js(&s, &js) {
+            match KIT.eval_js(&s, &js) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "mode": mode, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
@@ -681,7 +689,7 @@ fn serve(args: &[String]) {
         .and_then(|i| args.get(i + 1))
         .map(|v| v.to_string());
     if proxy.is_some() || user_agent.is_some() {
-        backend::set_agent_options(proxy.clone(), user_agent.clone());
+        KIT.set_agent_options(proxy.clone(), user_agent.clone());
         if let Some(pr) = &proxy {
             eprintln!("[navette] proxy: {pr} (wry backends; macOS uses the system proxy)");
         }
@@ -724,7 +732,7 @@ fn serve(args: &[String]) {
         let idle_secs = (idle_release_min * 60.0) as u64;
         thread::spawn(move || loop {
             thread::sleep(Duration::from_secs(30));
-            let n = backend::reap_idle(idle_secs);
+            let n = KIT.reap_idle(idle_secs);
             let _ = n;
         });
         eprintln!(
@@ -751,7 +759,7 @@ fn serve(args: &[String]) {
 
     #[cfg(target_os = "macos")]
     {
-        backend::prewarm_default();
+        KIT.prewarm_default();
         eprintln!("[navette] +{} ms — pre-warm done (WebContent spawning)", t0.elapsed().as_millis());
     }
 
@@ -766,7 +774,7 @@ fn serve(args: &[String]) {
             let idle_secs = (idle_release_min * 60.0) as u64;
             thread::spawn(move || loop {
                 thread::sleep(Duration::from_secs(30));
-                let _ = backend::reap_idle(idle_secs);
+                let _ = KIT.reap_idle(idle_secs);
             });
             eprintln!(
                 "[navette] idle-release enabled: sessions drop after {} min without requests",
