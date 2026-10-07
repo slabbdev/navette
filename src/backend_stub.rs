@@ -45,6 +45,8 @@ pub fn import_cookies(_s: &SessionRef, _cookies: &Value) -> Result<usize, String
     Err("platform not supported yet".into())
 }
 
+pub fn set_agent_options(_proxy: Option<String>, _user_agent: Option<String>) {}
+
 pub fn reap_idle(_max_idle_secs: u64) -> usize {
     0
 }

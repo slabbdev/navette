@@ -29,8 +29,12 @@ fn http_call(path: &str, method: &str, body: Option<&Value>) -> (u16, Value) {
     };
     let _ = stream.set_read_timeout(Some(Duration::from_secs(130)));
     let body_s = body.map(|v| v.to_string()).unwrap_or_default();
+    let auth = std::env::var("NAVETTE_TOKEN")
+        .ok()
+        .map(|t| format!("Authorization: Bearer {t}\r\n"))
+        .unwrap_or_default();
     let req = format!(
-        "{method} {path} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        "{method} {path} HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n{auth}Content-Length: {}\r\nConnection: close\r\n\r\n{}",
         body_s.len(),
         body_s
     );

@@ -107,6 +107,10 @@ unsafe fn make_webview() -> SendObj {
     let frame = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(WIDTH, HEIGHT));
     let wv: *mut AnyObject = msg_send![class!(WKWebView), alloc];
     let wv: *mut AnyObject = msg_send![wv, initWithFrame: frame configuration: &*config];
+    if let Some(ua) = MAC_UA.lock().unwrap().clone() {
+        let ns: Retained<NSString> = NSString::from_str(&ua);
+        let _: () = msg_send![wv, setCustomUserAgent: &*ns];
+    }
     SendObj(Retained::from_raw(wv).expect("WKWebView init failed"))
 }
 
@@ -141,6 +145,10 @@ pub struct Session {
 }
 
 static SESSIONS: Mutex<Option<HashMap<String, Arc<Session>>>> = Mutex::new(None);
+// serve --user-agent override (applied to every webview at creation).
+// --proxy: on macOS the WKWebView follows the SYSTEM proxy settings; a
+// per-serve override would need Network.framework plumbing — documented.
+static MAC_UA: Mutex<Option<String>> = Mutex::new(None);
 static LOG_FIRST_FINISH: AtomicBool = AtomicBool::new(false);
 
 pub fn get_or_create(name: &str) -> Arc<Session> {
@@ -160,6 +168,13 @@ pub fn get_or_create(name: &str) -> Arc<Session> {
 }
 
 pub fn init_main_loop() {}
+
+pub fn set_agent_options(proxy: Option<String>, user_agent: Option<String>) {
+    if proxy.is_some() {
+        eprintln!("[navette] --proxy on macOS: WKWebView follows the system proxy settings; per-serve override not applied");
+    }
+    *MAC_UA.lock().unwrap() = user_agent;
+}
 
 pub fn prewarm_default() {
     // Called directly on main before app.run().

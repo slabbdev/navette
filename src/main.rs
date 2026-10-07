@@ -26,6 +26,7 @@ use std::time::{Duration, Instant};
 
 static T0: OnceLock<Instant> = OnceLock::new();
 pub static PORT: OnceLock<u16> = OnceLock::new();
+static TOKEN: OnceLock<String> = OnceLock::new();
 
 #[cfg(unix)]
 extern "C" fn graceful_term(_sig: i32) {
@@ -123,6 +124,7 @@ struct Req {
     method: String,
     path: String,
     body: Vec<u8>,
+    headers: Vec<(String, String)>,
 }
 
 fn parse_request(data: &[u8]) -> Option<Req> {
@@ -131,9 +133,11 @@ fn parse_request(data: &[u8]) -> Option<Req> {
     let mut lines = head.split("\r\n");
     let first = lines.next()?.to_string();
     let mut cl = 0usize;
+    let mut headers: Vec<(String, String)> = Vec::new();
     for l in lines {
         let mut kv = l.splitn(2, ':');
         if let (Some(k), Some(v)) = (kv.next(), kv.next()) {
+            headers.push((k.trim().to_ascii_lowercase(), v.trim().to_string()));
             if k.trim().eq_ignore_ascii_case("content-length") {
                 cl = v.trim().parse().unwrap_or(0);
             }
@@ -150,6 +154,7 @@ fn parse_request(data: &[u8]) -> Option<Req> {
         method,
         path,
         body: data[body_start..body_start + cl].to_vec(),
+        headers,
     })
 }
 
@@ -196,6 +201,30 @@ fn serve_fd(mut stream: TcpStream) {
 // MARK: - Routes
 
 fn route(fd: &mut TcpStream, req: Req) {
+    // Optional auth (--token): every route except /health requires
+    // `Authorization: Bearer <secret>` or `X-Navette-Token: <secret>`.
+    if let Some(tok) = TOKEN.get() {
+        let path_ok = req.path.split('?').next() == Some("/health");
+        let presented = req
+            .headers
+            .iter()
+            .find(|(k, _)| k == "authorization" || k == "x-navette-token")
+            .map(|(_, v)| {
+                let v = v.trim();
+                v.strip_prefix("Bearer ").unwrap_or(v)
+            });
+        if !path_ok && presented != Some(tok.as_str()) {
+            respond(
+                fd,
+                401,
+                "Unauthorized",
+                "application/json",
+                &json_bytes(&err_data("missing or invalid token — pass the --token value via Authorization: Bearer")),
+            );
+            return;
+        }
+    }
+
     let path = req.path.split('?').next().unwrap_or("/").to_string();
     let j: Value = serde_json::from_slice(&req.body).unwrap_or(json!({}));
     let name = j.get("session").and_then(|v| v.as_str()).unwrap_or("default").to_string();
@@ -576,6 +605,36 @@ fn serve(args: &[String]) {
         .and_then(|v| v.parse().ok())
         .unwrap_or(0.0);
 
+    let token: Option<String> = args
+        .iter()
+        .position(|a| a == "--token")
+        .and_then(|i| args.get(i + 1))
+        .map(|v| v.to_string());
+    if let Some(t) = &token {
+        let _ = TOKEN.set(t.clone());
+        eprintln!("[navette] auth enabled: routes require the token (Authorization: Bearer)");
+    }
+
+    let proxy: Option<String> = args
+        .iter()
+        .position(|a| a == "--proxy")
+        .and_then(|i| args.get(i + 1))
+        .map(|v| v.to_string());
+    let user_agent: Option<String> = args
+        .iter()
+        .position(|a| a == "--user-agent")
+        .and_then(|i| args.get(i + 1))
+        .map(|v| v.to_string());
+    if proxy.is_some() || user_agent.is_some() {
+        backend::set_agent_options(proxy.clone(), user_agent.clone());
+        if let Some(pr) = &proxy {
+            eprintln!("[navette] proxy: {pr} (wry backends; macOS uses the system proxy)");
+        }
+        if user_agent.is_some() {
+            eprintln!("[navette] user-agent override set");
+        }
+    }
+
     let t0 = Instant::now();
     #[cfg(target_os = "macos")]
     {
@@ -871,6 +930,10 @@ fn main() {
             println!();
             println!("USAGE:");
             println!("  navette serve [--port N]    HTTP API on 127.0.0.1 (default 8765)");
+            println!("             [--token SECRET] require Bearer auth on all routes but /health");
+            println!("             [--idle-release MIN] drop idle WebKit sessions (memory saver)");
+            println!("             [--proxy URL] HTTP CONNECT or SOCKS5 proxy for every session");
+            println!("             [--user-agent UA] per-serve user-agent override");;
             println!("  navette mcp                 MCP stdio server for agent hosts");
             println!("  navette install-daemon      resident: warm from login");
             println!("  navette uninstall-daemon    remove the resident daemon");
