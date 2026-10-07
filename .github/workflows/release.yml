@@ -22,6 +22,9 @@ jobs:
           - os: ubuntu-24.04
             asset: navette-linux-x64
             bin: target/release/navette
+          - os: ubuntu-24.04-arm
+            asset: navette-linux-arm64
+            bin: target/release/navette
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +32,12 @@ jobs:
       - name: install linux webkit deps
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev
+      - name: assert server.json version matches the crate
+        shell: bash
+        run: |
+          CRATE=$(grep -m1 '^version' Cargo.toml | sed 's/.*"\(.*\)"/\1/')
+          MANIFEST=$(grep -m1 '"version"' server.json | sed 's/.*"\(.*\)".*/\1/')
+          [ "$CRATE" = "$MANIFEST" ] || { echo "server.json version ($MANIFEST) != Cargo.toml ($CRATE) — update server.json before tagging"; exit 1; }
       - run: cargo build --release
       - name: attach binary to the release
         shell: bash
