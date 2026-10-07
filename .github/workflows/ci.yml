@@ -140,6 +140,10 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
+          KEYR=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/key -H 'Content-Type: application/json' \
+            -d '{"key":"Tab"}')
+          echo "$KEYR" | grep -q '"ok"' || { echo "KEY FAILED"; cat serve.log; exit 1; }
+          echo "key OK — mode: $(echo "$KEYR" | grep -o '"mode": "[a-z]*"')"
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/upload -H 'Content-Type: application/json' \
             -d '{"selector":"#f","filename":"up.txt","mime":"text/plain","content_base64":"aGVsbG8="}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/click -H 'Content-Type: application/json' \

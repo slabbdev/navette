@@ -537,6 +537,34 @@ fn route(fd: &mut TcpStream, req: Req) {
                 respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("key is required")));
                 return;
             }
+            // Native first: real OS-level events (isTrusted=true). Any failure
+            // (no mapping, no focus, unsupported platform) falls back to the
+            // in-page synthetic dispatch. A selector is focused via JS first —
+            // native events land on the focused element.
+            let mut mode = "synthetic";
+            if !sel.is_empty() {
+                let sel_esc = jstr(sel);
+                let _ = backend::eval_js(&s, &format!(
+                    "(function(){{var el=document.querySelector({s});if(el)el.focus();}})()",
+                    s = sel_esc
+                ));
+            }
+            match backend::native_key(&s, k) {
+                Ok(()) => {
+                    // Real event posted — the synthetic dispatch must NOT also
+                    // fire (it would double the keystroke and mask the native
+                    // one behind an untrusted copy).
+                    respond(
+                        fd,
+                        200,
+                        "OK",
+                        "application/json",
+                        &json_bytes(&json!({"ok": true, "mode": "native"})),
+                    );
+                    return;
+                }
+                Err(e) => eprintln!("[navette] native key fallback ({e})"),
+            }
             let code = if k.len() == 1 {
                 let c = k.chars().next().unwrap();
                 if c.is_ascii_alphabetic() { format!("Key{}", c.to_ascii_uppercase()) }
@@ -559,7 +587,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                 )
             };
             match backend::eval_js(&s, &js) {
-                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "result": v}))),
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({"ok": true, "mode": mode, "result": v}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
