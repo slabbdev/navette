@@ -239,22 +239,16 @@ pub fn native_key(s: &SessionRef, key: &str) -> Result<(), String> {
         .map(|idx| min + idx as u8)
         .ok_or_else(|| format!("keycode not found for '{key}' on this keymap"))?;
     // Bring the ghost on-screen first: X11 refuses focus to unviewable
-    // (off-screen under Xvfb there is no compositor to care, but the window
-    // may genuinely be unmapped past the root bounds) windows.
+    // windows. NOTE: no gtk::main_iteration() here — this runs on an HTTP
+    // thread and GTK is main-thread-only (an iteration pump from a worker
+    // deadlocks the loop; that was CI exit 52).
     {
         s.window.0.set_visible(true);
         s.window.0.set_outer_position(tao::dpi::PhysicalPosition::new(0, 0));
-        for _ in 0..10 {
-            gtk::main_iteration();
-        }
     }
     if let RawWindowHandle::Xlib(h) = s.window.0.window_handle().map_err(|e| e.to_string())?.as_raw() {
         let wid: u32 = h.window as u32;
         let _ = conn.set_input_focus(InputFocus::PARENT, wid, 0u32); // 0 = CurrentTime
-        // give the GDK/WebKit key machinery a beat to notice the focus change
-        for _ in 0..10 {
-            gtk::main_iteration();
-        }
     }
     let _ = conn.change_window_attributes(root, &ChangeWindowAttributesAux::new().event_mask(EventMask::KEY_PRESS | EventMask::KEY_RELEASE));
     x11rb::protocol::xtest::fake_input(&conn, 2, keycode, 0, root, 0, 0, 0)
