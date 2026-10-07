@@ -7,3 +7,7 @@ bench/node_modules/
 bench/corpus/
 bench/lightpanda-*
 bench/package-lock.json
+
+# daily.dev recipe artifacts (the state file IS a login)
+demo/dailydev/state.json
+demo/dailydev/*-preview.png
