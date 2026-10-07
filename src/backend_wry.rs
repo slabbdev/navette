@@ -853,7 +853,8 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
                 s.window.0.set_decorations(true);
                 // Center on the current monitor (physical pixels on wry).
-                if let Ok(Some(mon)) = s.window.0.current_monitor() {
+                // tao's current_monitor() returns Option<MonitorHandle>.
+                if let Some(mon) = s.window.0.current_monitor() {
                     let m = mon.size();
                     let w = s.window.0.inner_size();
                     let x = ((m.width as i32 - w.width as i32) / 2).max(0);
