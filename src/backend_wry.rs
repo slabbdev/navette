@@ -401,6 +401,24 @@ pub fn set_viewport(s: &SessionRef, width: u32, height: u32) -> Result<(), Strin
         .unwrap_or_else(|_| Err("viewport timeout".into()))
 }
 
+pub fn show_window(s: &SessionRef) -> Result<(), String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::Show(s.name.clone(), tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(10))
+        .unwrap_or_else(|_| Err("show timeout".into()))
+}
+
+pub fn hide_window(s: &SessionRef) -> Result<(), String> {
+    let (tx, rx) = std::sync::mpsc::sync_channel(1);
+    proxy()
+        .send_event(Command::Hide(s.name.clone(), tx))
+        .map_err(|_| "event loop gone")?;
+    rx.recv_timeout(Duration::from_secs(10))
+        .unwrap_or_else(|_| Err("hide timeout".into()))
+}
+
 // After a click that may have triggered a form-POST navigation: wait for the
 // new page to reach `complete` (opt-in via wait_navigation on /click).
 pub fn wait_settle(s: &SessionRef) {
@@ -707,6 +725,8 @@ pub enum Command {
     ExportCookies(String, SyncSender<Result<Value, String>>),
     ImportCookies(String, Value, SyncSender<Result<usize, String>>),
     Screenshot(String, SyncSender<Result<Vec<u8>, String>>),
+    Show(String, SyncSender<Result<(), String>>),
+    Hide(String, SyncSender<Result<(), String>>),
     Reap(u64, SyncSender<usize>),
 }
 
@@ -823,6 +843,36 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
             let r = (|| -> Result<Vec<u8>, String> {
                 let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
                 screenshot_on_main(&s)
+            })();
+            let _ = tx.send(r);
+        }
+        // Human-visible window: decorations on, centered, focused — for
+        // one-time logins a human completes inside the session.
+        Command::Show(name, tx) => {
+            let r = (|| -> Result<(), String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                s.window.0.set_decorations(true);
+                // Center on the current monitor (physical pixels on wry).
+                if let Ok(Some(mon)) = s.window.0.current_monitor() {
+                    let m = mon.size();
+                    let w = s.window.0.inner_size();
+                    let x = ((m.width as i32 - w.width as i32) / 2).max(0);
+                    let y = ((m.height as i32 - w.height as i32) / 2).max(0);
+                    let _ = s.window
+                        .0
+                        .set_outer_position(tao::dpi::PhysicalPosition::new(x, y));
+                }
+                s.window.0.set_visible(true);
+                s.window.0.set_focus();
+                Ok(())
+            })();
+            let _ = tx.send(r);
+        }
+        Command::Hide(name, tx) => {
+            let r = (|| -> Result<(), String> {
+                let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
+                s.window.0.set_visible(false);
+                Ok(())
             })();
             let _ = tx.send(r);
         }

@@ -556,6 +556,69 @@ pub fn set_viewport(s: &Arc<Session>, width: u32, height: u32) -> Result<(), Str
     Ok(())
 }
 
+// ---------- Human-visible windows (one-time logins & friends) ----------
+//
+// The ghost window is borderless and parked off-screen — a rendering surface,
+// not a surface a human can interact with: a borderless NSWindow can never
+// become the key window, so a login form would swallow every keystroke.
+// show_window() restyles it titled (keyable), sizes the CONTENT rect back to
+// the viewport (the title bar eats into it otherwise), centers it on the main
+// screen and fronts the app. hide_window() orders it back out; the ghost
+// screenshot path is unaffected — takeSnapshot rasterizes the layer tree.
+
+pub fn show_window(s: &Arc<Session>) -> Result<(), String> {
+    {
+        // Attach the ghost if this session never had a window.
+        let s2 = s.clone();
+        let so = s.webview.clone();
+        run_on_main(move || unsafe {
+            let wv = &*so;
+            let mut w = s2.window.lock().unwrap();
+            if w.is_none() {
+                *w = Some(attach_window(wv));
+            }
+        });
+    }
+    let win = {
+        let guard = s.window.lock().unwrap();
+        guard.as_ref().ok_or("session has no window")?.clone()
+    };
+    run_on_main(move || unsafe {
+        let win = &*win;
+        // Titled windows can become key; the ghost's borderless mask cannot.
+        let style: u64 = 1 | 2 | 4 | 8; // titled | closable | miniaturizable | resizable
+        let _: () = msg_send![win, setStyleMask: style];
+        let title: Retained<NSString> = NSString::from_str("navette");
+        let _: () = msg_send![win, setTitle: &*title];
+        let _: () = msg_send![win, setContentSize: NSSize::new(WIDTH, HEIGHT)];
+        // Center on the main screen's visible frame (menu bar / Dock excluded).
+        let screen: *mut AnyObject = msg_send![class!(NSScreen), mainScreen];
+        let vf: NSRect = msg_send![screen, visibleFrame];
+        let frame: NSRect = msg_send![win, frame];
+        let origin = NSPoint::new(
+            vf.origin.x + (vf.size.width - frame.size.width) / 2.0,
+            vf.origin.y + (vf.size.height - frame.size.height) / 2.0,
+        );
+        let _: () = msg_send![win, setFrameOrigin: origin];
+        let app: *mut AnyObject = msg_send![class!(NSApplication), sharedApplication];
+        let _: () = msg_send![app, activateIgnoringOtherApps: true];
+        let _: () = msg_send![win, makeKeyAndOrderFront: std::ptr::null::<AnyObject>()];
+    });
+    Ok(())
+}
+
+pub fn hide_window(s: &Arc<Session>) -> Result<(), String> {
+    let win = {
+        let guard = s.window.lock().unwrap();
+        guard.as_ref().ok_or("session has no window")?.clone()
+    };
+    run_on_main(move || unsafe {
+        let win = &*win;
+        let _: () = msg_send![win, orderOut: std::ptr::null::<AnyObject>()];
+    });
+    Ok(())
+}
+
 // ---------- Native (OS-level) key events (CGEvent) ----------
 //
 // Synthetic JS KeyboardEvents never set isTrusted; CGEvents posted at the

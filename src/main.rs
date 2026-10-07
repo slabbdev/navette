@@ -50,10 +50,16 @@ fn click_js(sel: &str) -> String {
   const el = document.querySelector(sel);
   if (!el) return 'MISSING';
   const r = el.getBoundingClientRect();
-  const o = {{bubbles:true, cancelable:true, view:window, clientX:r.x + r.width/2, clientY:r.y + r.height/2}};
-  el.dispatchEvent(new MouseEvent('mousedown', o));
-  el.dispatchEvent(new MouseEvent('mouseup', o));
-  if (el instanceof HTMLElement) {{ el.click(); }} else {{ el.dispatchEvent(new MouseEvent('click', o)); }}
+  const base = {{bubbles:true, cancelable:true, view:window, clientX:r.x + r.width/2, clientY:r.y + r.height/2}};
+  const po = Object.assign({{pointerId:1, pointerType:'mouse', isPrimary:true, width:1, height:1, pressure:0}}, base);
+  // Pointer events first: Radix/HeadlessUI menus listen for pointerdown and
+  // never see a bare mousedown (found the hard way on daily.dev's kebab menu).
+  el.dispatchEvent(new PointerEvent('pointerover', po));
+  el.dispatchEvent(new PointerEvent('pointerdown', po));
+  el.dispatchEvent(new MouseEvent('mousedown', base));
+  el.dispatchEvent(new PointerEvent('pointerup', po));
+  el.dispatchEvent(new MouseEvent('mouseup', base));
+  if (el instanceof HTMLElement) {{ el.click(); }} else {{ el.dispatchEvent(new MouseEvent('click', base)); }}
   return 'OK';
 }})({sel})"#
     )
@@ -422,12 +428,15 @@ fn route(fd: &mut TcpStream, req: Req) {
             let sel = j.get("selector").and_then(|v| v.as_str()).unwrap_or("").to_string();
             let ms = j.get("ms").and_then(|v| v.as_u64()).unwrap_or(10_000);
             let s = { let n = name.clone(); backend::run_get_or_create(&n) };
-            let probe = format!("!!document.querySelector({})", jstr(&sel));
+            // String() coerces the bool: the macOS bridge stringifies an
+            // NSNumber bool as "1"/"0" (description), the wry IPC path as
+            // "true"/"false" — accept both shapes.
+            let probe = format!("String(!!document.querySelector({}))", jstr(&sel));
             let deadline = Instant::now() + Duration::from_millis(ms);
             let mut found = false;
             while Instant::now() < deadline {
                 if let Ok(v) = backend::eval_js(&s, &probe) {
-                    if v == "true" {
+                    if v == "true" || v == "1" {
                         found = true;
                         break;
                     }
@@ -463,6 +472,24 @@ fn route(fd: &mut TcpStream, req: Req) {
             match backend::set_viewport(&s, w, h) {
                 Ok(()) => respond(fd, 200, "OK", "application/json",
                                   &json_bytes(&json!({"ok": true, "width": w, "height": h}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/sessions/show") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            match backend::show_window(&s) {
+                Ok(()) => respond(fd, 200, "OK", "application/json",
+                                  &json_bytes(&json!({"ok": true, "visible": true}))),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/sessions/hide") => {
+            let s = { let n = name.clone(); backend::run_get_or_create(&n) };
+            match backend::hide_window(&s) {
+                Ok(()) => respond(fd, 200, "OK", "application/json",
+                                  &json_bytes(&json!({"ok": true, "visible": false}))),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
@@ -969,7 +996,8 @@ fn main() {
             println!();
             println!("HTTP routes: /health /sessions /navigate /read /screenshot /click /hover");
             println!("/type /key /evaluate /wait /scroll /upload /sessions/viewport /sessions/state");
-            println!("/sessions/load /sessions/close — full docs: https://github.com/slabbdev/navette");
+            println!("/sessions/load /sessions/show /sessions/hide /sessions/close — full docs:");
+            println!("https://github.com/slabbdev/navette");
         }
         Some("--version") | Some("-V") | Some("version") => {
             println!("navette {}", env!("CARGO_PKG_VERSION"));
