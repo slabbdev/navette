@@ -80,6 +80,8 @@ pub struct PendingNav {
 }
 
 static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
+// serve --proxy / --user-agent: applied to every session at webview creation.
+static AGENT_OPTS: OnceLock<(Option<String>, Option<String>)> = OnceLock::new();
 static PROXY: OnceLock<EventLoopProxy<Command>> = OnceLock::new();
 static RPC_ID: AtomicU64 = AtomicU64::new(1);
 
@@ -108,6 +110,47 @@ pub fn run_get_or_create(name: &str) -> SessionRef {
 }
 
 pub fn prewarm_default() {}
+
+pub fn set_agent_options(proxy: Option<String>, user_agent: Option<String>) {
+    let _ = AGENT_OPTS.set((proxy, user_agent));
+}
+
+// "http://host:port" / "socks5://host:port" / "host:port" -> ProxyEndpoint.
+// Proxy AUTH is not carried by the engine layer — warn loudly.
+fn parse_proxy(url: &str) -> Result<wry::ProxyConfig, String> {
+    let rest = url
+        .split_once("://")
+        .map(|(scheme, r)| {
+            if scheme.starts_with("socks") {
+                (true, r)
+            } else {
+                (false, r)
+            }
+        })
+        .unwrap_or((false, url));
+    let (socks, authority) = rest;
+    let hostport = if let Some((userinfo, hp)) = authority.rsplit_once('@') {
+        eprintln!(
+            "[navette] WARNING: proxy credentials in the URL are NOT passed through by the engine layer — use an unauthenticated proxy or IP allowlisting"
+        );
+        let _ = userinfo;
+        hp
+    } else {
+        authority
+    };
+    let (host, port) = hostport
+        .rsplit_once(':')
+        .ok_or("proxy URL must include a port (host:port)")?;
+    let ep = wry::ProxyEndpoint {
+        host: host.to_string(),
+        port: port.to_string(),
+    };
+    Ok(if socks {
+        wry::ProxyConfig::Socks5(ep)
+    } else {
+        wry::ProxyConfig::Http(ep)
+    })
+}
 
 pub fn list_sessions() -> Value {
     let (tx, rx) = std::sync::mpsc::sync_channel(1);
@@ -694,7 +737,19 @@ fn create_session(
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
-    let webview = wry::WebViewBuilder::new()
+    let mut builder = wry::WebViewBuilder::new();
+    if let Some((proxy, ua)) = AGENT_OPTS.get() {
+        if let Some(p) = proxy {
+            match parse_proxy(p) {
+                Ok(cfg) => builder = builder.with_proxy_config(cfg),
+                Err(e) => eprintln!("[navette] proxy ignored: {e}"),
+            }
+        }
+        if let Some(ua) = ua {
+            builder = builder.with_user_agent(ua.clone());
+        }
+    }
+    let webview = builder
         .with_url("about:blank")
         .with_initialization_script(RPC_SHIM)
         .with_ipc_handler(move |req: wry::http::Request<String>| {

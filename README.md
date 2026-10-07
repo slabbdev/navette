@@ -1,4 +1,4 @@
-# navette — v1.5.0
+# navette — v1.6.0
 
 ![navette — the browser for agents](assets/banner.png)
 
@@ -27,7 +27,9 @@ $ ls -lh target/release/navette
 
 **Why not an ML extraction model?** Two trades, not a ranking. Trained extraction models survive hostile HTML — agency templates, mangled CMS output — where a DOM walk picks the wrong node, at roughly **~600 ms of compute per page**. navette's native DOM walk costs **~10 ms per page** and wins wherever the markup is sane, which is most documentation, news and dev-tool pages — most of what agents actually read. The layers compose: when one target's markup is hostile enough that native extraction picks garbage, hand *that* page's raw HTML to an ML pass.
 
-**Security?** The server binds 127.0.0.1 only, has no auth (do not expose it), and sessions use a non-persistent store — no cookies leak between runs. The agent's JS executes in the OS WebKit sandbox, not in your terminal.
+**Security?** The server binds 127.0.0.1 only, sessions use a non-persistent store — no cookies leak between runs. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var.
+
+**Operator flags** (serve): `--proxy URL` (HTTP CONNECT / SOCKS5, wry backends — macOS follows the system proxy), `--user-agent UA` (per-serve override), `--idle-release MIN` (drop idle WebKit sessions, the daemon stays resident).
 
 ## Build & run
 
@@ -107,8 +109,8 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-**v1.5.0 (2026-10-05)** — current. **Idle-release watchdog**: `navette serve --idle-release 15` drops WebKit sessions after 15 minutes without requests — daemon stays resident, memory comes back, the next request re-warms on demand (validated on macOS and Linux). **16 MCP tools** including file upload (page-side DataTransfer — no OS dialog) and scroll; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
+**v1.6.0 (2026-10-07)** — current. **Operator release**: `--token` (Bearer auth on the HTTP API), `--proxy` (HTTP CONNECT / SOCKS5 per serve), `--user-agent` (per-serve override).  **Idle-release watchdog**: `navette serve --idle-release 15` drops WebKit sessions after 15 minutes without requests — daemon stays resident, memory comes back, the next request re-warms on demand (validated on macOS and Linux). **16 MCP tools** including file upload (page-side DataTransfer — no OS dialog) and scroll; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
 
-Recent releases: [v1.4.1](https://github.com/slabbdev/navette/releases/tag/v1.4.1) — container image (ghcr, amd64+arm64), --help/--version, brew tap, official MCP registry listing · [v1.3.0](https://github.com/slabbdev/navette/releases/tag/v1.3.0) — full platform parity (native screenshots per engine, cookie state export/import, viewport control, resident daemon everywhere, hover + key, auto-handled dialogs) · [v1.2.1](https://github.com/slabbdev/navette/releases/tag/v1.2.1) — hardening (five root-cause fixes, boot-time session pre-warm: first navigate 38 s → 83 ms on a cold CI VM).
+Recent releases: [v1.5.0](https://github.com/slabbdev/navette/releases/tag/v1.5.0) — idle-release watchdog (drop idle WebKit sessions, the daemon stays resident), the tollbooth bench harness, the native-vs-ML extraction trade documented · [v1.4.1](https://github.com/slabbdev/navette/releases/tag/v1.4.1) — container image (ghcr, amd64+arm64), --help/--version, brew tap, official MCP registry listing · [v1.3.0](https://github.com/slabbdev/navette/releases/tag/v1.3.0) — full platform parity (native screenshots per engine, cookie state export/import, viewport control, resident daemon everywhere, hover + key, auto-handled dialogs) · [v1.2.1](https://github.com/slabbdev/navette/releases/tag/v1.2.1) — hardening (five root-cause fixes, boot-time session pre-warm: first navigate 38 s → 83 ms on a cold CI VM).
 
 Known gaps, stated plainly: real (OS-level) keyboard/mouse input, request/response network interception, OS file-dialog automation. MIT.
