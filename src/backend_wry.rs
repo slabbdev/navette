@@ -853,7 +853,9 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 let s = sessions().lock().unwrap().get(&name).cloned().ok_or("no such session")?;
                 s.window.0.set_decorations(true);
                 // Center on the current monitor (physical pixels on wry).
-                // tao's current_monitor() returns Option<MonitorHandle>.
+                // tao's current_monitor() returns Option<MonitorHandle> —
+                // this must compile on Windows AND Linux (tao is shared);
+                // it slipped through a macOS-only build of a wry change.
                 if let Some(mon) = s.window.0.current_monitor() {
                     let m = mon.size();
                     let w = s.window.0.inner_size();
@@ -1075,4 +1077,64 @@ pub fn run_main_loop() {
             handle_command(cmd, target);
         }
     });
+}
+
+// ---------- Kit contract (compile-checked parity — see webviewkit.rs)
+
+use crate::webviewkit::WebviewKit;
+
+#[allow(dead_code)]
+pub struct Kit;
+
+impl WebviewKit for Kit {
+    type SessionRef = Arc<Session>;
+
+    fn run_get_or_create(&self, name: &str) -> Self::SessionRef {
+        run_get_or_create(name)
+    }
+    fn prewarm_default(&self) {
+        prewarm_default()
+    }
+    fn set_agent_options(&self, proxy: Option<String>, user_agent: Option<String>) {
+        set_agent_options(proxy, user_agent)
+    }
+    fn list_sessions(&self) -> Value {
+        list_sessions()
+    }
+    fn close_session(&self, name: &str) {
+        close_session(name)
+    }
+    fn reap_idle(&self, max_idle_secs: u64) -> usize {
+        reap_idle(max_idle_secs)
+    }
+    fn navigate(&self, s: &Self::SessionRef, url: &str, after: Option<String>) -> Result<String, String> {
+        navigate(s, url, after)
+    }
+    fn eval_js(&self, s: &Self::SessionRef, js: &str) -> Result<String, String> {
+        eval_js(s, js)
+    }
+    fn screenshot(&self, s: &Self::SessionRef) -> Result<Vec<u8>, String> {
+        screenshot(s)
+    }
+    fn export_cookies(&self, s: &Self::SessionRef) -> Result<Value, String> {
+        export_cookies(s)
+    }
+    fn import_cookies(&self, s: &Self::SessionRef, cookies: &Value) -> Result<usize, String> {
+        import_cookies(s, cookies)
+    }
+    fn set_viewport(&self, s: &Self::SessionRef, width: u32, height: u32) -> Result<(), String> {
+        set_viewport(s, width, height)
+    }
+    fn show_window(&self, s: &Self::SessionRef) -> Result<(), String> {
+        show_window(s)
+    }
+    fn hide_window(&self, s: &Self::SessionRef) -> Result<(), String> {
+        hide_window(s)
+    }
+    fn native_key(&self, s: &Self::SessionRef, key: &str) -> Result<(), String> {
+        native_key(s, key)
+    }
+    fn wait_settle(&self, s: &Self::SessionRef) {
+        wait_settle(s)
+    }
 }

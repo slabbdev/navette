@@ -100,14 +100,17 @@ The host gets 18 tools: `navigate`, `read`, `screenshot` (returned as MCP image 
 ```
 src/main.rs          HTTP server (std::net), routes, agent-first JS snippets
 src/mcp.rs           MCP stdio adapter + serve auto-start
+src/webviewkit.rs    the kit contract — a trait every backend must implement,
+                     so surface parity is compile-enforced (a backend that
+                     misses a primitive or drifts on a signature won't build)
 src/backend_macos.rs WKWebView via raw objc2 — ghost windows, lazy attach,
                      measured cold-start ordering (AppKit -> listener -> pre-warm)
 src/backend_wry.rs   Windows (WebView2) / Linux (WebKitGTK) via wry + tao —
                      same surface, IPC-shim results, URL-matched navigation
-src/backend_stub.rs  fallback for other targets (placeholder)
+src/backend_stub.rs  fallback for other targets (placeholder, same contract)
 ```
 
-The 8 primitives are engine-agnostic; each platform backend is a thin layer over the system WebView behind this exact surface. Engine strategy: system-first, embedded fallback (WebView2 Fixed Version / WebKitGTK via apt / WPE) — see [ONEPAGER.md](ONEPAGER.md).
+The 8 primitives are engine-agnostic; each platform backend is a thin layer over the system WebView behind this exact surface — now pinned by the `WebviewKit` trait, the seam a future hand-rolled backend (direct WebKitGTK/WebView2 FFI, no wry) would plug into. Engine strategy: system-first, embedded fallback (WebView2 Fixed Version / WebKitGTK via apt / WPE) — see [ONEPAGER.md](ONEPAGER.md).
 
 ## Status
 
