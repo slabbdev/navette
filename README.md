@@ -63,13 +63,15 @@ The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if
 | `POST /navigate` | `{url, session?, with_content?, format?}` | `{ok, url, title[, content]}` — `with_content` folds the read into one round-trip |
 | `POST /read` | `{session?, format?}` markdown/text/html | `{ok, content}` |
 | `POST /screenshot` | `{session?}` | PNG bytes |
-| `POST /click` | `{selector, session?, wait_navigation?}` | `{ok}` (real mouse events; opt-in auto-wait for form-POST navigations) |
+| `POST /click` | `{selector, session?, wait_navigation?}` | `{ok}` (real pointer+mouse events — opens Radix/HeadlessUI menus too; opt-in auto-wait for form-POST navigations) |
 | `POST /type` | `{selector, value, session?}` | `{ok}` (React-safe native setter) |
 | `POST /evaluate` | `{js, session?}` | `{ok, result}` |
 | `POST /wait` | `{selector, ms?, session?}` | `{ok}` |
 | `POST /sessions/state` | `{session}` | cookies JSON — the logged-in state |
 | `POST /sessions/load` | `{session, cookies}` | `{ok, imported}` restore a logged-in state |
 | `POST /sessions/viewport` | `{width, height, session?}` | `{ok, width, height}` set the viewport (default 1280x800) |
+| `POST /sessions/show` | `{session?}` | `{ok, visible}` put the session's window ON SCREEN — titled, keyable, centered; for one-time human logins inside a session |
+| `POST /sessions/hide` | `{session?}` | `{ok, visible}` order the window back out (session and state untouched) |
 | `POST /hover` | `{selector, session?}` | `{ok}` (mouseover/mousemove at the element's center) |
 | `POST /key` | `{key, selector?, session?}` | `{ok}` (keydown+keyup on the focused element) |
 | `POST /scroll` | `{y?, selector?, session?}` | `{ok, y}` absolute scroll or scrollIntoView |
@@ -91,7 +93,7 @@ Register once (ZCode example, workspace `.zcode/config.json`):
 } } } }
 ```
 
-The host gets 16 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `scroll`, `upload`, `viewport`, `sessions`, `session_close`, `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
+The host gets 18 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `scroll`, `upload`, `viewport`, `sessions`, `session_close`, `session_show` / `session_hide` (put the window on screen so a human can log in, then take it away — the state stays), `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
 
 ## Architecture
 
@@ -109,7 +111,7 @@ The 8 primitives are engine-agnostic; each platform backend is a thin layer over
 
 ## Status
 
-**v1.7.0 (2026-10-07)** — current. **Native keyboard input** shipped: `POST /key` attempts real OS-level events first (CGEvent on macOS, SendInput on Windows, XTEST on Linux — `isTrusted: true`) and falls back automatically to the synthetic dispatch, reporting which `mode` ran. Windows is the platform where native input is verified end-to-end; macOS and headless Linux fall back cleanly (see the native-input issue for exactly where each stands).  **Operator release**: `--token` (Bearer auth on the HTTP API), `--proxy` (HTTP CONNECT / SOCKS5 per serve), `--user-agent` (per-serve override).  **Idle-release watchdog**: `navette serve --idle-release 15` drops WebKit sessions after 15 minutes without requests — daemon stays resident, memory comes back, the next request re-warms on demand (validated on macOS and Linux). **16 MCP tools** including file upload (page-side DataTransfer — no OS dialog) and scroll; published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
+**v1.7.0 (2026-10-07)** — current. **Native keyboard input** shipped: `POST /key` attempts real OS-level events first (CGEvent on macOS, SendInput on Windows, XTEST on Linux — `isTrusted: true`) and falls back automatically to the synthetic dispatch, reporting which `mode` ran. Windows is the platform where native input is verified end-to-end; macOS and headless Linux fall back cleanly (see the native-input issue for exactly where each stands).  **Operator release**: `--token` (Bearer auth on the HTTP API), `--proxy` (HTTP CONNECT / SOCKS5 per serve), `--user-agent` (per-serve override).  **Idle-release watchdog**: `navette serve --idle-release 15` drops WebKit sessions after 15 minutes without requests — daemon stays resident, memory comes back, the next request re-warms on demand (validated on macOS and Linux). **18 MCP tools** including file upload (page-side DataTransfer — no OS dialog), scroll, and `session_show`/`session_hide` (on-screen windows for one-time human logins, demanded by the daily.dev recipe); published on crates.io as [`navette-browser`](https://crates.io/crates/navette-browser) (`cargo install navette-browser` → `navette`); a `bench` workflow measures navigate/read/screenshot on all three engines. **CI green on all three OSes**: macOS (WKWebView), Windows (WebView2), Linux (WebKitGTK).
 
 Recent releases: [v1.6.0](https://github.com/slabbdev/navette/releases/tag/v1.6.0) — the operator release (`--token`, `--proxy`, `--user-agent`), linux-arm64 asset · [v1.5.0](https://github.com/slabbdev/navette/releases/tag/v1.5.0) — idle-release watchdog (drop idle WebKit sessions, the daemon stays resident), the tollbooth bench harness, the native-vs-ML extraction trade documented · [v1.4.1](https://github.com/slabbdev/navette/releases/tag/v1.4.1) — container image (ghcr, amd64+arm64), --help/--version, brew tap, official MCP registry listing · [v1.3.0](https://github.com/slabbdev/navette/releases/tag/v1.3.0) — full platform parity (native screenshots per engine, cookie state export/import, viewport control, resident daemon everywhere, hover + key, auto-handled dialogs) · [v1.2.1](https://github.com/slabbdev/navette/releases/tag/v1.2.1) — hardening (five root-cause fixes, boot-time session pre-warm: first navigate 38 s → 83 ms on a cold CI VM).
 

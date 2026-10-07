@@ -59,4 +59,12 @@ pub fn set_viewport(_s: &SessionRef, _width: u32, _height: u32) -> Result<(), St
     Err("platform not supported yet".into())
 }
 
+pub fn show_window(_s: &SessionRef) -> Result<(), String> {
+    Err("platform not supported yet".into())
+}
+
+pub fn hide_window(_s: &SessionRef) -> Result<(), String> {
+    Err("platform not supported yet".into())
+}
+
 pub fn wait_settle(_s: &SessionRef) {}

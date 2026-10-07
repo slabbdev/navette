@@ -151,7 +151,7 @@ fn tools() -> Value {
              json!({"session": p_string("Session name")}),
              &[]),
         tool("click",
-             "Click an element matched by a CSS selector (dispatches real mouse events: mousedown, mouseup, click). Set wait_navigation when the click submits a form or navigates — navette then waits for the new page to finish loading.",
+             "Click an element matched by a CSS selector (dispatches real pointer and mouse events, so Radix/HeadlessUI dropdown menus open too). Set wait_navigation when the click submits a form or navigates — navette then waits for the new page to finish loading.",
              json!({
                  "selector": p_string("CSS selector of the element to click"),
                  "wait_navigation": p_bool("Wait for the navigation triggered by this click (form submit, link)"),
@@ -200,6 +200,14 @@ fn tools() -> Value {
              "Close a browser session and free its window.",
              json!({"session": p_string("Session name to close")}),
              &["session"]),
+        tool("session_show",
+             "Show the session's window on screen so a HUMAN can interact with it — the one-time-login primitive: navigate to the login page, call this, let the person type their credentials, then hide and export the state.",
+             json!({"session": p_string("Session name")}),
+             &[]),
+        tool("session_hide",
+             "Hide the session's window again after a human finished interacting with it (the window stays alive — the session and its state are untouched).",
+             json!({"session": p_string("Session name")}),
+             &[]),
         tool("hover",
              "Hover an element matched by a CSS selector (dispatches mouseover/mousemove at its center — reveals hover menus and tooltips).",
              json!({
@@ -402,6 +410,16 @@ fn run_tool(name: &str, a: &Value) -> Value {
             let (code, data) = http_call("/sessions/close", "POST", Some(&json!({"session": session})));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("close failed ({})", code), true) }
+        }
+        "session_show" => {
+            let (code, data) = http_call("/sessions/show", "POST", Some(&json!({"session": session})));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("show failed ({}): {}", code, compact(data)), true) }
+        }
+        "session_hide" => {
+            let (code, data) = http_call("/sessions/hide", "POST", Some(&json!({"session": session})));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("hide failed ({}): {}", code, compact(data)), true) }
         }
         _ => text_content(format!("unknown tool {name}"), true),
     }
