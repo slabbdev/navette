@@ -132,6 +132,30 @@ fn jstr(s: &str) -> String {
     serde_json::to_string(s).unwrap_or_else(|_| "\"\"".into())
 }
 
+/// Constant-time string equality for token checks — no early exit on the
+/// first differing byte. (Length still leaks via iteration count, the
+/// standard accepted residual.)
+fn ct_eq(a: &str, b: &str) -> bool {
+    let (a, b) = (a.as_bytes(), b.as_bytes());
+    let n = a.len().max(b.len());
+    let mut acc = 0u8;
+    for i in 0..n {
+        acc |= a.get(i).copied().unwrap_or(0) ^ b.get(i).copied().unwrap_or(0);
+    }
+    acc == 0
+}
+
+/// Proxy URLs may carry credentials (http://user:pass@host) — never log them.
+fn redact_proxy(u: &str) -> String {
+    match u.split_once("://") {
+        Some((scheme, rest)) => match rest.rsplit_once('@') {
+            Some((_, tail)) => format!("{scheme}://***@{tail}"),
+            None => u.to_string(),
+        },
+        None => u.to_string(),
+    }
+}
+
 // MARK: - HTTP plumbing
 
 struct Req {
@@ -217,8 +241,21 @@ fn serve_fd(mut stream: TcpStream) {
 fn route(fd: &mut TcpStream, req: Req) {
     // Optional auth (--token): every route except /health requires
     // `Authorization: Bearer <secret>` or `X-Navette-Token: <secret>`.
+    // DNS-rebinding hardening: this API is loopback-only; a public site
+    // that rebinds its DNS to 127.0.0.1 must not reach it. Only requests
+    // addressed to a local Host are served (browsers' Private Network
+    // Access blocks most of this already — this is the belt to that).
+    let host_local = req
+        .headers
+        .iter()
+        .find(|(k, _)| k == "host")
+        .map(|(_, v)| {
+            let h = v.split(':').next().unwrap_or("").trim();
+            h == "127.0.0.1" || h == "localhost" || h == "[::1]"
+        })
+        .unwrap_or(false);
+    let path_ok = req.path.split('?').next() == Some("/health");
     if let Some(tok) = TOKEN.get() {
-        let path_ok = req.path.split('?').next() == Some("/health");
         let presented = req
             .headers
             .iter()
@@ -227,7 +264,7 @@ fn route(fd: &mut TcpStream, req: Req) {
                 let v = v.trim();
                 v.strip_prefix("Bearer ").unwrap_or(v)
             });
-        if !path_ok && presented != Some(tok.as_str()) {
+        if !path_ok && !presented.is_some_and(|p| ct_eq(p, tok.as_str())) {
             respond(
                 fd,
                 401,
@@ -237,6 +274,16 @@ fn route(fd: &mut TcpStream, req: Req) {
             );
             return;
         }
+    }
+    if !path_ok && !host_local {
+        respond(
+            fd,
+            403,
+            "Forbidden",
+            "application/json",
+            &json_bytes(&err_data("non-local Host header — this API is loopback-only (DNS-rebinding guard)")),
+        );
+        return;
     }
 
     let path = req.path.split('?').next().unwrap_or("/").to_string();
@@ -691,7 +738,7 @@ fn serve(args: &[String]) {
     if proxy.is_some() || user_agent.is_some() {
         KIT.set_agent_options(proxy.clone(), user_agent.clone());
         if let Some(pr) = &proxy {
-            eprintln!("[navette] proxy: {pr} (wry backends; macOS uses the system proxy)");
+            eprintln!("[navette] proxy: {} (wry backends; macOS uses the system proxy)", redact_proxy(&pr));
         }
         if user_agent.is_some() {
             eprintln!("[navette] user-agent override set");
