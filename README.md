@@ -31,7 +31,7 @@ $ ls -lh target/release/navette
 
 **Screenshot fidelity?** Capture is native per engine (v1.3+) — what the compositor drew, not a re-render — and viewport-sized; set the viewport before navigating for repeatable captures. Full-page capture is not implemented yet; tracked honestly rather than approximated.
 
-**Security?** The server binds 127.0.0.1 only, sessions use a non-persistent store — no cookies leak between runs. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var.
+**Security?** The server binds 127.0.0.1 only, and every session is ephemeral by construction on all three engines — non-persistent `WKWebsiteDataStore` (macOS), InPrivate profile (WebView2), ephemeral WebKitGTK context — so nothing hits disk and no cookies leak between sessions or between runs. (Pre-v1.8.1, WebView2 used its default on-disk profile and WebKitGTK wrote cache/HSTS to `~/.cache`/`~/.local/share` — the audit lives in [#6](https://github.com/slabbdev/navette/issues/6).) Cross-run state moves explicitly: `state_export` / `state_import`. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var.
 
 **Operator flags** (serve): `--proxy URL` (HTTP CONNECT / SOCKS5, wry backends — macOS follows the system proxy), `--user-agent UA` (per-serve override), `--idle-release MIN` (drop idle WebKit sessions, the daemon stays resident).
 
