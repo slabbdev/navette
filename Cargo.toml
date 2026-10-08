@@ -30,6 +30,7 @@ objc2 = "0.6"
 block2 = "0.6"
 objc2-foundation = "0.3"
 core-graphics = { version = "0.24", features = ["elcapitan"] }
+foreign-types = "0.5"
 
 [target.'cfg(any(target_os = "windows", target_os = "linux"))'.dependencies]
 wry = "0.57"

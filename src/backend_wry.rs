@@ -347,7 +347,7 @@ pub fn eval_js(s: &SessionRef, js: &str) -> Result<String, String> {
     proxy()
         .send_event(Command::EvalJs(s.name.clone(), script))
         .map_err(|_| "event loop gone")?;
-    match rx.recv_timeout(Duration::from_secs(20)) {
+    match rx.recv_timeout(Duration::from_secs(crate::webviewkit::eval_timeout_secs())) {
         Ok(v) => Ok(v),
         Err(_) => {
             s.evals.lock().unwrap().remove(&id);

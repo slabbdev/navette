@@ -1229,6 +1229,7 @@ dependencies = [
  "base64",
  "block2",
  "core-graphics",
+ "foreign-types",
  "gtk",
  "libc",
  "objc2",
