@@ -1,6 +1,6 @@
 [package]
 name = "navette-browser"
-version = "1.8.1"
+version = "1.9.0"
 edition = "2021"
 description = "The browser for agents — one tiny binary driving the WebView your OS already ships."
 license = "MIT"
