@@ -3,7 +3,7 @@
   "name": "io.github.slabbdev/navette",
   "title": "navette — the browser for agents",
   "description": "A 659 KB Rust binary driving the OS WebView — no Chromium. 18 MCP tools for AI agents.",
-  "version": "1.8.1",
+  "version": "1.9.0",
   "websiteUrl": "https://github.com/slabbdev/navette",
   "repository": {
     "url": "https://github.com/slabbdev/navette",
