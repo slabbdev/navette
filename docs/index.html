@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>navette — the browser for agents</title>
+<meta name="description" content="One tiny Rust binary driving the WebView your OS already ships. No Chromium, no download, no RAM bonfire. 8 agent-first primitives, 18 MCP tools, measured faster than Playwright + Chromium.">
+<meta property="og:title" content="navette — the browser for agents">
+<meta property="og:description" content="One tiny Rust binary driving the WebView your OS already ships. No Chromium, no download, no RAM bonfire.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://slabbdev.github.io/navette/">
+<meta property="og:image" content="https://slabbdev.github.io/navette/assets/banner.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+<style>
+  :root{
+    --bg:#05070f; --bg2:#0a0e1d; --card:rgba(255,255,255,.035);
+    --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+    --text:#e9edf8; --muted:#98a2b8; --dim:#6b7488;
+    --acc:#7b8cff; --acc2:#a78bfa; --ok:#4ade80;
+    --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--text); background:var(--bg);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  ::selection{background:rgba(123,140,255,.35)}
+  a{color:var(--acc); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1060px; margin:0 auto; padding:0 24px}
+  section{padding:64px 0; border-top:1px solid var(--line)}
+  .eyebrow{
+    display:inline-block; font:600 12px/1 var(--mono); letter-spacing:.14em;
+    text-transform:uppercase; color:var(--acc); margin:0 0 14px;
+  }
+  h2{font-size:clamp(24px,3.2vw,32px); line-height:1.2; margin:0 0 12px; letter-spacing:-.01em}
+  h3{font-size:17px; margin:0 0 6px}
+  p.lede{color:var(--muted); font-size:17px; max-width:760px; margin:0 0 28px}
+
+  /* nav */
+  .nav{
+    position:sticky; top:0; z-index:9; backdrop-filter:blur(10px);
+    background:rgba(5,7,15,.75); border-bottom:1px solid var(--line);
+  }
+  .nav .wrap{display:flex; align-items:center; gap:22px; height:56px}
+  .nav .brand{font:700 15px var(--mono); color:var(--text); letter-spacing:.02em}
+  .nav .brand span{color:var(--acc)}
+  .nav .links{margin-left:auto; display:flex; gap:20px; font-size:14px}
+  .nav .links a{color:var(--muted)}
+  .nav .links a:hover{color:var(--text); text-decoration:none}
+  @media (max-width:640px){ .nav .links a:not(:last-child){display:none} }
+
+  /* hero */
+  .hero{padding:72px 0 64px; text-align:center}
+  .hero .badge{
+    display:inline-flex; gap:8px; align-items:center; font:500 13px var(--mono);
+    color:var(--muted); border:1px solid var(--line); border-radius:999px;
+    padding:7px 14px; margin-bottom:26px; background:var(--card);
+  }
+  .hero .badge i{width:7px; height:7px; border-radius:50%; background:var(--ok); font-style:normal}
+  .hero h1{
+    font-size:clamp(34px,6vw,58px); line-height:1.06; margin:0 0 18px; letter-spacing:-.02em;
+  }
+  .hero h1 em{
+    font-style:normal;
+    background:linear-gradient(100deg,#8fa2ff,#b18cff 55%,#7dd3fc);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero .sub{color:var(--muted); font-size:clamp(16px,2.2vw,19px); max-width:720px; margin:0 auto 30px}
+  .hero .sub b{color:var(--text); font-weight:600}
+  .banner{
+    width:100%; border-radius:18px; border:1px solid var(--line2); display:block;
+    box-shadow:0 40px 90px -30px rgba(110,100,255,.35), 0 10px 30px rgba(0,0,0,.5);
+    margin:34px 0 30px;
+  }
+  .chips{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:0 0 30px}
+  .chip{
+    font-size:13.5px; color:var(--muted); border:1px solid var(--line);
+    background:var(--card); border-radius:999px; padding:7px 15px; white-space:nowrap;
+  }
+  .chip b{color:var(--text); font-weight:650}
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
+  .btn{
+    display:inline-block; padding:11px 22px; border-radius:10px; font-weight:600; font-size:15px;
+  }
+  .btn:hover{text-decoration:none; filter:brightness(1.08)}
+  .btn.primary{background:linear-gradient(120deg,#5b7cfa,#9b6eff); color:#fff; box-shadow:0 8px 30px -8px rgba(110,100,255,.5)}
+  .btn.ghost{border:1px solid var(--line2); color:var(--text); background:var(--card)}
+
+  /* tables */
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; margin:0}
+  table{width:100%; border-collapse:collapse; font-size:14.5px; min-width:640px}
+  th,td{padding:11px 14px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  th{color:var(--dim); font-weight:600; font-size:13px; white-space:nowrap; background:rgba(255,255,255,.02)}
+  td:first-child{color:var(--muted); white-space:nowrap}
+  td.us{color:#dfe4ff; background:rgba(110,120,255,.09); font-weight:500}
+  th.us{color:var(--acc)}
+  .note{color:var(--dim); font-size:13.5px; margin:14px 0 0}
+  .note a{color:var(--muted)}
+
+  /* install */
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:0 0 22px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px;
+  }
+  .card h3{font:600 14px var(--mono); color:var(--acc); letter-spacing:.02em}
+  .card p{color:var(--muted); font-size:14px; margin:4px 0 12px}
+  pre{
+    margin:0; background:#070b17; border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; overflow-x:auto; font:13px/1.55 var(--mono); color:#c9d4f0;
+  }
+  pre .c{color:var(--dim)}
+  .runbar{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px}
+  .run{border:1px dashed var(--line2); border-radius:14px; padding:16px 18px}
+  .run p{color:var(--muted); font-size:14px; margin:8px 0 0}
+
+  /* primitives */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(225px,1fr)); gap:12px}
+  .prim{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px}
+  .prim code{font:600 13.5px var(--mono); color:#b7c1ff}
+  .prim p{margin:5px 0 0; font-size:13.5px; color:var(--muted)}
+  .moreline{margin:18px 0 0; color:var(--muted); font-size:14.5px}
+  .moreline code{font:500 13px var(--mono); color:#b7c1ff; background:var(--card); border:1px solid var(--line); border-radius:6px; padding:2px 7px}
+
+  /* demo figures */
+  .figs{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px}
+  figure{margin:0}
+  figure img{width:100%; border-radius:12px; border:1px solid var(--line2); display:block; background:#fff}
+  figcaption{color:var(--muted); font-size:13.5px; margin-top:10px; line-height:1.55}
+  figcaption b{color:var(--text)}
+
+  /* security + gaps */
+  .seclist{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px}
+  .sec{border-left:2px solid rgba(110,120,255,.5); padding:2px 0 2px 16px}
+  .sec b{display:block; font-size:14.5px; margin-bottom:3px}
+  .sec p{margin:0; color:var(--muted); font-size:13.5px}
+  .gaps{
+    border:1px dashed var(--line2); border-radius:14px; padding:18px 22px;
+    color:var(--muted); font-size:14.5px; background:rgba(255,255,255,.015);
+  }
+  .gaps b{color:var(--text)}
+
+  /* footer */
+  footer{border-top:1px solid var(--line); padding:34px 0 46px; color:var(--dim); font-size:14px}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:baseline}
+  footer .fbrand{font:700 14px var(--mono); color:var(--muted)}
+  footer a{color:var(--muted)}
+  footer a:hover{color:var(--text)}
+  footer .right{margin-left:auto}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand">navette<span>://</span></div>
+    <nav class="links">
+      <a href="#why">Why</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="#install">Install</a>
+      <a href="#tools">MCP tools</a>
+      <a href="#security">Security</a>
+      <a href="https://github.com/slabbdev/navette">GitHub ↗</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="hero" style="border-top:none">
+  <div class="wrap">
+    <span class="badge"><i></i> v1.9.0 · MCP-native · system WebKit · MIT</span>
+    <h1>The browser <em>for agents.</em></h1>
+    <p class="sub">One tiny Rust binary driving the WebView your OS already ships — <b>no Chromium, no download, no RAM bonfire.</b><br>
+    <i>Navette</i> is French for <b>shuttle</b>: the small vessel that carries your agent from page to page. Always fueled — the engine ships with your OS.</p>
+    <img class="banner" src="assets/banner.png" alt="navette — the browser for agents. A shuttle orbits browser windows and MCP calls: navigate, click, type, screenshot, evaluate, wait, scroll, upload, viewport, session.">
+    <div class="chips">
+      <span class="chip"><b>626 KB</b> installed</span>
+      <span class="chip"><b>0 MB</b> engine download</span>
+      <span class="chip"><b>79 MB</b> peak RAM vs 599 MB</span>
+      <span class="chip"><b>11 ms</b> navigate → read</span>
+      <span class="chip"><b>2 ms</b> act</span>
+      <span class="chip"><b>3</b> OS engines, 1 binary</span>
+      <span class="chip"><b>18</b> MCP tools</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="#install">Get started</a>
+      <a class="btn ghost" href="https://github.com/slabbdev/navette">Source on GitHub</a>
+      <a class="btn ghost" href="https://github.com/slabbdev/navette/blob/main/BENCHMARKS.md">The numbers</a>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <span class="eyebrow">Why</span>
+    <h2>Every agent drags along the same stack: headless Chromium.</h2>
+    <p class="lede">Playwright and Puppeteer download ~300–400&nbsp;MB of browser per machine and burn ~100–200&nbsp;MB of RAM per open page, driven by CDP — a protocol built for DevTools, not for agents. But what an agent actually needs is small: <em>go to a page, execute its JS, read the text, take a screenshot, click, type.</em> Your OS already ships a full rendering engine. navette is the few hundred KB of glue that drives it.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th></th><th>Playwright + Chromium</th><th>Lightpanda</th><th>Browserbase (cloud)</th><th class="us">navette</th></tr>
+        <tr><td>Engine download</td><td>~300–400 MB</td><td>96 MB</td><td>none (remote)</td><td class="us">none — the engine is the OS</td></tr>
+        <tr><td>Engine completeness</td><td>full</td><td>partial (alpha)</td><td>full</td><td class="us">full — system WebKit, real layout + JS</td></tr>
+        <tr><td>RAM per page</td><td>~100–200 MB</td><td>~123 MB peak</td><td>n/a (their bill)</td><td class="us">WebView-native</td></tr>
+        <tr><td>Protocol</td><td>CDP</td><td>CDP</td><td>REST</td><td class="us">MCP native (+ plain HTTP)</td></tr>
+        <tr><td>Runs where</td><td>anywhere</td><td>anywhere</td><td>their cloud</td><td class="us">anywhere with a system WebView</td></tr>
+      </table>
+    </div>
+    <p class="note">On Windows the system WebView is <b>WebView2 — Chromium</b>, preinstalled on every Windows 10/11: Chromium-grade rendering from a 0.6&nbsp;MB binary. Headless Chromium is the Postgres of scraping; navette is the embedded SQLite.</p>
+  </div>
+</section>
+
+<section id="benchmarks">
+  <div class="wrap">
+    <span class="eyebrow">Benchmarks</span>
+    <h2>Measured, not vibes.</h2>
+    <p class="lede">Same machine, same 100-page corpus (50 static / 50 JS-built) on loopback HTTP. Medians; RAM is the peak of the whole process tree. Reproducible with one command — see <a href="https://github.com/slabbdev/navette/blob/main/BENCHMARKS.md">BENCHMARKS.md</a>.</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>Metric</th><th class="us">navette (system WebKit)</th><th>Playwright + Chromium</th><th>Lightpanda (CDP)</th></tr>
+        <tr><td>Install size (on disk)</td><td class="us"><b>0.6 MB</b></td><td>215.8 MB</td><td>96.1 MB</td></tr>
+        <tr><td>Cold start → first page read</td><td class="us"><b>669 ms</b></td><td>934 ms</td><td>33 ms</td></tr>
+        <tr><td>Navigate → readable content</td><td class="us"><b>11 ms</b></td><td>12 ms</td><td>12 ms</td></tr>
+        <tr><td>Act: type + click round-trip</td><td class="us"><b>2 ms</b></td><td>33 ms</td><td>18 ms</td></tr>
+        <tr><td>Peak RAM, whole tree</td><td class="us"><b>79 MB</b></td><td>599 MB</td><td>41 MB</td></tr>
+        <tr><td>Crawl: 100 pages navigate+read</td><td class="us"><b>1.5 s</b></td><td>1.8 s</td><td>0.9 s</td></tr>
+      </table>
+    </div>
+    <p class="note">The honest reading: Lightpanda wins fresh-process boot and peak RAM — it parses a partial DOM, cannot render and cannot screenshot. navette is the <b>fastest full-rendering reader</b>, and it acts 9–16× faster than both (2&nbsp;ms vs 18–33&nbsp;ms). On the real web: 95–100% success vs 85% for Playwright. Resident daemon mode drops the cold start an agent feels to <b>24–37&nbsp;ms</b>.</p>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <span class="eyebrow">Install</span>
+    <h2>One command. No browser comes with it — one was already there.</h2>
+    <div class="cards" style="margin-top:26px">
+      <div class="card">
+        <h3>Homebrew · macOS</h3>
+        <p>arm64 bottle, WKWebView backend.</p>
+        <pre>brew install slabbdev/navette/navette</pre>
+      </div>
+      <div class="card">
+        <h3>cargo · any platform</h3>
+        <p>From source on crates.io — macOS, Windows, Linux.</p>
+        <pre>cargo install navette-browser</pre>
+      </div>
+      <div class="card">
+        <h3>Docker · stdio MCP</h3>
+        <p>Container with WebKitGTK, amd64 + arm64.</p>
+        <pre>docker run -i --rm ghcr.io/slabbdev/navette navette mcp</pre>
+      </div>
+    </div>
+    <div class="runbar">
+      <div class="run">
+        <h3><code style="font:600 14px var(--mono);color:#b7c1ff">navette serve</code></h3>
+        <p>HTTP JSON API on <code>127.0.0.1:8765</code> — 19 routes, sessions, cookies, PNG screenshots.</p>
+      </div>
+      <div class="run">
+        <h3><code style="font:600 14px var(--mono);color:#b7c1ff">navette mcp</code></h3>
+        <p>MCP stdio for agent hosts — auto-starts <code>serve</code> if nothing is listening.</p>
+      </div>
+      <div class="run">
+        <h3><code style="font:600 14px var(--mono);color:#b7c1ff">navette install-daemon</code></h3>
+        <p>Resident LaunchAgent, warm from login — first page in 24–37&nbsp;ms.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="wrap">
+    <span class="eyebrow">The surface</span>
+    <h2>8 primitives. No DevTools baggage.</h2>
+    <p class="lede">Everything an agent does on a page, and nothing else. The same surface on WKWebView (macOS), WebView2 (Windows) and WebKitGTK (Linux) — parity is compile-enforced by the <code style="font:500 14px var(--mono);color:#b7c1ff">WebviewKit</code> trait.</p>
+    <div class="grid">
+      <div class="prim"><code>navigate</code><p>open a URL in a session — <code>with_content</code> folds the read into one round-trip</p></div>
+      <div class="prim"><code>read</code><p>page as markdown, text or DOM</p></div>
+      <div class="prim"><code>screenshot</code><p>native capture — what the compositor drew</p></div>
+      <div class="prim"><code>click</code><p>real pointer + mouse events; Radix/HeadlessUI menus open</p></div>
+      <div class="prim"><code>type</code><p>React-safe native setter</p></div>
+      <div class="prim"><code>evaluate</code><p>run JS in the page</p></div>
+      <div class="prim"><code>wait</code><p>selector / idle / timeout</p></div>
+      <div class="prim"><code>sessions</code><p>parallel named sessions, lazily created</p></div>
+    </div>
+    <p class="moreline">…plus <code>hover</code> <code>key</code> <code>scroll</code> <code>upload</code> <code>viewport</code> <code>session_show</code>/<code>session_hide</code> <code>state_export</code>/<code>state_import</code> — <b>18 tools</b> on the MCP surface. JS dialogs are auto-handled in-page, so agents never deadlock on a hidden modal.</p>
+  </div>
+</section>
+
+<section id="acting">
+  <div class="wrap">
+    <span class="eyebrow">Not a scraper — an actor</span>
+    <h2>It logs in. It reads. It comes back with proof.</h2>
+    <p class="lede">navette doesn't fetch pages for later parsing — it acts: opens sessions, fills forms, clicks through flows, verifies with screenshots, keeps state across steps. Scraping is the demo; acting is the product.</p>
+    <div class="figs">
+      <figure>
+        <img src="assets/demo-login.png" alt="A logged-in 'Secure Area' page with a green confirmation banner — the result of a human login performed inside a visible navette session.">
+        <figcaption><b>One-time human login, then out of the way.</b> <code style="font:500 12.5px var(--mono);color:#b7c1ff">session_show</code> brings the ghost window on screen — titled, key, focus-gated — for the OAuth/2FA/captcha only a human can do; <code style="font:500 12.5px var(--mono);color:#b7c1ff">session_hide</code> parks it again. The session state stays.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/demo-read.png" alt="A dev.to article rendered in the navette session, ready to be returned as markdown by the read primitive.">
+        <figcaption><b>Read like an agent.</b> <code style="font:500 12.5px var(--mono);color:#b7c1ff">navigate</code> + <code style="font:500 12.5px var(--mono);color:#b7c1ff">read</code> in one round-trip returns clean markdown of a JS-built page; screenshots come back as MCP image content — the agent <i>sees</i> the page. Full working recipe: <a href="https://github.com/slabbdev/navette/tree/main/demo/dailydev">demo/dailydev</a>.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="security">
+  <div class="wrap">
+    <span class="eyebrow">Security</span>
+    <h2>Loopback by default. Isolation by build failure.</h2>
+    <p class="lede">The full reference posture lives in <a href="https://github.com/slabbdev/navette/blob/main/docs/SECURITY.md">docs/SECURITY.md</a>. The short version:</p>
+    <div class="seclist">
+      <div class="sec"><b>Loopback only</b><p>The server binds 127.0.0.1; non-local <code>Host</code> headers are refused — DNS-rebinding guard, <code>/health</code> exempt.</p></div>
+      <div class="sec"><b>Token auth, constant-time</b><p><code>--token SECRET</code> requires <code>Authorization: Bearer</code> on every route; comparison is constant-time.</p></div>
+      <div class="sec"><b>Session isolation, CI-enforced ×3 engines</b><p>A cookie imported into one session must not appear in another's jar — or the build fails. Non-persistent <code>WKWebsiteDataStore</code> (macOS) · per-session WebView2 profile + InPrivate (Windows) · fresh WebContext, cookies never touch disk (Linux).</p></div>
+      <div class="sec"><b>Explicit state, nothing implicit</b><p>Cross-run state moves only through <code>state_export</code> / <code>state_import</code>. Proxy credentials are redacted in logs.</p></div>
+      <div class="sec"><b>The agent's JS runs sandboxed</b><p>Page JS executes inside the OS WebKit sandbox — not in your terminal, not in the server.</p></div>
+      <div class="sec"><b>Native input is focus-gated</b><p>Keystrokes are posted only after the Window Server confirms the session's window is key — a key can never land in someone else's app.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="gaps">
+      <b>Known gaps, stated plainly:</b> real OS-level mouse trajectories, request/response network interception, OS file-dialog automation and full-page capture are not implemented yet — tracked honestly rather than approximated. WebKit ≠ Blink: a minority of Chrome-tuned sites may render slightly differently (on Windows, WebView2 <i>is</i> Chromium).
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="fbrand">navette</span>
+    <a href="https://github.com/slabbdev/navette">GitHub</a>
+    <a href="https://github.com/slabbdev/navette/releases">Releases</a>
+    <a href="https://crates.io/crates/navette-browser">crates.io</a>
+    <a href="https://github.com/slabbdev/navette/blob/main/docs/SECURITY.md">Security</a>
+    <a href="https://github.com/slabbdev/navette/blob/main/BENCHMARKS.md">Benchmarks</a>
+    <a href="https://dev.to/slabb/594-kb-to-orbit-a-browser-for-ai-agents-with-no-chromium-attached-1odg">The 594 KB story</a>
+    <span class="right">MIT · built in Rust · the engine was already on your machine</span>
+  </div>
+</footer>
+
+</body>
+</html>
