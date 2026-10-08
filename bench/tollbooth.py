@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """The tollbooth bench — how much of the real web is walled off from AI agents?
 
-For ~200 real URLs across 5 categories, measures three independent layers:
+For ~200 real URLs across 5 categories, measures four independent layers:
   1. robots.txt AI clauses (GPTBot / ClaudeBot / CCBot / Google-Extended /
      PerplexityBot / Bytespider / Amazonbot / anthropic-ai / Applebot-Extended)
      — stance per site: blocked-all, partial, no-rules, no-robots-file.
   2. llms.txt adoption (GET /llms.txt).
-  3. The agent path itself: navette navigate+read (real WebKit, residential
+  3. x402 / paywall signals (round 2): a plain passive GET captures HTTP 402,
+     X-Payment* / X402* response headers, and declared-paywall markup
+     (schema.org isAccessibleForFree:false). The probe is recorded as its own
+     observation — never merged into the agent-path classification. A blocked
+     probe (403 from an edge) is reported as probe-blocked, not "no signals".
+  4. The agent path itself: navette navigate+read (real WebKit, residential
      IP), classified as ok / challenge (Turnstile, "Just a moment", captcha…)
      / empty-js-gate / http-4xx / http-5xx / timeout / error.
 
-Output: tollbooth-results.json (per-URL rows) + tollbooth-summary.md
-(per-category aggregates). The dataset is committed to the repo.
+Output: tollbooth-results.json (per-URL rows) + tollbooth-results.csv (flat
+export) + tollbooth-summary.md (per-category aggregates). The dataset is
+committed to the repo under CC BY 4.0 (code is MIT, repo root).
 
 Usage: python3 tollbooth.py [--port 8765] [--out DIR] [--category NAME]
 """
@@ -42,6 +48,15 @@ CHALLENGE_MARKERS = [
     "access denied", "pardon our interruption", "ddos protection",
     "request unsuccessful. incapsula", "perimeterx", "datadome",
     "bot verification", "blocked because", "unusual traffic",
+]
+
+# Declared-paywall signals in markup. isAccessibleForFree is the schema.org
+# NewsArticle paywall markup publishers ship for Google; the phrases are the
+# hard-gate copy sites put in front of the article body.
+PAYWALL_MARKERS = [
+    "subscribe to continue", "subscription required", "subscribe to read",
+    "payment required", "unlock this article", "subscribe to keep reading",
+    "become a member to continue", "rent this article",
 ]
 
 SEEDS = {
@@ -320,6 +335,48 @@ def llms_txt(host: str) -> dict:
     return {"present": code == 200 and bool(body.strip()), "bytes": len(body) if code == 200 else 0}
 
 
+def payment_probe(url: str) -> dict:
+    """Round 2: x402 / paywall signals, as an independent passive observation.
+
+    Plain GET with a research UA (not the WebKit agent path). Status 403 from
+    an edge means the PROBE was blocked — that is reported, never read as
+    "no payment signals".
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (tollbooth-research)"})
+    status, headers, body = 0, {}, ""
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            status, headers, body = r.status, dict(r.headers), r.read(250_000).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        status, headers = e.code, dict(e.headers or {})
+        try:
+            body = e.read(250_000).decode("utf-8", "replace")
+        except Exception:
+            pass
+    except Exception:
+        return {"probe_status": 0, "x402": False, "paywall": False, "signals": []}
+
+    signals: list[str] = []
+    for h, v in headers.items():
+        hl = h.lower()
+        if hl.startswith(("x-pay", "x402", "x-402")):
+            signals.append(f"hdr {h}: {str(v)[:60]}")
+    if status == 402:
+        signals.append("http-402")
+    low = body.lower()
+    if '"isaccessibleforfree":false' in low or 'isaccessibleforfree" content="false"' in low:
+        signals.append("schema-isAccessibleForFree-false")
+    for m in PAYWALL_MARKERS:
+        if m in low:
+            signals.append(f"marker: {m}")
+    return {
+        "probe_status": status,
+        "x402": any(s.startswith(("hdr X-Pay", "hdr x-pay", "hdr X402", "hdr x402", "http-402")) for s in signals),
+        "paywall": any(s.startswith(("schema-", "marker:")) for s in signals),
+        "signals": signals[:8],
+    }
+
+
 def classify(result: dict) -> str:
     if result.get("nav_error") or result.get("fold_error") in ("navigation timeout",):
         return "timeout-or-error"
@@ -382,6 +439,7 @@ def main() -> None:
                 "fold_error": res.get("fold_error"),
                 **robots_cache[host],
                 "llms_txt": llms_txt(host),
+                "payment": payment_probe(url),
             }
             rows.append(row)
             print(f"[{cat}] {row['outcome']:>16}  {url}", flush=True)
@@ -389,11 +447,38 @@ def main() -> None:
 
     json.dump(rows, open(os.path.join(out_dir, "tollbooth-results.json"), "w"), indent=1)
 
+    # flat CSV export — the dataset people can open in a spreadsheet
+    import csv
+    csv_cols = ["category", "url", "outcome", "ms", "http_status", "title",
+                "content_chars", "stance", "ai_blocked", "ai_partial",
+                "llms_txt", "payment_probe_status", "x402", "paywall", "payment_signals"]
+    with open(os.path.join(out_dir, "tollbooth-results.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(csv_cols)
+        for r in rows:
+            pay = r.get("payment") or {}
+            w.writerow([
+                r["category"], r["url"], r["outcome"], r.get("ms"), r.get("http_status"),
+                r.get("title"), r.get("content_chars"), r.get("stance"),
+                "|".join(r.get("ai_blocked") or []), "|".join(r.get("ai_partial") or []),
+                "yes" if (r.get("llms_txt") or {}).get("present") else "no",
+                pay.get("probe_status"), "yes" if pay.get("x402") else "no",
+                "yes" if pay.get("paywall") else "no", " ; ".join(pay.get("signals") or []),
+            ])
+
     # summary
-    lines = ["# Tollbooth — the walled web, measured", "",
-             f"URLs measured: {len(rows)} · method: real WebKit via navette navigate+read, residential IP", ""]
-    lines += ["| Category | URLs | ok | challenge | empty/JS-gate | timeout/error | AI-blocked-all | AI-partial | llms.txt |",
-              "|---|---|---|---|---|---|---|---|---|"]
+    lines = [
+        "# Tollbooth — the walled web, measured",
+        "",
+        "> **A measurement, not a verdict.** One exit IP (residential), no challenge solving, no retries, no logins. A site that walls itself off from this probe has not been judged — it has been measured once, from one vantage point, on one day.",
+        "> **Dataset license: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)** — the bench code is MIT (repo root).",
+        "",
+        f"URLs measured: {len(rows)} · method: real WebKit via navette navigate+read, residential IP · "
+        f"payment probe: passive plain GET (recorded separately, never merged into the agent-path outcome)",
+        "",
+    ]
+    lines += ["| Category | URLs | ok | challenge | empty/JS-gate | timeout/error | AI-blocked-all | AI-partial | llms.txt | x402 | paywall |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
     for cat in cats:
         rs = [r for r in rows if r["category"] == cat]
         n = len(rs) or 1
@@ -405,7 +490,9 @@ def main() -> None:
             f"| {sum(r['outcome']=='timeout-or-error' for r in rs)} "
             f"| {len({r['url'].split('/')[2] for r in rs if r.get('stance')=='blocked-all'})} "
             f"| {len({r['url'].split('/')[2] for r in rs if r.get('stance')=='partial'})} "
-            f"| {sum(r['llms_txt']['present'] for r in rs)} |")
+            f"| {sum(r['llms_txt']['present'] for r in rs)} "
+            f"| {sum((r.get('payment') or {}).get('x402', False) for r in rs)} "
+            f"| {sum((r.get('payment') or {}).get('paywall', False) for r in rs)} |")
     open(os.path.join(out_dir, "tollbooth-summary.md"), "w").write("\n".join(lines) + "\n")
     print("\n".join(lines))
 
