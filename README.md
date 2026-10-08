@@ -25,7 +25,11 @@ $ ls -lh target/release/navette
 
 **Why not just fetch + readability?** For static pages, do that — it beats everyone. navette exists for what fetch can't do: JS-built pages, logins, sessions, forms, screenshots, acting like a human.
 
-**Why not an ML extraction model?** Two trades, not a ranking. Trained extraction models survive hostile HTML — agency templates, mangled CMS output — where a DOM walk picks the wrong node, at roughly **~600 ms of compute per page**. navette's native DOM walk costs **~10 ms per page** and wins wherever the markup is sane, which is most documentation, news and dev-tool pages — most of what agents actually read. The layers compose: when one target's markup is hostile enough that native extraction picks garbage, hand *that* page's raw HTML to an ML pass.
+**Why not an ML extraction model?** Two trades, not a ranking — [pulpie-mcp](https://github.com/pinkpixel-dev/pulpie-mcp) lives on the ML side of this lane. Trained extraction models survive hostile HTML — agency templates, mangled CMS output — where a DOM walk picks the wrong node, at roughly **~600 ms of compute per page**. navette's native DOM walk costs **~10 ms per page** and wins wherever the markup is sane, which is most documentation, news and dev-tool pages — most of what agents actually read. The layers compose: when one target's markup is hostile enough that native extraction picks garbage, hand *that* page's raw HTML to an ML pass.
+
+**Is navette a crawler?** No — deliberately. navette does navigate/read/screenshot/act on a URL you hand it; robots → sitemap → link discovery is a layer above, not a core primitive. Point a crawler at navette when its targets need a real engine.
+
+**Screenshot fidelity?** Capture is native per engine (v1.3+) — what the compositor drew, not a re-render — and viewport-sized; set the viewport before navigating for repeatable captures. Full-page capture is not implemented yet; tracked honestly rather than approximated.
 
 **Security?** The server binds 127.0.0.1 only, sessions use a non-persistent store — no cookies leak between runs. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var.
 
@@ -52,7 +56,7 @@ cargo build --release          # rustup; macOS fully shipped — Windows (WebVie
 ./target/release/navette uninstall-daemon
 ```
 
-The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if the port is already served by another navette). The resident daemon is a LaunchAgent with KeepAlive — the cold start an agent feels drops to **24–37 ms**, forever.
+The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if the port is already served by another navette). The resident daemon is a LaunchAgent with KeepAlive — the cold start an agent feels drops to **24–37 ms** while sessions are warm. With `--idle-release MIN` that window gains an honest edge: idle sessions drop, and the first request after that re-warms through the pre-warm path in **~100 ms** — the daemon itself never exits.
 
 ## HTTP API (127.0.0.1 only, JSON)
 
