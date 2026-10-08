@@ -3,7 +3,7 @@
   "category": "docs",
   "url": "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
   "outcome": "ok",
-  "ms": 2636,
+  "ms": 1957,
   "http_status": null,
   "title": "JavaScript | MDN",
   "content_chars": 11262,
@@ -14,13 +14,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://developer.mozilla.org/en-US/docs/Web/CSS",
   "outcome": "ok",
-  "ms": 151,
+  "ms": 115,
   "http_status": null,
   "title": "CSS: Cascading Style Sheets | MDN",
   "content_chars": 10359,
@@ -31,13 +37,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://developer.mozilla.org/en-US/docs/Web/API",
   "outcome": "ok",
-  "ms": 321,
+  "ms": 155,
   "http_status": null,
   "title": "Web APIs | MDN",
   "content_chars": 27856,
@@ -48,13 +60,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.python.org/3/tutorial/",
   "outcome": "ok",
-  "ms": 856,
+  "ms": 606,
   "http_status": null,
   "title": "The Python Tutorial \u2014 Python 3.14.8 documentation",
   "content_chars": 7426,
@@ -65,13 +83,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.python.org/3/library/asyncio.html",
   "outcome": "ok",
-  "ms": 76,
+  "ms": 66,
   "http_status": null,
   "title": "asyncio \u2014 Asynchronous I/O \u2014 Python 3.14.8 documentation",
   "content_chars": 4380,
@@ -82,13 +106,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.python.org/3/reference/datamodel.html",
   "outcome": "ok",
-  "ms": 392,
+  "ms": 268,
   "http_status": null,
   "title": "3. Data model \u2014 Python 3.14.8 documentation",
   "content_chars": 146245,
@@ -99,13 +129,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://react.dev/learn",
   "outcome": "ok",
-  "ms": 701,
+  "ms": 1096,
   "http_status": null,
   "title": "Quick Start \u2013 React",
   "content_chars": 15417,
@@ -116,13 +152,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 14476
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://react.dev/reference/react/useState",
   "outcome": "ok",
-  "ms": 454,
+  "ms": 386,
   "http_status": null,
   "title": "useState \u2013 React",
   "content_chars": 26546,
@@ -133,33 +175,45 @@
   "llms_txt": {
    "present": true,
    "bytes": 14476
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://nextjs.org/docs",
   "outcome": "ok",
-  "ms": 1928,
+  "ms": 851,
   "http_status": null,
   "title": "Next.js Docs | Next.js",
-  "content_chars": 16535,
+  "content_chars": 8924,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 13581
+   "bytes": 13794
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://vuejs.org/guide/introduction.html",
   "outcome": "ok",
-  "ms": 4494,
+  "ms": 891,
   "http_status": null,
   "title": "Introduction | Vue.js",
-  "content_chars": 17739,
+  "content_chars": 17118,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -167,13 +221,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 7415
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://svelte.dev/docs/kit",
   "outcome": "ok",
-  "ms": 547,
+  "ms": 319,
   "http_status": null,
   "title": "Introduction \u2022 SvelteKit Docs",
   "content_chars": 4425,
@@ -184,13 +244,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 1674
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://astro.build/docs/basics/project-structure/",
   "outcome": "ok",
-  "ms": 692,
+  "ms": 466,
   "http_status": null,
   "title": "Page not found | Astro",
   "content_chars": 2609,
@@ -201,16 +267,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 404,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://vitejs.dev/guide/",
   "outcome": "ok",
-  "ms": 1208,
+  "ms": 1643,
   "http_status": null,
   "title": "Getting Started | Vite",
-  "content_chars": 12762,
+  "content_chars": 13743,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -218,13 +290,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 3507
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://www.rust-lang.org/learn",
   "outcome": "ok",
-  "ms": 763,
+  "ms": 855,
   "http_status": null,
   "title": "Learn Rust - Rust Programming Language",
   "content_chars": 3805,
@@ -235,13 +313,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://doc.rust-lang.org/book/ch01-01-installation.html",
   "outcome": "ok",
-  "ms": 705,
+  "ms": 308,
   "http_status": null,
   "title": "Installation - The Rust Programming Language",
   "content_chars": 10427,
@@ -252,13 +336,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://go.dev/doc/",
   "outcome": "ok",
-  "ms": 1419,
+  "ms": 1399,
   "http_status": null,
   "title": "Documentation - The Go Programming Language",
   "content_chars": 13000,
@@ -269,16 +359,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://go.dev/tour/basics/1",
-  "outcome": "ok",
-  "ms": 2391,
+  "outcome": "empty-js-gate",
+  "ms": 815,
   "http_status": null,
   "title": "A Tour of Go",
-  "content_chars": 2813,
+  "content_chars": 60,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -286,16 +382,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://nodejs.org/api/fs.html",
   "outcome": "ok",
-  "ms": 754,
+  "ms": 1169,
   "http_status": null,
-  "title": "File system | Node.js v26.10.0 Documentation",
-  "content_chars": 218125,
+  "title": "File system | Node.js v26.11.1 Documentation",
+  "content_chars": 218182,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -303,13 +405,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 15008
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
   "outcome": "ok",
-  "ms": 818,
+  "ms": 735,
   "http_status": null,
   "title": "TypeScript: Handbook - The TypeScript Handbook",
   "content_chars": 8936,
@@ -320,13 +428,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.docker.com/get-started/",
   "outcome": "ok",
-  "ms": 1157,
+  "ms": 969,
   "http_status": null,
   "title": "Get started | Docker Docs",
   "content_chars": 5182,
@@ -337,13 +451,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 5584
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://kubernetes.io/docs/home/",
   "outcome": "ok",
-  "ms": 782,
+  "ms": 882,
   "http_status": null,
   "title": "Kubernetes Documentation | Kubernetes",
   "content_chars": 4134,
@@ -354,13 +474,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://www.postgresql.org/docs/current/tutorial.html",
   "outcome": "ok",
-  "ms": 1271,
+  "ms": 778,
   "http_status": null,
   "title": "PostgreSQL: Documentation: 18: Part\u00a0I.\u00a0Tutorial",
   "content_chars": 5845,
@@ -371,16 +497,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://redis.io/docs/latest/",
   "outcome": "ok",
-  "ms": 2584,
+  "ms": 1627,
   "http_status": null,
   "title": "Docs",
-  "content_chars": 7152,
+  "content_chars": 7150,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -388,13 +520,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 46830
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://www.sqlite.org/docs.html",
   "outcome": "ok",
-  "ms": 1702,
+  "ms": 1481,
   "http_status": null,
   "title": "SQLite Documentation",
   "content_chars": 17043,
@@ -405,13 +543,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://nginx.org/en/docs/",
   "outcome": "ok",
-  "ms": 307,
+  "ms": 268,
   "http_status": null,
   "title": "nginx documentation",
   "content_chars": 3907,
@@ -422,13 +566,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://git-scm.com/book/en/v2",
   "outcome": "ok",
-  "ms": 445,
+  "ms": 349,
   "http_status": null,
   "title": "Git",
   "content_chars": 4839,
@@ -439,13 +589,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.github.com/en/actions",
   "outcome": "ok",
-  "ms": 1782,
+  "ms": 958,
   "http_status": null,
   "title": "GitHub Actions documentation - GitHub Docs",
   "content_chars": 3653,
@@ -456,13 +612,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 28634
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html",
   "outcome": "ok",
-  "ms": 2506,
+  "ms": 2460,
   "http_status": null,
   "title": "What is AWS Lambda? - AWS Lambda",
   "content_chars": 7262,
@@ -473,13 +635,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 417581
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://cloud.google.com/docs",
   "outcome": "ok",
-  "ms": 2320,
+  "ms": 2037,
   "http_status": null,
   "title": "Documentation Google Cloud \u00a0|\u00a0 Google Cloud Documentation",
   "content_chars": 10968,
@@ -489,14 +657,20 @@
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 40904
+   "bytes": 50761
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://learn.microsoft.com/en-us/dotnet/",
   "outcome": "ok",
-  "ms": 2357,
+  "ms": 2062,
   "http_status": null,
   "title": ".NET documentation - .NET | Microsoft Learn",
   "content_chars": 8235,
@@ -507,13 +681,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://getbootstrap.com/docs/5.3/getting-started/introduction/",
   "outcome": "ok",
-  "ms": 779,
+  "ms": 635,
   "http_status": null,
   "title": "Get started with Bootstrap \u00b7 Bootstrap v5.3",
   "content_chars": 9160,
@@ -524,13 +704,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://tailwindcss.com/docs/installation",
   "outcome": "ok",
-  "ms": 1340,
+  "ms": 790,
   "http_status": null,
   "title": "Installing Tailwind CSS with Vite - Tailwind CSS",
   "content_chars": 6202,
@@ -541,13 +727,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://webpack.js.org/concepts/",
   "outcome": "ok",
-  "ms": 4041,
+  "ms": 826,
   "http_status": null,
   "title": "Concepts | webpack",
   "content_chars": 25049,
@@ -558,13 +750,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://jestjs.io/docs/getting-started",
   "outcome": "ok",
-  "ms": 2048,
+  "ms": 1202,
   "http_status": null,
   "title": "Getting Started \u00b7 Jest",
   "content_chars": 9434,
@@ -575,13 +773,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://docs.pytest.org/en/stable/",
   "outcome": "ok",
-  "ms": 1146,
+  "ms": 411,
   "http_status": null,
   "title": "pytest documentation",
   "content_chars": 4290,
@@ -592,13 +796,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://numpy.org/doc/stable/",
   "outcome": "ok",
-  "ms": 2096,
+  "ms": 970,
   "http_status": null,
   "title": "NumPy documentation \u2014 NumPy v2.5 Manual",
   "content_chars": 3979,
@@ -609,13 +819,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://pandas.pydata.org/docs/user_guide/index.html",
   "outcome": "ok",
-  "ms": 2467,
+  "ms": 1013,
   "http_status": null,
   "title": "User Guide \u2014 pandas 3.0.6 documentation",
   "content_chars": 10501,
@@ -626,13 +842,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene",
   "outcome": "ok",
-  "ms": 827,
+  "ms": 2187,
   "http_status": null,
   "title": "three.js docs",
   "content_chars": 30758,
@@ -643,16 +865,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 274
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://www.php.net/manual/en/index.php",
   "outcome": "ok",
-  "ms": 1816,
+  "ms": 1049,
   "http_status": null,
   "title": "PHP: Preface - Manual",
-  "content_chars": 9957,
+  "content_chars": 9902,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -660,13 +888,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "docs",
   "url": "https://guides.rubyonrails.org/getting_started.html",
   "outcome": "ok",
-  "ms": 3785,
+  "ms": 2176,
   "http_status": null,
   "title": "Getting Started with Rails \u2014 Ruby on Rails Guides",
   "content_chars": 98411,
@@ -677,13 +911,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.reuters.com/",
   "outcome": "empty-js-gate",
-  "ms": 5401,
+  "ms": 868,
   "http_status": null,
   "title": "reuters.com",
   "content_chars": 0,
@@ -705,16 +945,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 401,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://apnews.com/",
   "outcome": "ok",
-  "ms": 24795,
+  "ms": 20306,
   "http_status": null,
-  "title": "Un instant\u2026",
-  "content_chars": 442,
+  "title": "Associated Press News: Breaking News, Latest Headlines and Videos | AP News",
+  "content_chars": 70282,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -733,16 +979,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.bbc.com/news",
   "outcome": "ok",
-  "ms": 10554,
+  "ms": 1202,
   "http_status": null,
   "title": "BBC News - Breaking news, video and the latest top stories from the U.S. and around the world",
-  "content_chars": 14322,
+  "content_chars": 13695,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -761,16 +1013,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.nytimes.com/",
   "outcome": "ok",
-  "ms": 6268,
+  "ms": 3658,
   "http_status": null,
   "title": "The New York Times - Breaking News, US News, World News and Videos",
-  "content_chars": 11414,
+  "content_chars": 10619,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -789,16 +1047,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.washingtonpost.com/",
   "outcome": "ok",
-  "ms": 29336,
+  "ms": 14910,
   "http_status": null,
   "title": "The Washington Post - Breaking news and latest headlines, U.S. news, world news, and video",
-  "content_chars": 24907,
+  "content_chars": 26527,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -817,16 +1081,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 0,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.theguardian.com/international",
   "outcome": "ok",
-  "ms": 1251,
+  "ms": 1089,
   "http_status": null,
   "title": "Latest news, sport and opinion from the Guardian",
-  "content_chars": 21193,
+  "content_chars": 21338,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -845,16 +1115,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.lemonde.fr/",
   "outcome": "ok",
-  "ms": 1008,
+  "ms": 1173,
   "http_status": null,
   "title": "Le Monde.fr - Actualit\u00e9s et Infos en France et dans le monde",
-  "content_chars": 64341,
+  "content_chars": 64027,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -873,33 +1149,56 @@
   "llms_txt": {
    "present": true,
    "bytes": 3036
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.lefigaro.fr/",
   "outcome": "ok",
-  "ms": 665,
+  "ms": 574,
   "http_status": null,
   "title": "Le Figaro - Avant de poursuivre votre lecture ...",
   "content_chars": 563,
   "fold_error": null,
-  "stance": "no-robots",
-  "ai_blocked": [],
+  "stance": "blocked-all",
+  "ai_blocked": [
+   "GPTBot",
+   "ClaudeBot",
+   "Claude-Web",
+   "anthropic-ai",
+   "CCBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider",
+   "Amazonbot",
+   "Applebot-Extended"
+  ],
   "ai_partial": [],
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.cbc.ca/news",
   "outcome": "ok",
-  "ms": 3129,
+  "ms": 4645,
   "http_status": null,
   "title": "CBC News - Latest Canada, World, Entertainment and Business News",
-  "content_chars": 194494,
+  "content_chars": 201762,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -918,16 +1217,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.aljazeera.com/",
   "outcome": "challenge",
-  "ms": 1871,
+  "ms": 3187,
   "http_status": null,
   "title": "Breaking News, World News and Video from Al Jazeera",
-  "content_chars": 9657,
+  "content_chars": 9755,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -946,16 +1251,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.cnbc.com/world/?region=world",
   "outcome": "ok",
-  "ms": 9176,
+  "ms": 8929,
   "http_status": null,
   "title": "International Business, World News & Global Stock Market Analysis",
-  "content_chars": 46649,
+  "content_chars": 47051,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -974,16 +1285,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.bloomberg.com/",
   "outcome": "ok",
-  "ms": 23713,
+  "ms": 16681,
   "http_status": null,
   "title": "Bloomberg Europe",
-  "content_chars": 50696,
+  "content_chars": 49972,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1000,18 +1317,24 @@
   ],
   "ai_partial": [],
   "llms_txt": {
-   "present": false,
-   "bytes": 0
+   "present": true,
+   "bytes": 41271
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.ft.com/",
   "outcome": "ok",
-  "ms": 632,
+  "ms": 2048,
   "http_status": null,
-  "title": "Access error | Financial Times",
-  "content_chars": 547,
+  "title": "Home - Financial Times",
+  "content_chars": 28013,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1030,16 +1353,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.economist.com/",
-  "outcome": "ok",
-  "ms": 1166,
+  "outcome": "empty-js-gate",
+  "ms": 853,
   "http_status": null,
-  "title": "Un instant\u2026",
-  "content_chars": 456,
+  "title": "economist.com",
+  "content_chars": 0,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1057,13 +1386,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.wsj.com/",
   "outcome": "empty-js-gate",
-  "ms": 3345,
+  "ms": 622,
   "http_status": null,
   "title": "wsj.com",
   "content_chars": 0,
@@ -1086,16 +1421,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 401,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.npr.org/sections/news/",
   "outcome": "ok",
-  "ms": 5599,
+  "ms": 6685,
   "http_status": null,
   "title": "News: U.S. and World News Headlines : NPR",
-  "content_chars": 36242,
+  "content_chars": 34922,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1114,16 +1455,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.politico.com/",
   "outcome": "challenge",
-  "ms": 10272,
+  "ms": 8103,
   "http_status": null,
   "title": "Politics, Policy, Political News - POLITICO",
-  "content_chars": 11241,
+  "content_chars": 11219,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -1131,16 +1478,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.theatlantic.com/",
-  "outcome": "challenge",
-  "ms": 3579,
+  "outcome": "ok",
+  "ms": 754,
   "http_status": null,
-  "title": "World Edition - The Atlantic",
-  "content_chars": 9668,
+  "title": "Un instant\u2026",
+  "content_chars": 280,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1159,16 +1512,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.wired.com/",
   "outcome": "ok",
-  "ms": 9197,
+  "ms": 4201,
   "http_status": null,
   "title": "WIRED - The Latest in Technology, Science, Culture and Business | WIRED",
-  "content_chars": 54042,
+  "content_chars": 55667,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1187,16 +1546,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://techcrunch.com/",
   "outcome": "ok",
-  "ms": 16033,
+  "ms": 11511,
   "http_status": null,
   "title": "TechCrunch | Startup and Technology News",
-  "content_chars": 99948,
+  "content_chars": 99760,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1215,16 +1580,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.theverge.com/",
   "outcome": "ok",
-  "ms": 8693,
+  "ms": 5614,
   "http_status": null,
   "title": "The Verge",
-  "content_chars": 64589,
+  "content_chars": 59894,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1243,16 +1614,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://arstechnica.com/",
   "outcome": "ok",
-  "ms": 3205,
+  "ms": 5824,
   "http_status": null,
   "title": "Ars Technica - Serving the Technologist since 1998. News, reviews, and analysis.",
-  "content_chars": 62703,
+  "content_chars": 22189,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1270,33 +1647,45 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.engadget.com/",
   "outcome": "ok",
-  "ms": 2593,
+  "ms": 2143,
   "http_status": null,
   "title": "Engadget | Technology News & Expert Reviews",
-  "content_chars": 7093,
+  "content_chars": 7257,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 108056
+   "bytes": 109143
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://variety.com/",
   "outcome": "ok",
-  "ms": 4685,
+  "ms": 4196,
   "http_status": null,
   "title": "Variety - Entertainment news, film reviews, awards, film festivals, box office, entertainment industry conferences",
-  "content_chars": 30994,
+  "content_chars": 30609,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1315,16 +1704,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.hollywoodreporter.com/",
   "outcome": "ok",
-  "ms": 7582,
+  "ms": 3814,
   "http_status": null,
   "title": "The Hollywood Reporter \u2013 Movie news, TV news, awards news, lifestyle news, business news and more from The Hollywood Rep",
-  "content_chars": 26215,
+  "content_chars": 37610,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1343,16 +1738,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.espn.com/",
   "outcome": "ok",
-  "ms": 4121,
+  "ms": 5218,
   "http_status": null,
   "title": "ESPN United Kingdom - Serving Sports Fans. Anytime. Anywhere.",
-  "content_chars": 10979,
+  "content_chars": 10631,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1366,16 +1767,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 202,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.cnn.com/",
   "outcome": "ok",
-  "ms": 9478,
+  "ms": 7462,
   "http_status": null,
   "title": "Breaking News, Latest News and Videos | CNN",
-  "content_chars": 31617,
+  "content_chars": 32213,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1394,16 +1801,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://abcnews.go.com/",
   "outcome": "ok",
-  "ms": 9400,
+  "ms": 6527,
   "http_status": null,
   "title": "ABC News - Breaking News, Latest News and Videos",
-  "content_chars": 29419,
+  "content_chars": 30613,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1417,16 +1830,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.cbsnews.com/us/",
   "outcome": "ok",
-  "ms": 2056,
+  "ms": 1792,
   "http_status": null,
   "title": "U.S. News: Latest news, breaking news, today's news stories updated daily from CBS News",
-  "content_chars": 8231,
+  "content_chars": 8589,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1445,16 +1864,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.nbcnews.com/",
   "outcome": "ok",
-  "ms": 19849,
+  "ms": 14077,
   "http_status": null,
   "title": "NBC News - Breaking Headlines and Video Reports on World, U.S. and Local Angles | NBC News",
-  "content_chars": 54114,
+  "content_chars": 51637,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1473,16 +1898,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://time.com/",
   "outcome": "challenge",
-  "ms": 2603,
+  "ms": 8122,
   "http_status": null,
   "title": "TIME | Current & Breaking News | National & World Updates",
-  "content_chars": 10437,
+  "content_chars": 20056,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1490,16 +1921,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 716
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.newsweek.com/",
   "outcome": "ok",
-  "ms": 13449,
+  "ms": 4991,
   "http_status": null,
   "title": "Newsweek - Latest Breaking News, US, World, Politics, Business, Tech and Videos.",
-  "content_chars": 58098,
+  "content_chars": 59683,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1518,16 +1955,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.forbes.com/",
   "outcome": "ok",
-  "ms": 1199,
+  "ms": 1839,
   "http_status": null,
   "title": "Forbes",
-  "content_chars": 45176,
+  "content_chars": 45894,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1535,16 +1978,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 4945
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.inc.com/",
   "outcome": "ok",
-  "ms": 2515,
+  "ms": 1901,
   "http_status": null,
   "title": "Inc. | Tech and Business News for Entrepreneurs and Leaders",
-  "content_chars": 69387,
+  "content_chars": 72410,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1563,16 +2012,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.fastcompany.com/",
   "outcome": "ok",
-  "ms": 7970,
+  "ms": 6101,
   "http_status": null,
   "title": "Fast Company | Business News, Innovation, Technology, Work Life and Design",
-  "content_chars": 34768,
+  "content_chars": 35575,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1591,16 +2046,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://axios.com/",
   "outcome": "ok",
-  "ms": 7569,
+  "ms": 4229,
   "http_status": null,
   "title": "Axios - Breaking news, U.S. news and politics, and local news",
-  "content_chars": 4029,
+  "content_chars": 3778,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1619,16 +2080,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.semafor.com/",
   "outcome": "ok",
-  "ms": 2608,
+  "ms": 2584,
   "http_status": null,
   "title": "Semafor - An intelligent, transparent global news platform for breaking stories, analysis and video",
-  "content_chars": 23680,
+  "content_chars": 23488,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1647,16 +2114,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://theintercept.com/",
   "outcome": "ok",
-  "ms": 708,
+  "ms": 826,
   "http_status": null,
   "title": "The Intercept",
-  "content_chars": 8871,
+  "content_chars": 8862,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1671,16 +2144,24 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": true,
+   "signals": [
+    "schema-isAccessibleForFree-false"
+   ]
   }
  },
  {
   "category": "news",
   "url": "https://www.propublica.org/",
   "outcome": "ok",
-  "ms": 5179,
+  "ms": 3804,
   "http_status": null,
   "title": "ProPublica \u2014 Investigative Journalism and News in the Public Interest",
-  "content_chars": 22063,
+  "content_chars": 21190,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1688,13 +2169,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "news",
   "url": "https://www.rtbf.be/en",
   "outcome": "ok",
-  "ms": 1512,
+  "ms": 2358,
   "http_status": null,
   "title": "RTBF le site de la Radio T\u00e9l\u00e9vision Belge Francophone",
   "content_chars": 4614,
@@ -1716,13 +2203,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 404,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.amazon.com/",
   "outcome": "ok",
-  "ms": 1641,
+  "ms": 1330,
   "http_status": null,
   "title": "Amazon.com",
   "content_chars": 337,
@@ -1744,13 +2237,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 202,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.ebay.com/",
   "outcome": "ok",
-  "ms": 811,
+  "ms": 455,
   "http_status": null,
   "title": "Error Page | eBay",
   "content_chars": 218,
@@ -1772,16 +2271,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.etsy.com/",
   "outcome": "ok",
-  "ms": 5078,
+  "ms": 4435,
   "http_status": null,
   "title": "Etsy - Achetez des cadeaux faits main, vintage, personnalis\u00e9s et uniques pour tout le monde",
-  "content_chars": 9487,
+  "content_chars": 9632,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1789,16 +2294,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 26705
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.walmart.com/",
   "outcome": "ok",
-  "ms": 6114,
+  "ms": 3386,
   "http_status": null,
   "title": "Walmart | Save Money. Live better.",
-  "content_chars": 5737,
+  "content_chars": 6914,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1806,16 +2317,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.target.com/",
   "outcome": "ok",
-  "ms": 16055,
+  "ms": 16316,
   "http_status": null,
   "title": "Target : Expect More. Pay Less.",
-  "content_chars": 8780,
+  "content_chars": 9308,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1823,13 +2340,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 6158
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.bestbuy.com/",
   "outcome": "ok",
-  "ms": 2119,
+  "ms": 1824,
   "http_status": null,
   "title": "Best Buy International: Select your Country - Best Buy",
   "content_chars": 933,
@@ -1840,16 +2363,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 0,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.wayfair.com/",
   "outcome": "ok",
-  "ms": 3485,
+  "ms": 2760,
   "http_status": null,
   "title": "Wayfair.com - Online Home Store for Furniture, Decor, Outdoors & More",
-  "content_chars": 68059,
+  "content_chars": 68351,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1857,30 +2386,42 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.ikea.com/us/en/",
-  "outcome": "challenge",
-  "ms": 1628,
+  "outcome": "ok",
+  "ms": 7953,
   "http_status": null,
-  "title": "Attention Required! | Cloudflare",
-  "content_chars": 726,
+  "title": "Shop Affordable Home Furnishings & Home Goods - IKEA",
+  "content_chars": 21314,
   "fold_error": null,
-  "stance": "no-robots",
+  "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.homedepot.com/",
   "outcome": "challenge",
-  "ms": 135,
+  "ms": 136,
   "http_status": null,
   "title": "Access Denied",
   "content_chars": 121,
@@ -1891,16 +2432,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.lowes.com/",
   "outcome": "ok",
-  "ms": 20402,
+  "ms": 16424,
   "http_status": null,
   "title": "Lowe\u2019s Home Improvement",
-  "content_chars": 10207,
+  "content_chars": 10641,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -1908,16 +2455,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.costco.com/",
-  "outcome": "ok",
-  "ms": 11544,
-  "http_status": null,
-  "title": "Welcome to Costco Wholesale",
-  "content_chars": 19309,
+  "outcome": "empty-js-gate",
+  "ms": 449,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1925,16 +2478,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.newegg.com/",
   "outcome": "ok",
-  "ms": 9483,
+  "ms": 6226,
   "http_status": null,
   "title": "PC Parts, Computers, Workstations & AI PCs | Newegg",
-  "content_chars": 74895,
+  "content_chars": 76617,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -1953,16 +2512,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 11960
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.bhphotovideo.com/",
   "outcome": "ok",
-  "ms": 988,
+  "ms": 2603,
   "http_status": null,
-  "title": "Un instant\u2026",
-  "content_chars": 462,
+  "title": "B&H Photo Video Digital Cameras, Photography, Computers",
+  "content_chars": 7353,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1970,16 +2535,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.apple.com/shop/buy-iphone",
   "outcome": "ok",
-  "ms": 2396,
+  "ms": 1400,
   "http_status": null,
   "title": "Buy iPhone - Apple",
-  "content_chars": 164986,
+  "content_chars": 168243,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -1987,16 +2558,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.microsoft.com/en-us/store/b/shop-all-microsoft",
   "outcome": "ok",
-  "ms": 714,
+  "ms": 1883,
   "http_status": null,
   "title": "Page cannot be found",
-  "content_chars": 8703,
+  "content_chars": 3038,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2004,16 +2581,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 404,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.samsung.com/us/",
   "outcome": "ok",
-  "ms": 4033,
+  "ms": 2147,
   "http_status": null,
   "title": "Samsung US | Mobile | TV | Home Electronics | Home Appliances | Samsung US",
-  "content_chars": 9262,
+  "content_chars": 11918,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2032,16 +2615,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 4597
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://shop.nordstrom.com/",
   "outcome": "ok",
-  "ms": 2165,
+  "ms": 2283,
   "http_status": null,
   "title": "Nordstrom Online & in Store: Shoes, Jewelry, Clothing, Makeup, Dresses",
-  "content_chars": 20058,
+  "content_chars": 21099,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2049,13 +2638,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.macys.com/",
   "outcome": "empty-js-gate",
-  "ms": 2142,
+  "ms": 1081,
   "http_status": null,
   "title": "",
   "content_chars": 66,
@@ -2066,16 +2661,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.zappos.com/",
   "outcome": "ok",
-  "ms": 7028,
+  "ms": 3250,
   "http_status": null,
   "title": "Shoes, Sneakers, Boots, & Clothing + FREE SHIPPING | Zappos.com",
-  "content_chars": 41392,
+  "content_chars": 36070,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2083,13 +2684,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.asos.com/us/",
   "outcome": "ok",
-  "ms": 7204,
+  "ms": 5316,
   "http_status": null,
   "title": "ASOS | Online shopping for the Latest Clothes & Fashion",
   "content_chars": 24104,
@@ -2100,13 +2707,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 0,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.zalando.fr/",
   "outcome": "empty-js-gate",
-  "ms": 30077,
+  "ms": 30014,
   "http_status": 502,
   "title": "",
   "content_chars": 0,
@@ -2117,13 +2730,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://fr.shein.com/",
   "outcome": "ok",
-  "ms": 3144,
+  "ms": 459,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 446,
@@ -2134,33 +2753,51 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.temu.com/",
   "outcome": "ok",
-  "ms": 3827,
+  "ms": 2125,
   "http_status": null,
   "title": "Temu France | Explore the Latest Clothing, Beauty, Home, Jewelry & More",
-  "content_chars": 1822,
+  "content_chars": 1848,
   "fold_error": null,
-  "stance": "no-rules",
+  "stance": "partial",
   "ai_blocked": [],
-  "ai_partial": [],
+  "ai_partial": [
+   "GPTBot",
+   "ClaudeBot",
+   "Google-Extended",
+   "PerplexityBot",
+   "Bytespider"
+  ],
   "llms_txt": {
    "present": true,
    "bytes": 2889
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.aliexpress.com/",
-  "outcome": "empty-js-gate",
-  "ms": 1217,
-  "http_status": 502,
-  "title": "",
-  "content_chars": 0,
+  "outcome": "ok",
+  "ms": 7271,
+  "http_status": null,
+  "title": "AliExpress France - Livraison gratuite et \u00e9conomisez plus - Le plus grand catalogue de choix d'achat en ligne pour l'\u00e9le",
+  "content_chars": 32211,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2168,16 +2805,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 13830
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.banggood.com/",
   "outcome": "ok",
-  "ms": 3772,
+  "ms": 2539,
   "http_status": null,
   "title": "Banggood : Global Leading Online Shop for Gadgets and Fashion",
-  "content_chars": 11997,
+  "content_chars": 11207,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2185,16 +2828,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.flipkart.com/",
   "outcome": "ok",
-  "ms": 4707,
+  "ms": 4696,
   "http_status": null,
   "title": "Online Shopping India Mobile, Cameras, Lifestyle & more Online @ Flipkart.com",
-  "content_chars": 58876,
+  "content_chars": 63098,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2202,16 +2851,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.myntra.com/",
   "outcome": "ok",
-  "ms": 4133,
+  "ms": 3502,
   "http_status": null,
   "title": "Online Shopping for Women, Men, Kids Fashion & Lifestyle - Myntra",
-  "content_chars": 29208,
+  "content_chars": 39282,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -2219,16 +2874,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 0,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.noon.com/uae-en/",
-  "outcome": "empty-js-gate",
-  "ms": 978,
+  "outcome": "ok",
+  "ms": 2294,
   "http_status": null,
-  "title": "",
-  "content_chars": 66,
+  "title": "noon Online Shopping UAE - Electronics, Mobiles, Fashion, Appliances & More",
+  "content_chars": 49599,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -2236,13 +2897,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 0,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.jumia.ma/",
   "outcome": "ok",
-  "ms": 667,
+  "ms": 765,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 446,
@@ -2256,16 +2923,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.mercadolibre.com.mx/",
   "outcome": "ok",
-  "ms": 3629,
+  "ms": 3907,
   "http_status": null,
   "title": "Mercado Libre M\u00e9xico - Env\u00edos Gratis en el d\u00eda",
-  "content_chars": 20133,
+  "content_chars": 20809,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2278,16 +2951,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.alibaba.com/",
   "outcome": "ok",
-  "ms": 9615,
+  "ms": 7938,
   "http_status": null,
   "title": "Alibaba - la plus grande plateforme de commerce B2B en ligne au monde",
-  "content_chars": 30842,
+  "content_chars": 31004,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2306,16 +2985,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 269775
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://stockx.com/",
   "outcome": "ok",
-  "ms": 2060,
+  "ms": 1416,
   "http_status": null,
   "title": "StockX: Sneakers, Streetwear, Trading Cards, Handbags, Watches",
-  "content_chars": 3044,
+  "content_chars": 504,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2323,13 +3008,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.fanatics.com/",
   "outcome": "challenge",
-  "ms": 800,
+  "ms": 992,
   "http_status": null,
   "title": "Access Denied",
   "content_chars": 126,
@@ -2340,16 +3031,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.guitarguitar.co.uk/",
   "outcome": "ok",
-  "ms": 2640,
+  "ms": 1881,
   "http_status": null,
   "title": "GUITARGUITAR | Guitar Shop & Musical Instrument Store",
-  "content_chars": 6842,
+  "content_chars": 6757,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2357,16 +3054,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.thomann.de/fr/index.html",
   "outcome": "ok",
-  "ms": 2051,
+  "ms": 2968,
   "http_status": null,
   "title": "Acheter des instruments de musique en ligne chez le leader du march\u00e9 \u2013 Thomann France",
-  "content_chars": 16355,
+  "content_chars": 16025,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2385,13 +3088,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.pccasegear.com/",
   "outcome": "ok",
-  "ms": 980,
+  "ms": 498,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 458,
@@ -2402,13 +3111,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.mouser.com/",
   "outcome": "empty-js-gate",
-  "ms": 2026,
+  "ms": 1387,
   "http_status": null,
   "title": "mouser.com",
   "content_chars": 0,
@@ -2419,13 +3134,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 13897
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.digikey.com/",
   "outcome": "ok",
-  "ms": 548,
+  "ms": 409,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 452,
@@ -2436,33 +3157,45 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.grainger.com/",
-  "outcome": "ok",
-  "ms": 5154,
+  "outcome": "empty-js-gate",
+  "ms": 852,
   "http_status": null,
-  "title": "Grainger Industrial Supply - MRO Products, Equipment and Tools",
-  "content_chars": 8452,
+  "title": "grainger.com",
+  "content_chars": 0,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 18271
+   "bytes": 18269
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "e-commerce",
   "url": "https://www.webstaurantstore.com/",
   "outcome": "ok",
-  "ms": 3188,
+  "ms": 3759,
   "http_status": null,
   "title": "WebstaurantStore: Commercial Supplies & Restaurant Equipment",
-  "content_chars": 12323,
+  "content_chars": 12240,
   "fold_error": null,
   "stance": "partial",
   "ai_blocked": [],
@@ -2475,13 +3208,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://github.com/",
   "outcome": "ok",
-  "ms": 2109,
+  "ms": 1690,
   "http_status": null,
   "title": "GitHub \u00b7 Le changement est constant. GitHub vous permet de garder une longueur d\u2019avance. \u00b7 GitHub",
   "content_chars": 7760,
@@ -2498,16 +3237,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 28650
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://github.com/trending",
   "outcome": "ok",
-  "ms": 1650,
+  "ms": 1409,
   "http_status": null,
   "title": "Trending repositories on GitHub today \u00b7 GitHub",
-  "content_chars": 71843,
+  "content_chars": 69378,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2521,16 +3266,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 28650
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://gitlab.com/",
   "outcome": "ok",
-  "ms": 1333,
+  "ms": 1801,
   "http_status": null,
-  "title": "GitLab\u00a0: l'ing\u00e9nierie logicielle agentique ma\u00eetris\u00e9e",
-  "content_chars": 11517,
+  "title": "GitLab : l'ing\u00e9nierie logicielle agentique ma\u00eetris\u00e9e",
+  "content_chars": 10791,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2538,13 +3289,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.npmjs.com/",
   "outcome": "ok",
-  "ms": 1093,
+  "ms": 942,
   "http_status": null,
   "title": "npm | Home",
   "content_chars": 1617,
@@ -2555,13 +3312,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://pypi.org/",
   "outcome": "ok",
-  "ms": 503,
+  "ms": 394,
   "http_status": null,
   "title": "PyPI \u00b7 L'Index des paquets Python",
   "content_chars": 2888,
@@ -2572,16 +3335,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://crates.io/",
-  "outcome": "ok",
-  "ms": 428,
+  "outcome": "empty-js-gate",
+  "ms": 794,
   "http_status": null,
   "title": "crates.io: Rust Package Registry",
-  "content_chars": 1142,
+  "content_chars": 0,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2589,13 +3358,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 404,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://rubygems.org/",
   "outcome": "ok",
-  "ms": 765,
+  "ms": 1518,
   "http_status": null,
   "title": "RubyGems.org | your community gem host",
   "content_chars": 2267,
@@ -2606,13 +3381,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://packagist.org/",
   "outcome": "ok",
-  "ms": 463,
+  "ms": 410,
   "http_status": null,
   "title": "Packagist.org",
   "content_chars": 4131,
@@ -2623,16 +3404,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://central.sonatype.com/",
   "outcome": "ok",
-  "ms": 1997,
+  "ms": 1994,
   "http_status": null,
   "title": "Maven Central",
-  "content_chars": 1949,
+  "content_chars": 1936,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -2640,13 +3427,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://stackoverflow.com/questions",
   "outcome": "challenge",
-  "ms": 347,
+  "ms": 324,
   "http_status": null,
   "title": "Just a moment...",
   "content_chars": 0,
@@ -2657,16 +3450,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://serverfault.com/",
-  "outcome": "ok",
-  "ms": 2628,
-  "http_status": null,
-  "title": "Server Fault",
-  "content_chars": 11878,
+  "outcome": "empty-js-gate",
+  "ms": 162,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -2674,16 +3473,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://stackexchange.com/",
   "outcome": "ok",
-  "ms": 1958,
+  "ms": 1194,
   "http_status": null,
   "title": "Hot Questions - Stack Exchange",
-  "content_chars": 18858,
+  "content_chars": 19263,
   "fold_error": null,
   "stance": "no-robots",
   "ai_blocked": [],
@@ -2691,16 +3496,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://hub.docker.com/",
   "outcome": "ok",
-  "ms": 5545,
+  "ms": 3684,
   "http_status": null,
   "title": "Docker Hub Container Image Library | App Containerization",
-  "content_chars": 13753,
+  "content_chars": 13756,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2708,13 +3519,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 8071
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://readthedocs.org/",
   "outcome": "ok",
-  "ms": 1798,
+  "ms": 1313,
   "http_status": null,
   "title": "Full featured documentation deployment platform - Read the Docs",
   "content_chars": 6432,
@@ -2736,16 +3553,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://dev.to/",
   "outcome": "ok",
-  "ms": 4131,
+  "ms": 3029,
   "http_status": null,
   "title": "DEV Community",
-  "content_chars": 25219,
+  "content_chars": 26941,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2753,16 +3576,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 2835
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://medium.com/tag/programming",
   "outcome": "ok",
-  "ms": 7015,
+  "ms": 1730,
   "http_status": null,
   "title": "The most insightful stories about Programming - Medium",
-  "content_chars": 25200,
+  "content_chars": 24716,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -2781,16 +3610,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://hashnode.com/",
   "outcome": "ok",
-  "ms": 3038,
+  "ms": 2438,
   "http_status": null,
   "title": "Hashnode \u2014 The Best Blogging Platform for Builders in Tech",
-  "content_chars": 12510,
+  "content_chars": 12766,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2798,16 +3633,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 71333
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://news.ycombinator.com/",
   "outcome": "ok",
-  "ms": 1050,
+  "ms": 966,
   "http_status": null,
   "title": "Hacker News",
-  "content_chars": 16293,
+  "content_chars": 16111,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2815,13 +3656,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://codepen.io/trending",
   "outcome": "challenge",
-  "ms": 1139,
+  "ms": 1084,
   "http_status": null,
   "title": "CodePen: Online Code Editor and Front End Web Developer Community",
   "content_chars": 3066,
@@ -2832,16 +3679,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://jsfiddle.net/",
   "outcome": "ok",
-  "ms": 3233,
+  "ms": 1454,
   "http_status": null,
   "title": "JSFiddle - React, Tailwind, and code Playground",
-  "content_chars": 9942,
+  "content_chars": 10059,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2849,13 +3702,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://replit.com/",
   "outcome": "ok",
-  "ms": 876,
+  "ms": 405,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 442,
@@ -2877,13 +3736,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 20191
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://codesandbox.io/",
   "outcome": "ok",
-  "ms": 2143,
+  "ms": 1471,
   "http_status": null,
   "title": "CodeSandbox: Instant Cloud Development Environments",
   "content_chars": 5424,
@@ -2894,33 +3759,45 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://vercel.com/docs",
   "outcome": "challenge",
-  "ms": 1144,
+  "ms": 999,
   "http_status": null,
   "title": "Vercel Documentation",
-  "content_chars": 11077,
+  "content_chars": 11234,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 4868
+   "bytes": 4935
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.netlify.com/docs/",
   "outcome": "ok",
-  "ms": 2760,
+  "ms": 1822,
   "http_status": null,
   "title": "Netlify Documentation | Netlify Docs",
-  "content_chars": 8509,
+  "content_chars": 8599,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -2928,13 +3805,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 2816
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://railway.app/docs",
   "outcome": "ok",
-  "ms": 2773,
+  "ms": 1389,
   "http_status": null,
   "title": "Railway Docs",
   "content_chars": 3365,
@@ -2945,13 +3828,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 6657
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://render.com/docs",
   "outcome": "challenge",
-  "ms": 3352,
+  "ms": 2815,
   "http_status": null,
   "title": "Docs + Quickstarts | Render",
   "content_chars": 5601,
@@ -2971,14 +3860,20 @@
   ],
   "llms_txt": {
    "present": true,
-   "bytes": 46744
+   "bytes": 46805
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://fly.io/docs/",
   "outcome": "ok",
-  "ms": 1599,
+  "ms": 1778,
   "http_status": null,
   "title": "Fly.io developer documentation - Fly.io",
   "content_chars": 2982,
@@ -2989,16 +3884,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 4951
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.heroku.com/platform",
   "outcome": "ok",
-  "ms": 3415,
+  "ms": 3038,
   "http_status": null,
   "title": "Heroku | Platform as a Service (PaaS) & App Hosting Platform",
-  "content_chars": 12966,
+  "content_chars": 12714,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3006,13 +3907,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 9206
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.digitalocean.com/products",
   "outcome": "challenge",
-  "ms": 1280,
+  "ms": 755,
   "http_status": null,
   "title": "AI-Native Cloud | DigitalOcean",
   "content_chars": 10736,
@@ -3023,16 +3930,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.jetbrains.com/idea/",
   "outcome": "ok",
-  "ms": 16515,
+  "ms": 3700,
   "http_status": null,
   "title": "The Java and Kotlin IDE for You and Your Agents",
-  "content_chars": 23438,
+  "content_chars": 8773,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3040,33 +3953,45 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://code.visualstudio.com/docs",
   "outcome": "ok",
-  "ms": 2713,
+  "ms": 1901,
   "http_status": null,
   "title": "Documentation for Visual Studio Code",
-  "content_chars": 5543,
+  "content_chars": 5520,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 67787
+   "bytes": 67736
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://marketplace.visualstudio.com/VSCode",
   "outcome": "ok",
-  "ms": 4139,
+  "ms": 1519,
   "http_status": null,
   "title": "Extensions for Visual Studio family of products | Visual Studio Marketplace",
-  "content_chars": 5291,
+  "content_chars": 5222,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3074,13 +3999,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://caniuse.com/",
   "outcome": "ok",
-  "ms": 2884,
+  "ms": 1962,
   "http_status": null,
   "title": "Can I use... Support tables for HTML5, CSS3, etc",
   "content_chars": 3082,
@@ -3091,13 +4022,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 8722
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://developer.apple.com/documentation/",
   "outcome": "ok",
-  "ms": 2313,
+  "ms": 2338,
   "http_status": null,
   "title": "Featured | Apple Developer Documentation",
   "content_chars": 3051,
@@ -3108,13 +4045,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://developer.android.com/docs",
   "outcome": "ok",
-  "ms": 4237,
+  "ms": 2836,
   "http_status": null,
   "title": "D\u00e9velopper pour Android \u00a0|\u00a0 Android Developers",
   "content_chars": 19096,
@@ -3125,16 +4068,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://docs.rs/serde/latest/serde/",
   "outcome": "ok",
-  "ms": 1089,
+  "ms": 690,
   "http_status": null,
   "title": "serde - Rust",
-  "content_chars": 4888,
+  "content_chars": 4891,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3142,13 +4091,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://pkg.go.dev/std",
   "outcome": "ok",
-  "ms": 1994,
+  "ms": 1815,
   "http_status": null,
   "title": "Standard library - Go Packages",
   "content_chars": 76949,
@@ -3159,16 +4114,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://libraries.io/",
   "outcome": "ok",
-  "ms": 3350,
+  "ms": 2957,
   "http_status": null,
   "title": "Libraries.io - security & maintenance data for open source software",
-  "content_chars": 4903,
+  "content_chars": 4904,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3176,16 +4137,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://www.jsdelivr.com/",
   "outcome": "ok",
-  "ms": 1097,
+  "ms": 483,
   "http_status": null,
   "title": "jsDelivr - A free, fast, and reliable CDN for JS and open source",
-  "content_chars": 7464,
+  "content_chars": 6847,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3193,13 +4160,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "dev-tools",
   "url": "https://unpkg.com/",
   "outcome": "ok",
-  "ms": 977,
+  "ms": 1268,
   "http_status": null,
   "title": "UNPKG",
   "content_chars": 9914,
@@ -3210,13 +4183,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://x.com/",
   "outcome": "ok",
-  "ms": 3347,
+  "ms": 1388,
   "http_status": null,
   "title": "X. C'est ce qu'il se passe / X",
   "content_chars": 1213,
@@ -3238,13 +4217,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.facebook.com/",
   "outcome": "empty-js-gate",
-  "ms": 2117,
+  "ms": 1203,
   "http_status": null,
   "title": "Facebook",
   "content_chars": 0,
@@ -3265,17 +4250,23 @@
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 419413
+   "bytes": 417494
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.instagram.com/",
   "outcome": "ok",
-  "ms": 3876,
+  "ms": 1297,
   "http_status": null,
   "title": "Instagram",
-  "content_chars": 1388,
+  "content_chars": 3580,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3293,14 +4284,20 @@
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 629874
+   "bytes": 628115
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.linkedin.com/",
   "outcome": "ok",
-  "ms": 2347,
+  "ms": 969,
   "http_status": null,
   "title": "LinkedIn\u00a0: s\u2019identifier ou s\u2019inscrire",
   "content_chars": 7060,
@@ -3322,13 +4319,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.tiktok.com/",
   "outcome": "empty-js-gate",
-  "ms": 4978,
+  "ms": 4310,
   "http_status": null,
   "title": "TikTok - Make Your Day",
   "content_chars": 0,
@@ -3348,13 +4351,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 33589
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.pinterest.com/",
   "outcome": "empty-js-gate",
-  "ms": 3006,
+  "ms": 1741,
   "http_status": null,
   "title": "Pinterest - France",
   "content_chars": 0,
@@ -3375,17 +4384,23 @@
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 1140219
+   "bytes": 1252601
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.reddit.com/",
-  "outcome": "empty-js-gate",
-  "ms": 389,
+  "outcome": "ok",
+  "ms": 435,
   "http_status": null,
-  "title": "Reddit",
-  "content_chars": 0,
+  "title": "",
+  "content_chars": 180,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3402,15 +4417,21 @@
   ],
   "ai_partial": [],
   "llms_txt": {
-   "present": true,
-   "bytes": 8405
+   "present": false,
+   "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.youtube.com/",
   "outcome": "empty-js-gate",
-  "ms": 7117,
+  "ms": 3731,
   "http_status": null,
   "title": "YouTube",
   "content_chars": 82,
@@ -3421,16 +4442,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.twitch.tv/",
   "outcome": "empty-js-gate",
-  "ms": 2654,
+  "ms": 1625,
   "http_status": null,
   "title": "Twitch",
-  "content_chars": 99,
+  "content_chars": 0,
   "fold_error": null,
   "stance": "partial",
   "ai_blocked": [],
@@ -3439,14 +4466,20 @@
   ],
   "llms_txt": {
    "present": true,
-   "bytes": 198739
+   "bytes": 199222
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://discord.com/",
   "outcome": "ok",
-  "ms": 5619,
+  "ms": 1781,
   "http_status": null,
   "title": "Discord - Group Chat That\u2019s All Fun & Games",
   "content_chars": 5359,
@@ -3468,13 +4501,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://telegram.org/",
   "outcome": "ok",
-  "ms": 962,
+  "ms": 548,
   "http_status": null,
   "title": "Telegram Messenger",
   "content_chars": 2328,
@@ -3485,13 +4524,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 19848
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.threads.net/",
   "outcome": "empty-js-gate",
-  "ms": 2391,
+  "ms": 1299,
   "http_status": null,
   "title": "Threads \u2022 Se connecter",
   "content_chars": 0,
@@ -3512,14 +4557,20 @@
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 328663
+   "bytes": 325341
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://bsky.app/",
   "outcome": "empty-js-gate",
-  "ms": 3054,
+  "ms": 3149,
   "http_status": null,
   "title": "Bluesky",
   "content_chars": 0,
@@ -3530,13 +4581,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://mastodon.social/",
   "outcome": "empty-js-gate",
-  "ms": 1259,
+  "ms": 473,
   "http_status": null,
   "title": "Mastodon",
   "content_chars": 0,
@@ -3549,13 +4606,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://lemmy.world/",
   "outcome": "ok",
-  "ms": 739,
+  "ms": 1336,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 444,
@@ -3566,13 +4629,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.tumblr.com/",
   "outcome": "ok",
-  "ms": 2675,
+  "ms": 1431,
   "http_status": null,
   "title": "Tumblr",
   "content_chars": 716,
@@ -3594,13 +4663,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.flickr.com/",
   "outcome": "ok",
-  "ms": 3318,
+  "ms": 1668,
   "http_status": null,
   "title": "Flickr | The best place to be a photographer online.",
   "content_chars": 7527,
@@ -3622,30 +4697,42 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://vk.com/",
   "outcome": "empty-js-gate",
-  "ms": 30089,
-  "http_status": 502,
-  "title": "",
+  "ms": 3076,
+  "http_status": null,
+  "title": "VK | Bienvenue!",
   "content_chars": 0,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
-   "present": false,
-   "bytes": 0
+   "present": true,
+   "bytes": 27285
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://weibo.com/",
   "outcome": "empty-js-gate",
-  "ms": 4369,
+  "ms": 4105,
   "http_status": null,
   "title": "Sina Visitor System",
   "content_chars": 0,
@@ -3667,13 +4754,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 9086
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.quora.com/",
   "outcome": "ok",
-  "ms": 6992,
+  "ms": 1761,
   "http_status": null,
   "title": "Quora - Un lieu pour partager le savoir et mieux comprendre le monde",
   "content_chars": 843,
@@ -3695,16 +4788,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.goodreads.com/",
   "outcome": "ok",
-  "ms": 6347,
+  "ms": 2862,
   "http_status": null,
   "title": "Goodreads | Meet your next favorite book",
-  "content_chars": 10228,
+  "content_chars": 10254,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3715,16 +4814,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://letterboxd.com/",
-  "outcome": "ok",
-  "ms": 883,
-  "http_status": null,
-  "title": "Un instant\u2026",
-  "content_chars": 450,
+  "outcome": "empty-js-gate",
+  "ms": 30009,
+  "http_status": 502,
+  "title": "",
+  "content_chars": 0,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3739,16 +4844,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://bandcamp.com/",
   "outcome": "ok",
-  "ms": 9093,
+  "ms": 4262,
   "http_status": null,
   "title": "Bandcamp",
-  "content_chars": 21910,
+  "content_chars": 21544,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3767,16 +4878,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://soundcloud.com/discover",
   "outcome": "ok",
-  "ms": 19045,
+  "ms": 2021,
   "http_status": null,
   "title": "Discover the top streamed music and songs online on Soundcloud",
-  "content_chars": 17774,
+  "content_chars": 439,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3795,16 +4912,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://open.spotify.com/",
   "outcome": "ok",
-  "ms": 6499,
+  "ms": 2925,
   "http_status": null,
   "title": "Spotify\u00a0- Lecteur web\u00a0: de la musique pour tout le monde",
-  "content_chars": 8926,
+  "content_chars": 9949,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3821,13 +4944,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.mixcloud.com/",
   "outcome": "ok",
-  "ms": 1592,
+  "ms": 517,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 454,
@@ -3838,13 +4967,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.strava.com/",
   "outcome": "ok",
-  "ms": 9754,
+  "ms": 5036,
   "http_status": null,
   "title": "Strava | Application running, v\u00e9lo et randonn\u00e9e - Entra\u00eenement, suivi et partage",
   "content_chars": 32564,
@@ -3859,16 +4994,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.behance.net/",
   "outcome": "ok",
-  "ms": 3209,
+  "ms": 1306,
   "http_status": null,
   "title": "Search Projects :: Photos, videos, logos, illustrations and branding :: Behance",
-  "content_chars": 16024,
+  "content_chars": 16633,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3884,16 +5025,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://dribbble.com/shots",
-  "outcome": "ok",
-  "ms": 2190,
+  "outcome": "challenge",
+  "ms": 1626,
   "http_status": null,
   "title": "Dribbble - Discover the World\u2019s Top Designers & Creative Professionals",
-  "content_chars": 4184,
+  "content_chars": 9637,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3901,16 +5048,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://imgur.com/",
   "outcome": "ok",
-  "ms": 4603,
+  "ms": 3091,
   "http_status": null,
   "title": "Imgur: The magic of the Internet",
-  "content_chars": 96853,
+  "content_chars": 96956,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -3918,30 +5071,42 @@
   "llms_txt": {
    "present": true,
    "bytes": 6675
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://9gag.com/",
   "outcome": "ok",
-  "ms": 3130,
+  "ms": 1619,
   "http_status": null,
   "title": "9GAG - Best Funny Memes and Breaking News",
-  "content_chars": 3174,
+  "content_chars": 3264,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
   "ai_partial": [],
   "llms_txt": {
    "present": true,
-   "bytes": 60835
+   "bytes": 62151
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://knowyourmeme.com/",
   "outcome": "ok",
-  "ms": 1333,
+  "ms": 447,
   "http_status": null,
   "title": "Un instant\u2026",
   "content_chars": 454,
@@ -3952,16 +5117,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.boredpanda.com/",
   "outcome": "ok",
-  "ms": 13449,
+  "ms": 6749,
   "http_status": null,
   "title": "Bored Panda - The Only Magazine For Pandas",
-  "content_chars": 72483,
+  "content_chars": 73104,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -3971,13 +5142,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 1320
+  },
+  "payment": {
+   "probe_status": 302,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.duolingo.com/learn",
   "outcome": "ok",
-  "ms": 5749,
+  "ms": 3524,
   "http_status": null,
   "title": "Duolingo",
   "content_chars": 3124,
@@ -3988,16 +5165,22 @@
   "llms_txt": {
    "present": true,
    "bytes": 11568
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.meetup.com/",
   "outcome": "ok",
-  "ms": 5128,
+  "ms": 2361,
   "http_status": null,
   "title": "Meetup | Trouvez des groupes locaux, des \u00e9v\u00e9nements et des activit\u00e9s pr\u00e8s de chez vous",
-  "content_chars": 18015,
+  "content_chars": 16979,
   "fold_error": null,
   "stance": "blocked-all",
   "ai_blocked": [
@@ -4016,13 +5199,19 @@
   "llms_txt": {
    "present": true,
    "bytes": 9414
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.eventbrite.com/",
   "outcome": "ok",
-  "ms": 4522,
+  "ms": 1128,
   "http_status": null,
   "title": "Eventbrite - Discover the Best Local Events & Things to Do",
   "content_chars": 6531,
@@ -4044,13 +5233,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.yelp.com/",
   "outcome": "empty-js-gate",
-  "ms": 15355,
+  "ms": 15219,
   "http_status": null,
   "title": "",
   "content_chars": 0,
@@ -4061,13 +5256,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://www.trustpilot.com/",
   "outcome": "ok",
-  "ms": 583,
+  "ms": 484,
   "http_status": null,
   "title": "Verifying Connection",
   "content_chars": 168,
@@ -4089,13 +5290,19 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 403,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://stackshare.io/",
   "outcome": "ok",
-  "ms": 167,
+  "ms": 140,
   "http_status": null,
   "title": "Vercel Security Checkpoint",
   "content_chars": 186,
@@ -4106,16 +5313,22 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 429,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  },
  {
   "category": "social",
   "url": "https://alternativeto.net/",
-  "outcome": "ok",
-  "ms": 4415,
+  "outcome": "challenge",
+  "ms": 1743,
   "http_status": null,
   "title": "AlternativeTo - Crowdsourced software recommendations | AlternativeTo",
-  "content_chars": 119179,
+  "content_chars": 118757,
   "fold_error": null,
   "stance": "no-rules",
   "ai_blocked": [],
@@ -4123,6 +5336,12 @@
   "llms_txt": {
    "present": false,
    "bytes": 0
+  },
+  "payment": {
+   "probe_status": 200,
+   "x402": false,
+   "paywall": false,
+   "signals": []
   }
  }
 ]
