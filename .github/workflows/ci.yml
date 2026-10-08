@@ -34,14 +34,10 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
-          curl -sf --max-time 60 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null
-          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","js":"document.cookie=\"iso_mark=1; path=/\"; document.cookie"}' >/dev/null
-          curl -sf --max-time 60 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null
-          ISO=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","js":"document.cookie || \"(none)\""}')
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
+            -d '{"session":"iso-a","cookies":[{"name":"iso_mark","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
+          ISO=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state -H 'Content-Type: application/json' \
+            -d '{"session":"iso-b"}')
           echo "$ISO" | grep -q iso_mark && { echo "SESSION ISOLATION FAILED — cookie leaked across sessions: $ISO"; cat serve.log; exit 1; }
           echo "session isolation OK"
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/upload -H 'Content-Type: application/json' \
@@ -101,14 +97,10 @@ jobs:
           # Diagnostic only — WebView2 currently shares its default on-disk
           # profile across sessions (the leak this probe exposes is a known
           # gap, #6; InPrivate broke second-session creation in CI, 6c480a1).
-          curl -s --max-time 90 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null || echo "iso-a navigate: ERR"
-          curl -s --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","js":"document.cookie=\"iso_mark=1; path=/\"; document.cookie"}' >/dev/null || true
-          curl -s --max-time 90 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null || echo "iso-b navigate: ERR"
-          ISO=$(curl -s --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","js":"document.cookie || \"(none)\""}' || echo EVAL_ERR)
+          curl -s --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
+            -d '{"session":"iso-a","cookies":[{"name":"iso_mark","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null || echo "iso-a import: ERR"
+          ISO=$(curl -s --max-time 30 -X POST http://127.0.0.1:8765/sessions/state -H 'Content-Type: application/json' \
+            -d '{"session":"iso-b"}' || echo STATE_ERR)
           echo "windows isolation probe: $ISO"
           echo "$ISO" | grep -q iso_mark \
             && echo "WINDOWS SESSION ISOLATION: known gap — shared WebView2 profile, tracked in #6" \
@@ -165,14 +157,10 @@ jobs:
             -d '{"cookies":[{"name":"navette_smoke","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
           curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state | grep -q navette_smoke || { echo "COOKIE ROUND-TRIP FAILED"; cat serve.log; exit 1; }
           echo "cookie round-trip OK"
-          curl -sf --max-time 60 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null
-          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-a","js":"document.cookie=\"iso_mark=1; path=/\"; document.cookie"}' >/dev/null
-          curl -sf --max-time 60 -X POST http://127.0.0.1:8765/navigate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","url":"http://127.0.0.1:8901/smoke-page.html"}' >/dev/null
-          ISO=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/evaluate -H 'Content-Type: application/json' \
-            -d '{"session":"iso-b","js":"document.cookie || \"(none)\""}')
+          curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/load -H 'Content-Type: application/json' \
+            -d '{"session":"iso-a","cookies":[{"name":"iso_mark","value":"1","domain":"127.0.0.1","path":"/"}]}' >/dev/null
+          ISO=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/sessions/state -H 'Content-Type: application/json' \
+            -d '{"session":"iso-b"}')
           echo "$ISO" | grep -q iso_mark && { echo "SESSION ISOLATION FAILED — cookie leaked across sessions: $ISO"; cat serve.log; exit 1; }
           echo "session isolation OK"
           KEYR=$(curl -sf --max-time 30 -X POST http://127.0.0.1:8765/key -H 'Content-Type: application/json' \
