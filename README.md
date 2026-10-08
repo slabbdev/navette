@@ -38,7 +38,7 @@ $ ls -lh target/release/navette
 ## Build & run
 
 ```sh
-brew install slabbdev/navette/navette   # macOS arm64
+brew install slabbdev/tap/navette   # macOS arm64
 cargo install navette-browser   # any platform, from source
 docker run -i --rm ghcr.io/slabbdev/navette navette mcp   # container, stdio MCP (amd64+arm64)
 navette serve --port 8765       # HTTP API on loopback
