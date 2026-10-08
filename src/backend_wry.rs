@@ -941,14 +941,17 @@ fn create_session(
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
-    let mut builder = wry::WebViewBuilder::new()
-        // The README promises ephemeral sessions ("no cookies leak between
-        // runs"). Without this, WebView2 uses its default on-disk profile
-        // (`{exe}.exe.WebView2`, shared by every session and every run) and
-        // WebKitGTK writes cache/HSTS to ~/.cache and ~/.local/share.
-        // InPrivate / ephemeral context keeps cookies AND disk footprint in
-        // memory only — state moves through state_export/state_import.
-        .with_incognito(true);
+    // NOTE: with_incognito(true) is the *right* long-term answer here
+    // (#6: WebView2's default profile is on disk and shared across
+    // sessions; WebKitGTK writes cache/HSTS to XDG dirs) — but wry 0.57
+    // creates the ephemeral context as a scoped local that it drops on
+    // return, and the second session's navigation then never completes
+    // (verified in CI on both Linux and Windows, 6c480a1). Fixing this
+    // needs a wry upgrade or per-session data directories — tracked in #6.
+    // Until then: Linux still isolates cookies per session (fresh
+    // WebContext per webview, verified); Windows shares the default
+    // profile (known gap, #6).
+    let mut builder = wry::WebViewBuilder::new();
     if let Some((proxy, ua)) = AGENT_OPTS.get() {
         if let Some(p) = proxy {
             match parse_proxy(p) {
