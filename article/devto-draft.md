@@ -1,7 +1,7 @@
 ---
 title: ~1 MB to orbit: your agent's browser ships with your OS
 published: true
-description: A single Rust binary that drives the WebView your OS already ships — 0.6–1.2 MB, no Chromium, MCP-native.
+description: A single Rust binary that drives the WebView your OS already ships — 0.6–1.2 MB, no Chromium, MCP-native. Benchmarked against Playwright and Lightpanda.
 tags: showdev, rust, ai, webdev
 ---
 
@@ -107,6 +107,7 @@ Apple shipped a Safari MCP server for coding agents this year. The thesis is bei
 - **v1.3.0 & v1.4.0 — Oct 4**: full platform parity (native screenshots per engine, cookie round-trip, viewport control, resident daemon — CI verifies a valid PNG and a cookie round-trip on all three OSes); JS dialogs auto-handled in-page; the agent loop completed with file upload (in-memory DataTransfer, no OS dialog) and scroll — **16 tools**; fixed an eval-wrapper bug where every `/evaluate` and `/read` outside the fold path returned `undefined` on Windows/Linux (CI now tests it); one-command install `cargo install navette-browser`. [Release](https://github.com/slabbdev/navette/releases/tag/v1.4.0)
 - **v1.5.0 — Oct 5**: the idle watchdog — `serve --idle-release 15` drops WebKit sessions after 15 minutes without requests while the daemon stays resident; the next request re-warms on demand (38 s cold → 83 ms warm on the CI VM). Plus the tollbooth bench harness: ~200 real URLs × 5 categories, measuring robots.txt AI clauses, llms.txt adoption and the agent path itself — the walled-web dataset is committed to the repo (its own post soon). [Release](https://github.com/slabbdev/navette/releases/tag/v1.5.0)
 - **v1.6.0 — Oct 7**: the operator release — `--token` (Bearer auth on the HTTP API, MCP hosts attach with `NAVETTE_TOKEN`), `--proxy` (HTTP CONNECT / SOCKS5), `--user-agent` (per-serve override); linux-arm64 joins the release assets; cross-engine medians (warm navigate+read 5.7–23.4 ms on all three OSes) landed in BENCHMARKS.md. [Release](https://github.com/slabbdev/navette/releases/tag/v1.6.0)
+- **v1.7.0 — Oct 7**: native keyboard input — `POST /key` attempts real OS-level events first (SendInput on Windows, XTEST on Linux, CGEvent research parked on macOS) and falls back automatically to the synthetic dispatch, always reporting which `mode` ran; visible session windows (`session_show`/`session_hide`) for one-time human logins; pointer-event clicks. 18 MCP tools. [Release](https://github.com/slabbdev/navette/releases/tag/v1.7.0)
 - **Sizing, honestly**: the title's 594 KB was v1.0. macOS arm64 is 658 KB today, Windows x64 / Linux x64 ~1.2 MB — still ~180× smaller than Playwright's browser download.
 
 Repo, benchmarks and the reproducible harness: **https://github.com/slabbdev/navette**
