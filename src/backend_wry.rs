@@ -909,6 +909,23 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
     }
 }
 
+/// WebView2 profile names: alphanumeric, `.`, `_`, `-`, space — max 64
+/// chars, not starting/ending with `.` or ` `. Session names are
+/// agent-chosen free text; map them lossily but deterministically.
+#[cfg(target_os = "windows")]
+fn windows_profile_name(name: &str) -> String {
+    let mut s: String = name
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | ' ') { c } else { '_' })
+        .collect();
+    s = s.trim_matches(|c| c == '.' || c == ' ').to_string();
+    if s.is_empty() {
+        s = "default".into();
+    }
+    s.truncate(64);
+    s
+}
+
 fn create_session(
     name: &str,
     target: &tao::event_loop::EventLoopWindowTarget<Command>,
@@ -946,15 +963,20 @@ fn create_session(
     let pl_slot = webview_slot.clone();
 
     let mut builder = wry::WebViewBuilder::new();
-    // Windows: the default WebView2 profile lives on disk and is SHARED by
-    // every session (measured in CI — state_import into one session leaks
-    // into another's state_export, #6). InPrivate gives each controller an
-    // isolated in-memory profile. (The Linux GTK path stays on the default
-    // context: cookies are already isolated per session there, and wry's
+    // Windows: every session gets its OWN WebView2 profile (cookies,
+    // storage, cache isolated per profile per the multi-profile docs) plus
+    // InPrivate (nothing on disk). InPrivate alone is NOT enough — all
+    // InPrivate controllers of one environment share a single profile
+    // (measured: state_import into one session leaked into another's
+    // state_export, #6). (The Linux GTK path stays on the default context:
+    // cookies are already isolated per session there, and wry's
     // ephemeral-context path breaks second-session navigation — #6.)
     #[cfg(target_os = "windows")]
     {
-        builder = builder.with_incognito(true);
+        use wry::WebViewBuilderExtWindows;
+        builder = builder
+            .with_incognito(true)
+            .with_profile_name(windows_profile_name(name));
     }
     if let Some((proxy, ua)) = AGENT_OPTS.get() {
         if let Some(p) = proxy {
