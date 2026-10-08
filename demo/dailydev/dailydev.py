@@ -379,6 +379,68 @@ def cmd_post(args):
             "check https://app.daily.dev manually before retrying")
 
 
+def cmd_link(args):
+    """Share a URL post — the flow that was driven live on Oct 8 and
+    encoded here with its race guard baked in.
+
+    The race (measured live): the Post button arms (holds the URL, becomes
+    enabled) while React is still hydrating around it; clicking in that
+    window is swallowed silently — no error, no navigation. Arm, SETTLE,
+    re-verify armed, then click; and if the click still navigates nowhere,
+    replay once — the replay published instantly every time."""
+    token_guard()
+    restore_state()
+    url = urllib.parse.urlencode({"link": args.url, "share": "1"})
+    nav_navigate(f"{COMPOSER_URL}?{url}")
+    nav_wait(SEL_FORM, 40000)
+
+    def armed():
+        r = nav_evaluate(
+            "(function(){var i=document.querySelector('input[name=\"url\"]');"
+            "var b=document.querySelector(" + json.dumps(SEL_PUBLISH) + ");"
+            "return JSON.stringify({url:i?i.value:null, enabled:b?b.disabled===false:false})})()")
+        return r or {}
+
+    # Arm: the form holds the URL AND the Post button is enabled (the link
+    # preview fetch takes ~8 s). 30 s ceiling.
+    deadline = time.time() + 30
+    while time.time() < deadline:
+        st = armed()
+        if st.get("url") == args.url and st.get("enabled"):
+            break
+        time.sleep(1)
+    else:
+        api("/sessions/close", {"session": SESSION})
+        die(f"composer never armed — url field: {st.get('url')!r}")
+    info(f"armed: url in form, Post enabled ({int(30 - (deadline - time.time()))} s)")
+
+    for attempt in (1, 2):
+        time.sleep(1.5 if attempt == 1 else 0.5)  # the settle — don't click a hydrating form
+        st = armed()
+        if st.get("url") != args.url or not st.get("enabled"):
+            time.sleep(2)
+            continue
+        if not args.publish:
+            shot = Path(f"linkpost-dry.png")
+            nav_screenshot(shot)
+            api("/sessions/close", {"session": SESSION})
+            print(f"\n  ✓ DRY-RUN armed and settled — nothing published. {shot}")
+            return
+        print("  · clicking “Post” …")
+        nav_click(SEL_PUBLISH)
+        deadline = time.time() + 20
+        while time.time() < deadline:
+            where = nav_evaluate("JSON.stringify(location.pathname)") or ""
+            if isinstance(where, str) and where.startswith("/posts/"):
+                api("/sessions/close", {"session": SESSION})
+                print(f"\n  ✓ PUBLISHED — https://app.daily.dev{where}")
+                return
+            time.sleep(1)
+        info(f"attempt {attempt}: click swallowed (no route) — replaying")
+    api("/sessions/close", {"session": SESSION})
+    die("two armed clicks, no /posts/<slug> route — check the site manually")
+
+
 def main():
     try:
         sys.stdout.reconfigure(line_buffering=True)  # live logs even when piped
@@ -394,8 +456,13 @@ def main():
     sp.add_argument("--title", help="override the title")
     sp.add_argument("--publish", action="store_true",
                     help="actually click Post (default: dry-run with screenshot)")
+    sp = sub.add_parser("link", help="share a URL post (link preview, no markdown)")
+    sp.add_argument("url", help="the URL to share")
+    sp.add_argument("--publish", action="store_true",
+                    help="actually click Post (default: dry-run with screenshot)")
     args = p.parse_args()
-    {"login": cmd_login, "check": cmd_check, "post": cmd_post}[args.cmd](args)
+    {"login": cmd_login, "check": cmd_check, "post": cmd_post,
+     "link": cmd_link}[args.cmd](args)
 
 
 if __name__ == "__main__":
