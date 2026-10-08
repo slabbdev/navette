@@ -371,7 +371,7 @@ pub fn eval_js(s: &Arc<Session>, js: &str) -> Result<String, String> {
         });
         let _: () = msg_send![wv, evaluateJavaScript: &*js_ns completionHandler: &*block];
     });
-    match rx.recv_timeout(Duration::from_secs(20)) {
+    match rx.recv_timeout(Duration::from_secs(crate::webviewkit::eval_timeout_secs())) {
         Ok(v) => Ok(v),
         Err(_) => Err("evaluate timeout".into()),
     }
@@ -660,16 +660,128 @@ fn mac_vk(key: &str) -> Option<u16> {
     })
 }
 
+// Not exposed by core-graphics 0.24 — attach a unicode string to a key
+// event so the delivered character is layout-independent (physical keycode
+// 0x00 is 'a' on QWERTY and 'q' on AZERTY; the unicode string wins), plus
+// the raw post/release pair to route the event after into_raw().
+#[link(name = "CoreGraphics", kind = "framework")]
+extern "C" {
+    fn CGEventKeyboardSetUnicodeString(
+        event: core_graphics::sys::CGEventRef,
+        length: libc::c_ulong,
+        string: *const u16,
+    );
+    fn CGEventPost(tap: libc::c_int, event: core_graphics::sys::CGEventRef);
+}
+
+/// kCGHIDEventTap — post into the hardware-input stream (lands on the
+/// focused application, which the focus gate guarantees is ours).
+const kCGHIDEventTap: libc::c_int = 0;
+
+/// macOS virtual keycodes (HIToolbox/Events.h) for the keys agents send.
+fn mac_keycode(key: &str) -> Option<u16> {
+    let lower = key.to_ascii_lowercase();
+    Some(match lower.as_str() {
+        "a" => 0x00, "s" => 0x01, "d" => 0x02, "f" => 0x03, "h" => 0x04,
+        "g" => 0x05, "z" => 0x06, "x" => 0x07, "c" => 0x08, "v" => 0x09,
+        "b" => 0x0B, "q" => 0x0C, "w" => 0x0D, "e" => 0x0E, "r" => 0x0F,
+        "y" => 0x10, "t" => 0x11, "1" => 0x12, "2" => 0x13, "3" => 0x14,
+        "4" => 0x15, "6" => 0x16, "5" => 0x17, "=" => 0x18, "9" => 0x19,
+        "7" => 0x1A, "-" => 0x1B, "8" => 0x1C, "0" => 0x1D, "]" => 0x1E,
+        "o" => 0x1F, "u" => 0x20, "[" => 0x21, "i" => 0x22, "p" => 0x23,
+        "return" | "enter" => 0x24, "l" => 0x25, "j" => 0x26, "'" => 0x27,
+        "k" => 0x28, ";" => 0x29, "\\" => 0x2A, "," => 0x2B, "/" => 0x2C,
+        "n" => 0x2D, "m" => 0x2E, "." => 0x2F,
+        "tab" => 0x30, " " | "space" => 0x31, "`" => 0x32,
+        "backspace" | "delete" => 0x33, "escape" | "esc" => 0x35,
+        "shift" => 0x38, "option" | "alt" => 0x3A, "control" | "ctrl" => 0x3B,
+        "arrowleft" | "left" => 0x7B, "arrowright" | "right" => 0x7C,
+        "arrowdown" | "down" => 0x7D, "arrowup" | "up" => 0x7E,
+        _ => return None,
+    })
+}
+
+/// Native key input, the honest attempt-first way (#3): bring the window
+/// on-screen and key, activate the app, and only post CGEvents once the
+/// Window Server actually made OUR window key — posting into the HID tap
+/// without focus would type into someone else's app. Delivery is verified
+/// in-page (isTrusted) before Ok is reported; anything less is an Err and
+/// the /key route falls back to the synthetic dispatch, mode reported.
 #[allow(dead_code)]
 pub fn native_key(s: &Arc<Session>, key: &str) -> Result<(), String> {
-    // macOS status: CGEvents CAN be posted, but routing them into a headless
-    // WKWebView reliably needs an app-bundle activation story the Window
-    // Server only grants to real foreground apps — the experimental on-screen
-    // approach (git history) still left document.hasFocus() == 0. Until that
-    // is solved, macOS reports "native unavailable" and the /key route falls
-    // back to the synthetic dispatch (the mode is always reported).
-    let _ = (s, key);
-    Err("macOS native key input is not wired yet — using the synthetic path".into())
+    use core_graphics::event::CGEvent;
+    use core_graphics::event_source::{CGEventSource, CGEventSourceStateID};
+    use foreign_types::ForeignType;
+
+    let code = mac_keycode(key).ok_or_else(|| format!("no native mapping for key '{key}'"))?;
+
+    // Focus gate — show_window is the whole recipe: it materializes the
+    // ghost's window, converts it to a TITLED window (borderless windows
+    // can never become key), centers it, activates the app, and makes it
+    // key. Only then may CGEvents be posted: posting into the HID tap
+    // without focus would type into someone else's app.
+    show_window(s)?;
+    std::thread::sleep(Duration::from_millis(150));
+    let is_key: bool = {
+        let win = { s.window.lock().unwrap().as_ref().cloned() }
+            .ok_or("session has no window")?;
+        run_on_main(move || unsafe { msg_send![&*win, isKeyWindow] })
+    };
+    if !is_key {
+        return Err(
+            "Window Server did not grant key focus (navette is not an app bundle) — not posting".into(),
+        );
+    }
+
+    // Delivery probe: a document-level once-listener records the next keydown.
+    let probe = "__navette_native_probe";
+    let _ = eval_js(
+        s,
+        &format!(
+            "(function(){{window.{p}=null;document.addEventListener('keydown',\
+             function(e){{window.{p}=JSON.stringify({{trusted:e.isTrusted,key:e.key}})}},\
+             {{once:true}});return 'armed'}})()",
+            p = probe
+        ),
+    );
+
+    let src = CGEventSource::new(CGEventSourceStateID::HIDSystemState)
+        .map_err(|e| format!("CGEventSource failed: {e:?}"))?;
+    // Single characters ride as unicode strings — the delivered e.key is
+    // then the character the agent asked for, whatever the active layout.
+    let utf16: Vec<u16> = if key.chars().count() == 1 {
+        key.encode_utf16().collect()
+    } else {
+        Vec::new()
+    };
+    for down in [true, false] {
+        let ev = CGEvent::new_keyboard_event(src.clone(), code, down)
+            .map_err(|e| format!("CGEvent create failed: {e:?}"))?;
+        let raw = ev.as_ptr();
+        if !utf16.is_empty() {
+            unsafe {
+                CGEventKeyboardSetUnicodeString(
+                    raw,
+                    utf16.len() as libc::c_ulong,
+                    utf16.as_ptr(),
+                );
+            }
+        }
+        unsafe { CGEventPost(kCGHIDEventTap, raw) };
+        // ev's Drop releases the event ref on scope exit.
+    }
+
+    // Delivery verification: the page must have seen a TRUSTED keydown with
+    // this key — otherwise report failure so the caller falls back.
+    std::thread::sleep(Duration::from_millis(250));
+    let seen = eval_js(s, &format!("window.{p} === null ? 'none' : window.{p}", p = probe))
+        .unwrap_or_else(|_| "eval-failed".into());
+    let _ = eval_js(s, &format!("delete window.{p}", p = probe));
+    let seen_l = seen.to_ascii_lowercase();
+    if seen_l.contains("\"trusted\":true") {
+        return Ok(());
+    }
+    Err(format!("CGEvent posted but not delivered as trusted (probe: {seen})"))
 }
 
 pub fn wait_settle(s: &Arc<Session>) {

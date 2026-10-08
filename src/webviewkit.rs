@@ -87,3 +87,19 @@ pub trait WebviewKit: 'static {
     /// After a click that may navigate: wait for the page to settle.
     fn wait_settle(&self, s: &Self::SessionRef);
 }
+
+/// /evaluate wait in seconds — overridable for slow or contended
+/// environments (#7): cookie-writing scripts flush synchronously and can
+/// stall past the default on a dying X server or a saturated CI disk.
+/// `NAVETTE_EVAL_TIMEOUT_SECS=45` turns a false timeout into a slow
+/// success. Range-clamped to [5, 300]; default 20.
+pub fn eval_timeout_secs() -> u64 {
+    static V: std::sync::OnceLock<u64> = std::sync::OnceLock::new();
+    *V.get_or_init(|| {
+        std::env::var("NAVETTE_EVAL_TIMEOUT_SECS")
+            .ok()
+            .and_then(|s| s.trim().parse::<u64>().ok())
+            .map(|v| v.clamp(5, 300))
+            .unwrap_or(20)
+    })
+}
