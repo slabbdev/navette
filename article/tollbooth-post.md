@@ -1,7 +1,7 @@
 ---
 title: My agent met the real web. 403s, challenges, and the coming tollbooth.
 published: false
-description: 200 real URLs, one vanilla AI agent, zero challenge solving — 82.5% readable, 72 hosts blocking every AI crawler, zero x402 signals yet, and one named site already running a declared paywall with the gate up.
+description: 200 real URLs, one vanilla agent, zero challenge solving — 82.5% readable, 72 hosts blocking every AI crawler, zero x402 yet, and one site running a declared paywall with the gate up.
 tags: ai, webdev, showdev, opensource
 ---
 
