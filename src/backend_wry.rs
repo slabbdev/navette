@@ -749,6 +749,10 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                     sessions().lock().unwrap().insert(name.clone(), s.clone());
                     let _ = tx.send(s);
                 }
+                // TODO(fail-fast): propagate the error over the channel so
+                // callers get a 500 with the cause instead of waiting out
+                // their timeout — needs GetOrCreate to carry Result<_, String>
+                // through the webviewkit trait.
                 Err(e) => eprintln!("[navette] session '{}' creation failed: {e}", name),
             }
         }
@@ -941,17 +945,17 @@ fn create_session(
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
-    // NOTE: with_incognito(true) is the *right* long-term answer here
-    // (#6: WebView2's default profile is on disk and shared across
-    // sessions; WebKitGTK writes cache/HSTS to XDG dirs) — but wry 0.57
-    // creates the ephemeral context as a scoped local that it drops on
-    // return, and the second session's navigation then never completes
-    // (verified in CI on both Linux and Windows, 6c480a1). Fixing this
-    // needs a wry upgrade or per-session data directories — tracked in #6.
-    // Until then: Linux still isolates cookies per session (fresh
-    // WebContext per webview, verified); Windows shares the default
-    // profile (known gap, #6).
     let mut builder = wry::WebViewBuilder::new();
+    // Windows: the default WebView2 profile lives on disk and is SHARED by
+    // every session (measured in CI — state_import into one session leaks
+    // into another's state_export, #6). InPrivate gives each controller an
+    // isolated in-memory profile. (The Linux GTK path stays on the default
+    // context: cookies are already isolated per session there, and wry's
+    // ephemeral-context path breaks second-session navigation — #6.)
+    #[cfg(target_os = "windows")]
+    {
+        builder = builder.with_incognito(true);
+    }
     if let Some((proxy, ua)) = AGENT_OPTS.get() {
         if let Some(p) = proxy {
             match parse_proxy(p) {
