@@ -941,7 +941,14 @@ fn create_session(
     let pl_url = current_url.clone();
     let pl_slot = webview_slot.clone();
 
-    let mut builder = wry::WebViewBuilder::new();
+    let mut builder = wry::WebViewBuilder::new()
+        // The README promises ephemeral sessions ("no cookies leak between
+        // runs"). Without this, WebView2 uses its default on-disk profile
+        // (`{exe}.exe.WebView2`, shared by every session and every run) and
+        // WebKitGTK writes cache/HSTS to ~/.cache and ~/.local/share.
+        // InPrivate / ephemeral context keeps cookies AND disk footprint in
+        // memory only — state moves through state_export/state_import.
+        .with_incognito(true);
     if let Some((proxy, ua)) = AGENT_OPTS.get() {
         if let Some(p) = proxy {
             match parse_proxy(p) {
