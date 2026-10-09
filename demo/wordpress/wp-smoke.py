@@ -135,7 +135,13 @@ def journey_install(url):
     # install.php?step=1 serves the five-field install form directly —
     # the page the language form's POST would have landed on.
     if ev("wpadmin", "!!document.querySelector('select[name=language]')") is True:
-        api("/navigate", {"url": f"{url}/wp-admin/install.php?step=1", "session": "wpadmin"})
+        # A navigate issued immediately after a redirect-completed one can be
+        # falsely completed by the wry event loop on slow CI runners (issue
+        # #10) — a retry with a condition lands it.
+        for _ in range(3):
+            api("/navigate", {"url": f"{url}/wp-admin/install.php?step=1", "session": "wpadmin"})
+            if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=8) is True:
+                break
     if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=25) is not True:
         state = ev("wpadmin", "(function(){var f=document.querySelector('form');var sel=document.querySelector('select[name=language]');var opt=sel?Array.prototype.slice.call(sel.options).map(function(o){return o.value}).slice(0,3):null;return {p:location.pathname+location.search, t:document.title, form:f?(f.method+' '+f.action).slice(0,80):null, formHTML:f?f.outerHTML.slice(0,260):null, langVals:opt}})()")
         fail("install", f"install form never appeared — page: {json.dumps(state)}")

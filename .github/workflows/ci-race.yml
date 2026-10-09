@@ -67,6 +67,7 @@ jobs:
           curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null || { echo "HEALTH FAILED after $(( $(date +%s) - t_boot ))s"; cat navette.log; exit 1; }
           echo "DAEMON_BOOT=$(( $(date +%s) - t_boot ))" >> "$GITHUB_ENV"
           t0=$(date +%s)
+          set -o pipefail
           rc=0
           python3 wp-smoke.py 2>&1 | tee suite.log || rc=$?
           echo "SUITE=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
