@@ -45,6 +45,32 @@ the swallow-retry pattern from the daily.dev recipe handles it). Speed and
 flakiness trade through the same knob: waits must be *probes with
 conditions*, never clocks.
 
+## The CI cold-runner race (`.github/workflows/ci-race.yml`)
+
+The same duel on fresh GitHub Actions runners (ubuntu-24.04, no caches,
+`workflow_dispatch` — the run's step summary renders the table). First
+green run, both suites 6/6:
+
+| fresh runner | navette | Playwright + Chromium |
+|---|---|---|
+| engine setup | 45 s — WebKitGTK via apt (macOS/Windows runners: **0 s**, the OS ships it) | 26 s — Chromium download + deps (557 MB on disk) |
+| driver setup | 78 s — cargo build from source (release binary: ~2 s once the next tag ships the fixes) | 4 s — npm |
+| **suite (6 journeys)** | **6/6 in 12 s** | **6/6 in 8 s** |
+
+Read it straight: on a **Linux** cold runner Playwright's total setup wins
+(30 s vs 123 s from source) — Azure's network makes the 182 MB download
+fast while apt + cargo pay full price. navette's CI story is the OS matrix:
+on macOS/Windows runners the engine row is zero (WKWebView/WebView2 are
+preinstalled) and, from the next release, the driver row collapses to a
+~2 s binary download.
+
+Getting this green took 13 CI runs and found three real bugs — the
+epilogue is in issues #9 (correction) and #10 (the probes were lying, not
+the navigations): `--port` silently ignored on Linux/Windows (a8b9330),
+redirected navigations timing out at 45 s (74cc7cd), and the wry eval
+shim double-stringifying results relative to macOS (script-side unwrap in
+the recipes' ev(); a backend parity papercut, logged in #10).
+
 ## Same journeys, four different flake classes
 
 Getting the Playwright twin green took four fixes that navette's suite never
