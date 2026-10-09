@@ -131,11 +131,11 @@ def journey_install(url):
         check("install", True, "already installed — skipped")
         return
     # Fresh boot shows a language-select step whose form submit is flaky
-    # under synthetic events on CI runners. The step is optional: the same
-    # page with ?language= serves the five-field install form directly —
-    # what the language form would have POSTed anyway.
+    # under synthetic events on CI runners. The step is optional: GET
+    # install.php?step=1 serves the five-field install form directly —
+    # the page the language form's POST would have landed on.
     if ev("wpadmin", "!!document.querySelector('select[name=language]')") is True:
-        api("/navigate", {"url": f"{url}/wp-admin/install.php?language=en_US", "session": "wpadmin"})
+        api("/navigate", {"url": f"{url}/wp-admin/install.php?step=1", "session": "wpadmin"})
     if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=25) is not True:
         state = ev("wpadmin", "(function(){var f=document.querySelector('form');var sel=document.querySelector('select[name=language]');var opt=sel?Array.prototype.slice.call(sel.options).map(function(o){return o.value}).slice(0,3):null;return {p:location.pathname+location.search, t:document.title, form:f?(f.method+' '+f.action).slice(0,80):null, formHTML:f?f.outerHTML.slice(0,260):null, langVals:opt}})()")
         fail("install", f"install form never appeared — page: {json.dumps(state)}")
