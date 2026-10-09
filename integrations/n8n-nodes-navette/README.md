@@ -6,6 +6,24 @@ WebView** (WebKit on macOS, WebView2 on Windows, WebKitGTK on Linux) driven
 by the 1 MB [navette](https://github.com/slabbdev/navette) daemon — no
 Chromium download, no 557 MB browser cache in your CI or container.
 
+## Two ways to use it
+
+**Beginner — build the flow by hand.** Every action speaks plain names:
+*Open a page → Take a screenshot*, *Open a page → Read the page → send to
+Slack*. The Navigate action carries an Options section (window size,
+wait-for-element, screenshot) so a full capture is ONE node.
+
+**The "va sur ce site et extrais-moi ça" way — AI Agent.** The node is
+`usableAsTool`: drop an **AI Agent** node (pick any chat model), add the
+navette actions as its tools, and just tell it what you want:
+
+> "Go to https://news.ycombinator.com and give me the top 5 titles with
+> their points."
+
+The agent opens pages, reads the markdown it gets back, clicks if it must,
+and answers — no workflow wiring beyond the two nodes. Pair it with n8n's
+built-in **Information Extractor** when you want the answer as strict JSON.
+
 ## What it unlocks
 
 The n8n pain this node answers: *"this site has no API."* The pattern every

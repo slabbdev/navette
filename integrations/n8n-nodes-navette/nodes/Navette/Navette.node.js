@@ -13,20 +13,23 @@
  * origin-bound keychain credential — the workflow never sees the password).
  */
 
+// Beginner-first naming: the label is what the user picks, the description
+// is the one line they see in the actions list. Values are stable — never
+// rename a value.
 const OPERATIONS = [
-  { name: 'navigate', description: 'Open a URL', hint: 'navigate + wait for load' },
-  { name: 'read', description: 'Read the page', hint: 'markdown/text content' },
-  { name: 'screenshot', description: 'Screenshot', hint: 'PNG, binary output' },
-  { name: 'click', description: 'Click', hint: 'pointer+mouse events' },
-  { name: 'type', description: 'Type into a field', hint: 'React-safe setter' },
-  { name: 'evaluate', description: 'Run JavaScript', hint: 'anything the others miss' },
-  { name: 'wait', description: 'Wait for a selector', hint: 'polls until it exists' },
-  { name: 'login', description: 'Login (keychain credential)', hint: 'the agent never sees the password' },
-  { name: 'exportState', description: 'Export cookie state', hint: 'the logged-in jar' },
-  { name: 'importState', description: 'Import cookie state', hint: 'restore a login' },
-  { name: 'viewport', description: 'Set viewport size', hint: 'width × height, affects rendering and screenshots' },
-  { name: 'sessions', description: 'List sessions', hint: 'url + title each' },
-  { name: 'closeSession', description: 'Close a session', hint: 'free the window' },
+  { name: 'Open a page', value: 'navigate', description: 'Open a website — waits for it to load' },
+  { name: 'Read the page', value: 'read', description: 'Get the page text (markdown)' },
+  { name: 'Take a screenshot', value: 'screenshot', description: 'Capture the page as a PNG image' },
+  { name: 'Click something', value: 'click', description: 'Click a button or a link' },
+  { name: 'Fill a field', value: 'type', description: 'Type text into a form field' },
+  { name: 'Wait for something', value: 'wait', description: 'Wait until an element shows up' },
+  { name: 'Run JavaScript', value: 'evaluate', description: 'Advanced: run your own code in the page' },
+  { name: 'Log in (saved password)', value: 'login', description: 'Log in with a password saved in the system keychain — the workflow never sees it' },
+  { name: 'Save login session', value: 'exportState', description: 'Export the logged-in cookies for later' },
+  { name: 'Restore login session', value: 'importState', description: 'Reuse saved cookies — no login needed' },
+  { name: 'Set window size', value: 'viewport', description: 'Choose the page size, e.g. 1920×1080' },
+  { name: 'List open pages', value: 'sessions', description: 'See what is currently open' },
+  { name: 'Close a page', value: 'closeSession', description: 'Close the browser window' },
 ];
 
 const OPERATION_FIELD = {
@@ -36,7 +39,7 @@ const OPERATION_FIELD = {
   noExpression: true,
   required: true,
   default: 'navigate',
-  options: OPERATIONS.map((o) => ({ name: o.name, value: o.name, description: o.description, action: o.hint })),
+  options: OPERATIONS.map((o) => ({ name: o.name, value: o.value, description: o.description })),
 };
 
 const show = (...ops) => ({ displayOptions: { show: { operation: ops } } });
@@ -53,9 +56,10 @@ class Navette {
       icon: 'file:navette.svg',
       group: ['transform'],
       version: 1,
-      subtitle: '={{$parameter["operation"]}}',
-      description: 'The browser for agents — drive a real system WebView (navigate, read, see, act)',
+      subtitle: '={{ {"navigate":"Open a page","read":"Read the page","screenshot":"Take a screenshot","click":"Click something","type":"Fill a field","evaluate":"Run JavaScript","wait":"Wait for something","login":"Log in","exportState":"Save login session","importState":"Restore login session","viewport":"Set window size","sessions":"List open pages","closeSession":"Close a page"}[$parameter["operation"]] }}',
+      description: 'Drive a real browser: open websites, click, fill forms, take screenshots. Works on its own — or as a tool for the AI Agent node, so the agent browses by itself.',
       defaults: { name: 'navette' },
+      usableAsTool: true,
       inputs: ['main'],
       outputs: ['main'],
       credentials: [{ name: 'navetteApi', required: true }],
