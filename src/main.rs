@@ -95,8 +95,161 @@ fn type_js(sel: &str, val: &str) -> String {
     )
 }
 
-pub const MARKDOWN_JS: &str = r#"(function(){
-  document.querySelectorAll('script,style,noscript,svg,iframe,template').forEach(e => e.remove());
+// /login fill: finds the visible password field, the nearest text/email/tel
+// input before it in the same form, and fills both with the React-safe
+// native setter. The credentials arrive as JSON-escaped JS string literals
+// and are never logged — the eval payload is not written anywhere.
+fn login_fill_js(user: &str, pass: &str) -> String {
+    format!(
+        r#"(function(u,p){{
+  var vis = function(el){{ var r = el.getBoundingClientRect(); var s = getComputedStyle(el);
+    return !el.disabled && !el.readOnly && r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; }};
+  var pw = Array.prototype.filter.call(document.querySelectorAll('input[type=password]'), vis)[0];
+  if (!pw) return JSON.stringify({{ok:false, reason:'no visible password field'}});
+  var scope = pw.closest('form') || document.body;
+  function set(el, val){{ el.focus();
+    var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    if (d && d.set) d.set.call(el, val); else el.value = val;
+    el.dispatchEvent(new Event('input', {{bubbles:true}}));
+    el.dispatchEvent(new Event('change', {{bubbles:true}})); }}
+  var filled = [];
+  var inputs = scope.querySelectorAll('input');
+  var user = null;
+  for (var i = Array.prototype.indexOf.call(inputs, pw) - 1; i >= 0; i--) {{
+    var t = (inputs[i].type || 'text').toLowerCase();
+    if ((t === 'text' || t === 'email' || t === 'tel') && vis(inputs[i])) {{ user = inputs[i]; break; }} }}
+  if (user) {{ set(user, u); filled.push('username'); }}
+  set(pw, p); filled.push('password');
+  return JSON.stringify({{ok:true, filled:filled}});
+}})({u}, {p})"#,
+        u = user,
+        p = pass
+    )
+}
+
+// Two-step login flows (email → Continuer → password) split the screens:
+// step 1 fills the one visible identifier field and clicks the continue
+// control; the route then re-probes for the password step.
+fn login_user_step_js(user: &str) -> String {
+    format!(
+        r#"(function(u){{
+  var vis = function(el){{ var r = el.getBoundingClientRect(); var s = getComputedStyle(el);
+    return !el.disabled && !el.readOnly && r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; }};
+  function set(el, val){{ el.focus();
+    var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+    if (d && d.set) d.set.call(el, val); else el.value = val;
+    el.dispatchEvent(new Event('input', {{bubbles:true}}));
+    el.dispatchEvent(new Event('change', {{bubbles:true}})); }}
+  var id = Array.prototype.filter.call(
+    document.querySelectorAll('input[type=email],input[type=text],input[type=tel]'), vis)[0];
+  if (!id) return JSON.stringify({{ok:false, reason:'no visible identifier field (and no password field) — 2FA or logged in already'}});
+  set(id, u);
+  var scope = id.closest('form') || document.body;
+  var btn = Array.prototype.filter.call(
+    scope.querySelectorAll('button[type=submit],input[type=submit],button:not([type])'),
+    function(b){{ var r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0; }})[0];
+  if (!btn) {{
+    var re = /continuer|connexion|connecter|log[\s-]?in|sign[\s-]?in|submit|entrer|suivant|next/i;
+    btn = Array.prototype.filter.call(scope.querySelectorAll('button,input[type=button]'),
+      function(b){{ var t = b.textContent || b.value || ''; var r = b.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && re.test(t); }})[0];
+  }}
+  if (!btn) return JSON.stringify({{ok:false, reason:'identifier filled but no continue control found'}});
+  var r = btn.getBoundingClientRect();
+  var base = {{bubbles:true, cancelable:true, view:window, clientX:r.x + r.width/2, clientY:r.y + r.height/2}};
+  var po = Object.assign({{pointerId:1, pointerType:'mouse', isPrimary:true}}, base);
+  btn.dispatchEvent(new PointerEvent('pointerdown', po));
+  btn.dispatchEvent(new MouseEvent('mousedown', base));
+  btn.dispatchEvent(new PointerEvent('pointerup', po));
+  btn.dispatchEvent(new MouseEvent('mouseup', base));
+  if (btn instanceof HTMLElement) {{ btn.click(); }} else {{ btn.dispatchEvent(new MouseEvent('click', base)); }}
+  return JSON.stringify({{ok:true, filled:['username'], button:((btn.textContent||btn.value||'').trim().slice(0,40))}});
+}})({u})"#,
+        u = user
+    )
+}
+
+fn login_password_step_js(pass: &str) -> String {
+    format!(
+        r#"(function(p){{
+  var vis = function(el){{ var r = el.getBoundingClientRect(); var s = getComputedStyle(el);
+    return !el.disabled && !el.readOnly && r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; }};
+  var pw = Array.prototype.filter.call(document.querySelectorAll('input[type=password]'), vis)[0];
+  if (!pw) return JSON.stringify({{ok:false, reason:'still no visible password field — 2FA or wrong-credential page'}});
+  pw.focus();
+  var d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  if (d && d.set) d.set.call(pw, p); else pw.value = p;
+  pw.dispatchEvent(new Event('input', {{bubbles:true}}));
+  pw.dispatchEvent(new Event('change', {{bubbles:true}}));
+  var scope = pw.closest('form') || document.body;
+  var btn = Array.prototype.filter.call(
+    scope.querySelectorAll('button[type=submit],input[type=submit],button:not([type])'),
+    function(b){{ var r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0; }})[0];
+  if (!btn) {{
+    var re = /continuer|connexion|connecter|log[\s-]?in|sign[\s-]?in|submit|entrer/i;
+    btn = Array.prototype.filter.call(scope.querySelectorAll('button,input[type=button]'),
+      function(b){{ var t = b.textContent || b.value || ''; var r = b.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && re.test(t); }})[0];
+  }}
+  if (!btn) return JSON.stringify({{ok:true, filled:['password'], button:null, reason:'no submit control — click it yourself'}});
+  var r = btn.getBoundingClientRect();
+  var base = {{bubbles:true, cancelable:true, view:window, clientX:r.x + r.width/2, clientY:r.y + r.height/2}};
+  var po = Object.assign({{pointerId:1, pointerType:'mouse', isPrimary:true}}, base);
+  btn.dispatchEvent(new PointerEvent('pointerdown', po));
+  btn.dispatchEvent(new MouseEvent('mousedown', base));
+  btn.dispatchEvent(new PointerEvent('pointerup', po));
+  btn.dispatchEvent(new MouseEvent('mouseup', base));
+  if (btn instanceof HTMLElement) {{ btn.click(); }} else {{ btn.dispatchEvent(new MouseEvent('click', base)); }}
+  return JSON.stringify({{ok:true, filled:['password'], button:((btn.textContent||btn.value||'').trim().slice(0,40))}});
+}})({p})"#,
+        p = pass
+    )
+}
+
+// /login submit: the form's first visible submit control, dispatched with
+// the same pointer+mouse sequence as /click (Radix-style UIs included).
+// Fallback for type="button" forms (leboncoin's auth uses "Continuer"):
+// the first visible button whose text reads like a submit action.
+fn login_submit_js() -> String {
+    r#"(function(){
+  var pw = document.querySelector('input[type=password]');
+  if (!pw) return JSON.stringify({ok:false, reason:'password field gone — the form may have submitted already'});
+  var scope = pw.closest('form') || document.body;
+  var btn = Array.prototype.filter.call(
+    scope.querySelectorAll('button[type=submit],input[type=submit],button:not([type])'),
+    function(b){ var r = b.getBoundingClientRect(); return r.width > 0 && r.height > 0; })[0];
+  if (!btn) {
+    var re = /continuer|connexion|connecter|log[\s-]?in|sign[\s-]?in|submit|entrer/i;
+    btn = Array.prototype.filter.call(scope.querySelectorAll('button,input[type=button]'),
+      function(b){ var t = b.textContent || b.value || ''; var r = b.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && re.test(t); })[0];
+  }
+  if (!btn) return JSON.stringify({ok:false, reason:'no visible submit control — click it yourself'});
+  var r = btn.getBoundingClientRect();
+  var base = {bubbles:true, cancelable:true, view:window, clientX:r.x + r.width/2, clientY:r.y + r.height/2};
+  var po = Object.assign({pointerId:1, pointerType:'mouse', isPrimary:true}, base);
+  btn.dispatchEvent(new PointerEvent('pointerdown', po));
+  btn.dispatchEvent(new MouseEvent('mousedown', base));
+  btn.dispatchEvent(new PointerEvent('pointerup', po));
+  btn.dispatchEvent(new MouseEvent('mouseup', base));
+  if (btn instanceof HTMLElement) { btn.click(); } else { btn.dispatchEvent(new MouseEvent('click', base)); }
+  return JSON.stringify({ok:true, button:((btn.textContent||btn.value||'').trim().slice(0,40))});
+})()"#
+        .to_string()
+}
+
+/// eval_js results may arrive JSON-encoded or bare (bridge-dependent) —
+/// accept both shapes and return the plain string.
+fn eval_str<K: webviewkit::WebviewKit>(kit: &K, s: &K::SessionRef, js: &str) -> Option<String> {
+    kit.eval_js(s, js).ok().map(|r| {
+        serde_json::from_str::<Value>(&r)
+            .ok()
+            .and_then(|v| v.as_str().map(|x| x.to_string()))
+            .unwrap_or(r)
+    })
+}
+
+pub const MARKDOWN_JS: &str = r#"(function(){  document.querySelectorAll('script,style,noscript,svg,iframe,template').forEach(e => e.remove());
   const txt = e => (e.innerText || '').replace(/\s+/g, ' ').trim();
   const out = [];
   const walk = el => {
@@ -598,6 +751,157 @@ fn route(fd: &mut TcpStream, req: Req) {
                 Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
+        }
+
+        // Stage 2 (#8): credentials are SET by a human (`navette creds set`,
+        // hidden stdin) — but the write goes through the daemon, which owns
+        // the keychain. No route ever returns a password; there is no
+        // read-back API at all.
+        ("POST", "/creds/set") => {
+            let site = j.get("site").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let username = j.get("username").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let password = j.get("password").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            if site.is_empty() || username.is_empty() || password.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json",
+                        &json_bytes(&err_data("site, username and password are required")));
+                return;
+            }
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            // The origin anchor is the session's CURRENT page — never free
+            // text, so a credential can only be saved while looking at the
+            // very site it will fill on.
+            let origin = eval_str(&KIT, &s, "location.origin").unwrap_or_default();
+            if !origin.starts_with("http") {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data(
+                    "the session is not on a page — navigate it to the site's login page first; \
+                     the credential binds to that page's exact origin")));
+                return;
+            }
+            match keystore::set_cred(&site, &origin, &username, &password) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("GET", "/creds") => {
+            match keystore::list_creds() {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/creds/delete") => {
+            let site = j.get("site").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            if site.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("site is required")));
+                return;
+            }
+            match keystore::delete_cred(&site) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        // The stage-2 payoff: fill + submit the site's login form with the
+        // stored credential. The agent passes a site NAME; the password is
+        // resolved inside this process and injected into the page — it never
+        // appears in the request, the response, or a log line. Refused
+        // unless the session currently sits on the credential's exact origin
+        // (a hostile or wrong page can neither harvest it nor aim it).
+        ("POST", "/login") => {
+            let site = j.get("site").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            if site.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("site is required")));
+                return;
+            }
+            let submit = j.get("submit").and_then(|v| v.as_bool()).unwrap_or(true);
+            let cred = match keystore::load_cred(&site) {
+                Ok(c) => c,
+                Err(e) => {
+                    respond(fd, 404, "Not Found", "application/json", &json_bytes(&err_data(&e)));
+                    return;
+                }
+            };
+            let expected = cred.get("origin").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
+            let current = eval_str(&KIT, &s, "location.origin").unwrap_or_default();
+            if current != expected {
+                respond(fd, 403, "Forbidden", "application/json", &json_bytes(&json!({
+                    "ok": false,
+                    "error": format!("credential {site:?} is origin-bound — navigate this session to the login page first"),
+                    "expected": expected,
+                    "current": current,
+                })));
+                return;
+            }
+            let username = cred.get("username").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let password = cred.get("password").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let mut filled: Vec<Value> = Vec::new();
+            let mut button = Value::Null;
+            let mut steps = 1;
+
+            // One-screen form first (both fields visible).
+            let fill = KIT.eval_js(&s, &login_fill_js(&jstr(&username), &jstr(&password)))
+                .ok()
+                .and_then(|v| serde_json::from_str::<Value>(&v).ok())
+                .unwrap_or(json!({}));
+            if fill.get("ok") == Some(&json!(true)) {
+                filled = fill.get("filled").and_then(|f| f.as_array()).cloned().unwrap_or_default();
+                if submit {
+                    if let Ok(v) = KIT.eval_js(&s, &login_submit_js()) {
+                        let sv: Value = serde_json::from_str(&v).unwrap_or(json!({}));
+                        button = sv.get("button").cloned().unwrap_or(Value::Null);
+                    }
+                    KIT.wait_settle(&s);
+                }
+            } else {
+                // Two-step flow (email → Continuer → password): fill the
+                // identifier, click through, re-probe for the password step.
+                let step1 = KIT.eval_js(&s, &login_user_step_js(&jstr(&username)))
+                    .ok()
+                    .and_then(|v| serde_json::from_str::<Value>(&v).ok())
+                    .unwrap_or(json!({}));
+                if step1.get("ok") != Some(&json!(true)) {
+                    let mut payload = json!({"ok": false, "site": site, "origin": expected});
+                    payload["reason"] = step1.get("reason").cloned().unwrap_or(json!("fill failed"));
+                    respond(fd, 200, "OK", "application/json", &json_bytes(&payload));
+                    return;
+                }
+                filled = step1.get("filled").and_then(|f| f.as_array()).cloned().unwrap_or_default();
+                button = step1.get("button").cloned().unwrap_or(Value::Null);
+                KIT.wait_settle(&s);
+                thread::sleep(Duration::from_millis(1200));
+                steps = 2;
+                if submit {
+                    let step2 = KIT.eval_js(&s, &login_password_step_js(&jstr(&password)))
+                        .ok()
+                        .and_then(|v| serde_json::from_str::<Value>(&v).ok())
+                        .unwrap_or(json!({}));
+                    if step2.get("ok") == Some(&json!(true)) {
+                        if let Some(f) = step2.get("filled").and_then(|f| f.as_array()) {
+                            filled.extend(f.iter().cloned());
+                        }
+                        button = step2.get("button").cloned().unwrap_or(button);
+                        KIT.wait_settle(&s);
+                    } else {
+                        // Honest stop: 2FA, wrong-credential page, etc. The
+                        // username step went through; the human takes over
+                        // via session_show if the page needs them.
+                        let mut payload = json!({"ok": true, "site": site, "origin": expected,
+                            "filled": filled, "submitted": true, "button": button,
+                            "steps": steps, "password_step": false});
+                        payload["reason"] = step2.get("reason").cloned().unwrap_or(json!("password step did not appear"));
+                        payload["url"] = json!(eval_str(&KIT, &s, "location.href").unwrap_or_default());
+                        respond(fd, 200, "OK", "application/json", &json_bytes(&payload));
+                        return;
+                    }
+                }
+            }
+            let url = eval_str(&KIT, &s, "location.href").unwrap_or_default();
+            respond(fd, 200, "OK", "application/json", &json_bytes(&json!({
+                "ok": true, "site": site, "origin": expected,
+                "filled": filled, "submitted": submit, "button": button, "steps": steps, "url": url,
+            })));
         }
 
         ("POST", "/sessions/viewport") => {
@@ -1168,6 +1472,107 @@ fn state_usage() {
     println!("The daemon (navette serve) owns the keychain; --url defaults to $NAVETTE or http://127.0.0.1:8765.");
 }
 
+fn creds_usage() {
+    println!("USAGE:");
+    println!("  navette creds set NAME [--session S] [--url U]    save a login (HUMAN step: prompts on hidden stdin;");
+    println!("                                                    binds to the origin of the session's current page)");
+    println!("  navette creds list [--url U]                      sites + origins + usernames — never passwords");
+    println!("  navette creds delete NAME [--url U]               remove one");
+    println!();
+    println!("The agent then logs in with POST /login {{\"site\": NAME}} — it never sees the password,");
+    println!("and the fill is refused on any page but the saved origin. There is no password read-back.");
+    println!("--url defaults to $NAVETTE or http://127.0.0.1:8765.");
+}
+
+fn creds_cli(args: &[String]) {
+    let cmd = match args.first().map(|s| s.as_str()) {
+        Some(c @ ("set" | "list" | "delete")) => c,
+        _ => {
+            creds_usage();
+            return;
+        }
+    };
+    let flag = |name: &str| {
+        args.iter()
+            .position(|a| a == name)
+            .and_then(|i| args.get(i + 1))
+            .map(|v| v.to_string())
+    };
+    let session = flag("--session").unwrap_or_else(|| "default".into());
+    let base = flag("--url")
+        .or_else(|| std::env::var("NAVETTE").ok())
+        .unwrap_or_else(|| "http://127.0.0.1:8765".into());
+    let site = args.get(1).cloned().unwrap_or_default();
+
+    let fail = |e: String| -> Value {
+        eprintln!("[navette] {e}");
+        std::process::exit(1);
+    };
+
+    match cmd {
+        "set" => {
+            if site.is_empty() {
+                creds_usage();
+                return;
+            }
+            println!("navette creds set {site:?} — the credential binds to the EXACT origin of session");
+            println!("{session:?}'s current page. Navigate that session to the site's login page first.");
+            print!("username: ");
+            let _ = std::io::stdout().flush();
+            let mut username = String::new();
+            if std::io::stdin().read_line(&mut username).is_err() {
+                fail("cannot read username".into());
+            }
+            let username = username.trim().to_string();
+            let password = rpassword::prompt_password("password: ")
+                .unwrap_or_else(|e| { eprintln!("[navette] {e}"); std::process::exit(1); });
+            let again = rpassword::prompt_password("password (again): ")
+                .unwrap_or_else(|e| { eprintln!("[navette] {e}"); std::process::exit(1); });
+            if password != again {
+                fail("passwords do not match — nothing was stored".into());
+            }
+            if username.is_empty() || password.is_empty() {
+                fail("empty username or password — nothing was stored".into());
+            }
+            let v = api_call(&base, "POST", "/creds/set", Some(&json!({
+                "site": site, "username": username, "password": password, "session": session,
+            })))
+            .unwrap_or_else(fail);
+            println!(
+                "credential {site:?} bound to {} — the password lives in the OS keychain; the agent logs in with POST /login {{\"site\":{site:?}}}",
+                v.get("origin").and_then(|o| o.as_str()).unwrap_or("?")
+            );
+        }
+        "list" => {
+            let v = api_call(&base, "GET", "/creds", None).unwrap_or_else(fail);
+            let creds = v.get("creds").and_then(|c| c.as_array()).cloned().unwrap_or_default();
+            if creds.is_empty() {
+                println!("no stored credentials — save one: navette creds set NAME");
+                return;
+            }
+            println!("{:<20} {:<30} {:<24} saved_at", "SITE", "ORIGIN", "USERNAME");
+            for c in creds {
+                println!(
+                    "{:<20} {:<30} {:<24} {}",
+                    c.get("site").and_then(|n| n.as_str()).unwrap_or("?"),
+                    c.get("origin").and_then(|o| o.as_str()).unwrap_or("?"),
+                    c.get("username").and_then(|u| u.as_str()).unwrap_or("?"),
+                    c.get("saved_at").and_then(|t| t.as_u64()).unwrap_or(0)
+                );
+            }
+        }
+        "delete" => {
+            if site.is_empty() {
+                creds_usage();
+                return;
+            }
+            api_call(&base, "POST", "/creds/delete", Some(&json!({"site": site}))).unwrap_or_else(fail);
+            println!("deleted {site:?}");
+        }
+        _ => unreachable!(),
+    }
+}
+
 fn state_cli(args: &[String]) {
     let cmd = match args.first().map(|s| s.as_str()) {
         Some(c @ ("save" | "load" | "list" | "delete")) => c,
@@ -1263,14 +1668,15 @@ fn main() {
             println!("             [--user-agent UA] per-serve user-agent override");;
             println!("  navette mcp                 MCP stdio server for agent hosts");
             println!("  navette state save|load|list|delete NAME    logged-in states in the OS keychain");
+            println!("  navette creds set|list|delete NAME          origin-bound logins the agent never sees");
             println!("  navette install-daemon      resident: warm from login");
             println!("  navette uninstall-daemon    remove the resident daemon");
             println!("  navette --version           print the version");
             println!();
             println!("HTTP routes: /health /sessions /navigate /read /screenshot /click /hover");
             println!("/type /key /evaluate /wait /scroll /upload /sessions/viewport /sessions/state");
-            println!("/sessions/load /sessions/show /sessions/hide /sessions/close /states");
-            println!("/states/delete — full docs:");
+            println!("/sessions/load /sessions/show /sessions/hide /sessions/close /states /states/delete");
+            println!("/creds /creds/set /creds/delete /login — full docs:");
             println!("https://github.com/slabbdev/navette");
         }
         Some("--version") | Some("-V") | Some("version") => {
@@ -1278,6 +1684,7 @@ fn main() {
         }
         Some("mcp") => mcp::run(),
         Some("state") => state_cli(&args[2..]),
+        Some("creds") => creds_cli(&args[2..]),
         Some("install-daemon") => install_daemon(),
         Some("uninstall-daemon") => uninstall_daemon(),
         _ => serve(&args),

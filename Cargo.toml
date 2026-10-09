@@ -21,6 +21,8 @@ serde = "1"
 serde_json = "1"
 png = "0.17"
 base64 = "0.22"
+# `navette creds set` reads the password on hidden stdin — never argv, never env.
+rpassword = "7"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

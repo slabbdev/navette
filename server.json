@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "name": "io.github.slabbdev/navette",
   "title": "navette — the browser for agents",
-  "description": "A 659 KB Rust binary driving the OS WebView — no Chromium. 18 MCP tools for AI agents.",
+  "description": "A 725 KB Rust binary driving the OS WebView — no Chromium. 19 MCP tools for AI agents; logins live in the OS keychain, origin-bound.",
   "version": "1.9.0",
   "websiteUrl": "https://github.com/slabbdev/navette",
   "repository": {

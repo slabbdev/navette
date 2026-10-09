@@ -212,6 +212,14 @@ fn tools() -> Value {
              "Hide the session's window again after a human finished interacting with it (the window stays alive — the session and its state are untouched).",
              json!({"session": p_string("Session name")}),
              &[]),
+        tool("login",
+             "Fill and submit the site's login form from the OS keychain — the agent NEVER sees the credentials. A human saves them first with the CLI `navette creds set SITE` (binds to the site's exact origin). The session must currently be ON that origin (navigate to the login page first) or the call is refused. submit=false fills without submitting. Verify the logged-in state yourself afterwards (page probe); 2FA steps still need session_show for the human. One call, no retry loops.",
+             json!({
+                 "site": p_string("Credential name saved by `navette creds set`"),
+                 "submit": p_bool("Click the form's submit control after filling (default true)"),
+                 "session": p_string("Session name — must be on the credential's origin")
+             }),
+             &["site"]),
         tool("hover",
              "Hover an element matched by a CSS selector (dispatches mouseover/mousemove at its center — reveals hover menus and tooltips).",
              json!({
@@ -437,6 +445,15 @@ fn run_tool(name: &str, a: &Value) -> Value {
             let (code, data) = http_call("/sessions/hide", "POST", Some(&json!({"session": session})));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("hide failed ({}): {}", code, compact(data)), true) }
+        }
+        "login" => {
+            let mut body = json!({"site": sget("site", ""), "session": session});
+            if let Some(b) = a.get("submit").and_then(|v| v.as_bool()) {
+                body["submit"] = json!(b);
+            }
+            let (code, data) = http_call("/login", "POST", Some(&body));
+            if ok(code) { text_content(compact(data), false) }
+            else { text_content(format!("login failed ({}): {}", code, compact(data)), true) }
         }
         _ => text_content(format!("unknown tool {name}"), true),
     }

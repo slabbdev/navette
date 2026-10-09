@@ -148,6 +148,114 @@ pub fn delete(name: &str) -> Result<Value, String> {
     Ok(json!({"deleted": name}))
 }
 
+// ---------- stage 2: origin-bound credentials (#8) — set by a human, used
+// by the agent, never readable back by anyone
+
+const CRED_INDEX_KEY: &str = "_cred_index";
+const CRED_PREFIX: &str = "cred:";
+
+fn cred_entry(site: &str) -> Result<keyring::Entry, String> {
+    if !valid_name(site) {
+        return Err(format!(
+            "invalid site name {site:?} — use 1-64 chars of [a-zA-Z0-9._-]"
+        ));
+    }
+    entry(&format!("{CRED_PREFIX}{site}"))
+}
+
+pub fn wrap_cred(origin: &str, username: &str, password: &str) -> Value {
+    let saved_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    json!({"v": 1, "origin": origin, "username": username, "password": password, "saved_at": saved_at})
+}
+
+pub fn unwrap_cred(secret: &str) -> Result<Value, String> {
+    let v: Value = serde_json::from_str(secret)
+        .map_err(|_| "stored credential is not valid JSON".to_string())?;
+    for k in ["origin", "username", "password"] {
+        if v.get(k).and_then(|x| x.as_str()).is_none() {
+            return Err(format!("stored credential carries no {k}"));
+        }
+    }
+    Ok(v)
+}
+
+fn read_cred_index() -> Result<Value, String> {
+    match entry(CRED_INDEX_KEY)?.get_password() {
+        Ok(s) => Ok(serde_json::from_str(&s).unwrap_or_else(|_| json!({"creds": []}))),
+        Err(keyring::Error::NoEntry) => Ok(json!({"creds": []})),
+        Err(e) => Err(format!("keychain read failed: {e}")),
+    }
+}
+
+fn write_cred_index(index: &Value) -> Result<(), String> {
+    entry(CRED_INDEX_KEY)?
+        .set_password(&index.to_string())
+        .map_err(|e| format!("keychain write failed: {e}"))
+}
+
+/// Store the credential for `site`, bound to `origin`. The password only
+/// ever travels in: hidden stdin → CLI → loopback HTTP → keychain. No route
+/// returns it; there is no read-back API at all.
+pub fn set_cred(site: &str, origin: &str, username: &str, password: &str) -> Result<Value, String> {
+    cred_entry(site)?
+        .set_password(&wrap_cred(origin, username, password).to_string())
+        .map_err(|e| format!("keychain write failed: {e}"))?;
+    let mut idx = read_cred_index()?;
+    if !idx.is_object() {
+        idx = json!({"creds": []});
+    }
+    if idx.get("creds").and_then(|c| c.as_array()).is_none() {
+        idx["creds"] = json!([]);
+    }
+    let saved_at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    if let Some(arr) = idx.get_mut("creds").and_then(|c| c.as_array_mut()) {
+        arr.retain(|e| e.get("site").and_then(|n| n.as_str()) != Some(site));
+        arr.push(json!({"site": site, "origin": origin, "username": username, "saved_at": saved_at}));
+    }
+    write_cred_index(&idx)?;
+    Ok(json!({"site": site, "origin": origin}))
+}
+
+pub fn load_cred(site: &str) -> Result<Value, String> {
+    let secret = cred_entry(site)?.get_password().map_err(|e| match e {
+        keyring::Error::NoEntry => format!(
+            "no stored credential for {site:?} — a human saves one with: navette creds set {site}"
+        ),
+        other => format!("keychain read failed: {other}"),
+    })?;
+    unwrap_cred(&secret)
+}
+
+/// `{"ok":true,"creds":[{site, origin, username, saved_at}]}` — no passwords.
+pub fn list_creds() -> Result<Value, String> {
+    let mut idx = read_cred_index()?;
+    if !idx.is_object() {
+        idx = json!({"creds": []});
+    }
+    idx["ok"] = json!(true);
+    Ok(idx)
+}
+
+pub fn delete_cred(site: &str) -> Result<Value, String> {
+    match cred_entry(site)?.delete_credential() {
+        Ok(()) => {}
+        Err(keyring::Error::NoEntry) => {}
+        Err(e) => return Err(format!("keychain delete failed: {e}")),
+    }
+    let mut idx = read_cred_index()?;
+    if let Some(arr) = idx.get_mut("creds").and_then(|c| c.as_array_mut()) {
+        arr.retain(|e| e.get("site").and_then(|n| n.as_str()) != Some(site));
+    }
+    write_cred_index(&idx)?;
+    Ok(json!({"deleted": site}))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -201,5 +309,16 @@ mod tests {
         let mut idx = json!("garbage");
         index_add(&mut idx, "a", "https://a.example");
         assert_eq!(idx["states"][0]["name"], "a");
+    }
+
+    #[test]
+    fn cred_roundtrip_and_rejection() {
+        let c = wrap_cred("https://login.example", "sam", "hunter2");
+        let back = unwrap_cred(&c.to_string()).unwrap();
+        assert_eq!(back["username"], "sam");
+        assert_eq!(back["password"], "hunter2");
+        assert_eq!(back["origin"], "https://login.example");
+        assert!(unwrap_cred("{\"origin\":\"https://x\",\"username\":\"u\"}").is_err());
+        assert!(unwrap_cred("garbage").is_err());
     }
 }
