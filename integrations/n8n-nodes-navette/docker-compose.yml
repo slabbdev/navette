@@ -1,0 +1,18 @@
+# The production topology on one network: n8n + the navette daemon.
+#   docker compose up -d      → n8n on http://localhost:5678
+#   In n8n: Settings → Community nodes → n8n-nodes-navette
+#   Credential "navette daemon": Base URL http://navette:8765
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_SECURE_COOKIE=false
+      - N8N_UNVERIFIED_PACKAGES_ENABLED=true
+    depends_on:
+      - navette
+  navette:
+    image: ghcr.io/slabbdev/navette
+    command: navette serve --port 8765
+    # To add credentials: docker compose run --rm -it navette navette creds set mysite

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- navette — the shuttle. Navy hull, orange flame; matches the repo banner. -->
+  <rect width="64" height="64" rx="14" fill="#0f172a"/>
+  <path d="M32 8c7 6 11 15 11 25 0 6-2 12-4 15H25c-2-3-4-9-4-15 0-10 4-19 11-25z"
+        fill="#e2e8f0"/>
+  <path d="M32 8c-4 3.5-7 8.5-9 14h18c-2-5.5-5-10.5-9-14z" fill="#94a3b8"/>
+  <circle cx="27" cy="26" r="2.6" fill="#0f172a"/>
+  <circle cx="37" cy="26" r="2.6" fill="#0f172a"/>
+  <path d="M21 40l-7 8 9-2zM43 40l7 8-9-2z" fill="#e2e8f0"/>
+  <path d="M26 48h12l-2.5 5h-7z" fill="#f97316"/>
+  <path d="M29 53h6l-3 6z" fill="#fdba74"/>
+</svg>
