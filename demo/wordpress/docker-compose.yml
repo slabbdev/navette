@@ -1,0 +1,32 @@
+# The smoke-test target: a disposable WordPress, one command away.
+#   docker compose up -d      → http://127.0.0.1:8090
+#   docker compose down -v    → gone, no trace
+services:
+  wp:
+    image: wordpress:latest
+    container_name: navette-wp
+    ports:
+      - "127.0.0.1:8090:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: wp
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      - db
+  db:
+    image: mariadb:11
+    container_name: navette-wp-db
+    environment:
+      MARIADB_DATABASE: wp
+      MARIADB_USER: wp
+      MARIADB_PASSWORD: wp
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  wp_data:
+  db_data:

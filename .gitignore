@@ -11,3 +11,10 @@ bench/package-lock.json
 # daily.dev recipe artifacts (the state file IS a login)
 demo/dailydev/state.json
 demo/dailydev/*-preview.png
+
+# WordPress smoke artifacts + states
+demo/wordpress/artifacts/
+demo/wordpress/artifacts-playwright/
+demo/wordpress/wp-state.json
+demo/wordpress/wp-state-playwright.json
+__pycache__/
