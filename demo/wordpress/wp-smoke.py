@@ -131,14 +131,15 @@ def journey_install(url):
         check("install", True, "already installed — skipped")
         return
     # language step (first boot): Continue reloads the page with the real form
-    for _ in range(20):
+    for _ in range(30):
         if ev("wpadmin", "!!document.querySelector('input[name=weblog_title]')") is True:
             break
         if ev("wpadmin", "!!document.querySelector('#language-continue')") is True:
             api("/click", {"selector": "input#language-continue", "session": "wpadmin"})
-        time.sleep(0.3)
+        time.sleep(1)
     else:
-        fail("install", "install form never appeared")
+        state = ev("wpadmin", "(function(){return {p:location.pathname, t:document.title, head:(document.body.innerText||'').slice(0,180)}})()")
+        fail("install", f"install form never appeared — page: {json.dumps(state)}")
     for sel, val in [("input[name=weblog_title]", SITE_TITLE),
                      ("input[name=user_name]", ADMIN_USER),
                      ("input[name=admin_password]", ADMIN_PASS),
