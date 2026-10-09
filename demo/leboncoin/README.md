@@ -61,6 +61,35 @@ search page. `--pages 2` walks one more page (2.5 s apart, hard ceiling at
 Class names are Tailwind role tokens, more stable than hashed modules but
 still the site's styling — if extraction drifts, re-check this table first.
 
+## The authenticated pro space (verified live 2026-10-09)
+
+Reading seller stats needs a login. The flow that worked, end to end:
+
+1. **Human moments stay human.** From the homepage, click the "Se connecter"
+   button (no href — it OAuth2-bounces to `auth.leboncoin.fr`), then call
+   `session_show`: the Datadome slider ("Faites glisser vers la droite pour
+   sécuriser votre accès") and the credentials belong to the person, in the
+   visible window. navette never solves challenges — and after a day of
+   automated browsing, the slider WILL appear. That is the site working as
+   intended, and `session_show` is the designed handoff.
+2. **Save once.** Logged in, `navette state save leboncoin` puts the cookie
+   jar (42 cookies that day) in the OS keychain; `navette state load
+   leboncoin` restores it for later runs until leboncoin expires it. No
+   re-login for the whole window.
+3. **The pro space is plain routes**, one `/navigate` + one `/evaluate` on
+   `document.body.innerText` each:
+   - `/compte/pro/mon-activite` → "En ligne (n) / En pause (n)"
+   - `/compte/pro/statistiques` → seller performance (response rate/time)
+     and per-period ad performance (annonces en ligne, apparitions en
+     recherche, favoris, vues, messages, appels) — period + category filters
+     live in the page.
+4. **`POST /login {"site":"leboncoin"}`** (keychain credentials, [#8](https://github.com/slabbdev/navette/issues/8)
+   stage 2) works mechanically — verified live with a throwaway credential:
+   the two-step flow (email → "Continuer" → password screen) is orchestrated
+   by the route. But Datadome sits on the auth flow itself, so the
+   *dependable* path for this site is the human login + keychain state.
+   Use the auto-login where the site is friendlier.
+
 ## Politeness is a feature
 
 This is a recipe for "what does X cost today", not bulk scraping. leboncoin's
