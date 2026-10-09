@@ -186,16 +186,20 @@ fn tools() -> Value {
              json!({}),
              &[]),
         tool("state_export",
-             "Export the session's cookies as JSON (the logged-in state). Keep it secret — it IS the login. Re-import later with state_import, even after a navette restart.",
-             json!({"session": p_string("Session name")}),
+             "Export the session's logged-in state. With store set, the cookie jar goes straight to the OS keychain under that name and is NOT returned — the safe path, since the jar IS a login. Without store, the jar comes back as JSON; keep it secret. Re-import later with state_import, even after a navette restart.",
+             json!({
+                 "session": p_string("Session name"),
+                 "store": p_string("Save into the OS keychain under this name instead of returning the cookies (see state_import store)")
+             }),
              &[]),
         tool("state_import",
-             "Import cookies JSON (from state_export) into a session to restore a logged-in state without re-logging in.",
+             "Restore a logged-in state into a session without re-logging in. Pass either cookies (JSON from state_export without store) or store (a name previously saved with state_export store) — never both.",
              json!({
                  "cookies": p_string("The cookies JSON exported by state_export (raw or wrapped in {\"cookies\":[...]})"),
+                 "store": p_string("Keychain store name saved earlier via state_export store"),
                  "session": p_string("Session name")
              }),
-             &["cookies"]),
+             &[]),
         tool("session_close",
              "Close a browser session and free its window.",
              json!({"session": p_string("Session name to close")}),
@@ -393,15 +397,28 @@ fn run_tool(name: &str, a: &Value) -> Value {
             else { text_content(format!("sessions failed ({})", code), true) }
         }
         "state_export" => {
-            let (code, data) = http_call("/sessions/state", "POST", Some(&json!({"session": sget("session", "default")})));
+            let mut body = json!({"session": sget("session", "default")});
+            if let Some(store) = a.get("store").and_then(|v| v.as_str()) {
+                body["store"] = json!(store);
+            }
+            let (code, data) = http_call("/sessions/state", "POST", Some(&body));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("state_export failed ({}): {}", code, compact(data)), true) }
         }
         "state_import" => {
-            let raw = a.get("cookies").and_then(|v| v.as_str()).unwrap_or("");
-            let parsed: Value = serde_json::from_str(raw).unwrap_or_else(|_| a.clone());
-            let cookies = parsed.get("cookies").cloned().unwrap_or_else(|| parsed.clone());
-            let body = json!({"session": sget("session", "default"), "cookies": cookies});
+            let store = a.get("store").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let body = if let Some(store) = store {
+                // keychain mode: only the name crosses the wire
+                json!({"session": session, "store": store})
+            } else if a.get("cookies").is_some() {
+                let raw = a.get("cookies").and_then(|v| v.as_str()).unwrap_or("");
+                let parsed: Value = serde_json::from_str(raw).unwrap_or_else(|_| a.clone());
+                let cookies = parsed.get("cookies").cloned().unwrap_or_else(|| parsed.clone());
+                json!({"session": session, "cookies": cookies})
+            } else {
+                return text_content(
+                    "state_import needs either cookies (from state_export) or store (a keychain name saved with state_export store)".to_string(), true);
+            };
             let (code, data) = http_call("/sessions/load", "POST", Some(&body));
             if ok(code) { text_content(compact(data), false) }
             else { text_content(format!("state_import failed ({}): {}", code, compact(data)), true) }

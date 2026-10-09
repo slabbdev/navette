@@ -1,4 +1,4 @@
-# navette — v1.7.0
+# navette — v1.9.0
 
 ![navette — the browser for agents](assets/banner.png)
 
@@ -10,10 +10,10 @@
 
 ```
 $ ls -lh target/release/navette
--rwxr-xr-x  1 user  staff   626K  navette
+-rwxr-xr-x  1 user  staff   725K  navette
 ```
 
-626 KB installed on macOS (release binaries: 658 KB darwin-arm64, ~1.2 MB windows-x64 / linux-x64 — the wry backends carry their bindings). Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
+725 KB installed on macOS (release binaries track it; the OS-keychain store for logged-in states costs ~100 KB). Windows-x64 / linux-x64 ride the wry backends. Playwright ships 218 MB. Lightpanda ships 96 MB (and cannot screenshot). Measured claims, reproducible with one command ([BENCHMARKS.md](BENCHMARKS.md)):
 
 - **Faster than Playwright + Chromium on every metric we measured** — install, cold start, navigate→read (8 ms), act (1 ms), peak RAM, 100-page crawl (0.9–2.8 s, parity with Lightpanda within variance and ~2–3x faster than Playwright), real-web success rate (95–100% vs 85%).
 - **Crawls at Lightpanda's speed while rendering** (parity within variance through the zero-bias raw-CDP probe, where Lightpanda is the fastest page-*reader* at 3.3–3.4 ms — it parses a partial DOM and cannot render — and navette is the **fastest full-rendering reader**: 17.9–19.4 ms vs Chromium's 28–34 ms through the identical client).
@@ -31,7 +31,7 @@ $ ls -lh target/release/navette
 
 **Screenshot fidelity?** Capture is native per engine (v1.3+) — what the compositor drew, not a re-render — and viewport-sized; set the viewport before navigating for repeatable captures. Full-page capture is not implemented yet; tracked honestly rather than approximated.
 
-**Security?** The server binds 127.0.0.1 only, non-local `Host` headers are refused (DNS-rebinding guard; `/health` exempt), token comparison is constant-time, and proxy URLs are credential-redacted in logs. **Session isolation is CI-enforced on every engine** — a cookie imported into one session must not appear in another's jar, or the build fails: macOS (non-persistent `WKWebsiteDataStore` per session) · Windows (one WebView2 profile per session + InPrivate — InPrivate alone shares one profile across controllers, [#6](https://github.com/slabbdev/navette/issues/6)) · Linux (fresh WebContext per session; cookies never touch disk — HTTP cache/HSTS still do, #6). Cross-run state moves explicitly: `state_export` / `state_import`. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var.
+**Security?** The server binds 127.0.0.1 only, non-local `Host` headers are refused (DNS-rebinding guard; `/health` exempt), token comparison is constant-time, and proxy URLs are credential-redacted in logs. **Session isolation is CI-enforced on every engine** — a cookie imported into one session must not appear in another's jar, or the build fails: macOS (non-persistent `WKWebsiteDataStore` per session) · Windows (one WebView2 profile per session + InPrivate — InPrivate alone shares one profile across controllers, [#6](https://github.com/slabbdev/navette/issues/6)) · Linux (fresh WebContext per session; cookies never touch disk — HTTP cache/HSTS still do, #6). Cross-run state moves explicitly: `state_export` / `state_import`. The agent's JS executes in the OS WebKit sandbox, not in your terminal. For anything beyond a private laptop, `--token SECRET` requires `Authorization: Bearer` on every route (except `/health`) — an MCP host attaches with the `NAVETTE_TOKEN` env var. **Logged-in states belong in the OS keychain, not in plaintext sidecar files** ([#8](https://github.com/slabbdev/navette/issues/8), stage 1): `navette state save NAME` writes the jar inside the daemon and only metadata ever returns — the request carries a name, the keychain holds the secret, and macOS re-prompts on a new binary (ACL), an implicit per-release consent. Stage 2 (origin-bound credentials the agent never sees) is designed in the issue, not yet built.
 
 **Operator flags** (serve): `--proxy URL` (HTTP CONNECT / SOCKS5, wry backends — macOS follows the system proxy), `--user-agent UA` (per-serve override), `--idle-release MIN` (drop idle WebKit sessions, the daemon stays resident).
 
@@ -43,6 +43,7 @@ cargo install navette-browser   # any platform, from source
 docker run -i --rm ghcr.io/slabbdev/navette navette mcp   # container, stdio MCP (amd64+arm64)
 navette serve --port 8765       # HTTP API on loopback
 navette mcp                     # MCP stdio for agent hosts
+navette state save NAME         # the session's login state → OS keychain
 navette install-daemon          # resident: warm from login
 ```
 
@@ -71,8 +72,10 @@ The `mcp` mode auto-starts `serve` if nothing is listening (it idles politely if
 | `POST /type` | `{selector, value, session?}` | `{ok}` (React-safe native setter) |
 | `POST /evaluate` | `{js, session?}` | `{ok, result}` |
 | `POST /wait` | `{selector, ms?, session?}` | `{ok}` |
-| `POST /sessions/state` | `{session}` | cookies JSON — the logged-in state |
-| `POST /sessions/load` | `{session, cookies}` | `{ok, imported}` restore a logged-in state |
+| `POST /sessions/state` | `{session, store?}` | cookies JSON — the logged-in state; with `store`, the jar goes to the OS keychain under that name and only `{stored, origin, cookies}` returns — the jar never rides the wire |
+| `POST /sessions/load` | `{session, cookies}` or `{session, store}` | `{ok, imported[, origin, saved_at]}` restore a logged-in state from JSON or from the keychain |
+| `GET /states` | — | stored states — names, origins, timestamps; never the jars |
+| `POST /states/delete` | `{name}` | `{ok}` remove one |
 | `POST /sessions/viewport` | `{width, height, session?}` | `{ok, width, height}` set the viewport (default 1280x800) |
 | `POST /sessions/show` | `{session?}` | `{ok, visible}` put the session's window ON SCREEN — titled, keyable, centered; for one-time human logins inside a session |
 | `POST /sessions/hide` | `{session?}` | `{ok, visible}` order the window back out (session and state untouched) |
@@ -97,7 +100,7 @@ Register once (ZCode example, workspace `.zcode/config.json`):
 } } } }
 ```
 
-The host gets 18 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `scroll`, `upload`, `viewport`, `sessions`, `session_close`, `session_show` / `session_hide` (put the window on screen so a human can log in, then take it away — the state stays), `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent).
+The host gets 18 tools: `navigate`, `read`, `screenshot` (returned as MCP image content — the agent *sees* the page), `click`, `hover`, `type`, `key`, `evaluate`, `wait`, `scroll`, `upload`, `viewport`, `sessions`, `session_close`, `session_show` / `session_hide` (put the window on screen so a human can log in, then take it away — the state stays), `state_export` / `state_import` (cookies — the Playwright `storageState` equivalent — with an optional `store` name that parks the jar in the OS keychain so it never crosses the wire).
 
 ## Architecture
 

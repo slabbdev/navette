@@ -25,7 +25,11 @@ base64 = "0.22"
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
+# Per-OS credential store for the session-state keychain (#8). The platform
+# feature must be named explicitly — keyring's defaults enable NONE, and the
+# silent in-memory mock that remains is exactly what keystore refuses to use.
 [target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3", features = ["apple-native"] }
 objc2 = "0.6"
 block2 = "0.6"
 objc2-foundation = "0.3"
@@ -40,8 +44,10 @@ raw-window-handle = "0.6"
 [target.'cfg(target_os = "linux")'.dependencies]
 x11rb = { version = "0.13", features = ["xtest"] }
 gtk = "0.18"
+keyring = { version = "3", features = ["sync-secret-service"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
 windows-sys = { version = "0.61", features = [
     "Win32_Foundation",
     "Win32_Graphics_Gdi",

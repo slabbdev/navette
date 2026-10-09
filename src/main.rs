@@ -15,6 +15,7 @@ mod backend;
 
 mod mcp;
 mod webviewkit;
+mod keystore;
 
 use serde_json::{json, Value};
 use std::io::{Read, Write};
@@ -506,16 +507,95 @@ fn route(fd: &mut TcpStream, req: Req) {
         ("POST", "/sessions/state") => {
             let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
             match KIT.export_cookies(&s) {
-                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Ok(v) => match j.get("store").and_then(|x| x.as_str()) {
+                    // store mode: the jar goes to the OS keychain inside this
+                    // process and never rides back on the wire — it IS the
+                    // login (#8, stage 1). Only metadata returns.
+                    Some(store) => {
+                        // eval_js may return the value JSON-encoded or bare
+                        // (bridge-dependent) — accept both shapes.
+                        let origin = KIT.eval_js(&s, "location.origin")
+                            .ok()
+                            .map(|r| {
+                                serde_json::from_str::<Value>(&r)
+                                    .ok()
+                                    .and_then(|v| v.as_str().map(|s| s.to_string()))
+                                    .unwrap_or(r)
+                            })
+                            .unwrap_or_default();
+                        let n_cookies = v.get("cookies").and_then(|c| c.as_array()).map(|a| a.len()).unwrap_or(0);
+                        match keystore::save(store, &origin, &v) {
+                            Ok(_) => respond(fd, 200, "OK", "application/json", &json_bytes(&json!({
+                                "ok": true, "stored": store, "origin": origin, "cookies": n_cookies,
+                            }))),
+                            Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+                        }
+                    }
+                    None => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                },
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
 
         ("POST", "/sessions/load") => {
             let s = { let n = name.clone(); KIT.run_get_or_create(&n) };
-            match KIT.import_cookies(&s, &j) {
-                Ok(n_cookies) => respond(fd, 200, "OK", "application/json",
-                                         &json_bytes(&json!({"ok": true, "imported": n_cookies}))),
+            // store mode: the jar is resolved from the OS keychain inside
+            // this process — the request carries a name, never the secret.
+            let mut body = j.clone();
+            let mut stored_meta: Option<Value> = None;
+            if body.get("cookies").map(|c| c.is_null()).unwrap_or(true) {
+                match body.get("store").and_then(|x| x.as_str()).map(|x| x.to_string()) {
+                    Some(store) => match keystore::load(&store) {
+                        Ok(wrapper) => {
+                            // /sessions/load's contract is FLAT: "cookies" is
+                            // the array, not the {"cookies":[...]} jar.
+                            body["cookies"] = wrapper
+                                .pointer("/jar/cookies")
+                                .cloned()
+                                .unwrap_or(json!([]));
+                            stored_meta = Some(wrapper);
+                        }
+                        Err(e) => {
+                            respond(fd, 404, "Not Found", "application/json", &json_bytes(&err_data(&e)));
+                            return;
+                        }
+                    },
+                    // Was a silent "imported 0" before — now it says so.
+                    None => {
+                        respond(fd, 400, "Bad Request", "application/json",
+                                &json_bytes(&err_data("either cookies or store is required")));
+                        return;
+                    }
+                }
+            }
+            match KIT.import_cookies(&s, &body) {
+                Ok(n_cookies) => {
+                    let mut payload = json!({"ok": true, "imported": n_cookies});
+                    if let Some(w) = stored_meta {
+                        payload["origin"] = w.get("origin").cloned().unwrap_or(json!(""));
+                        payload["saved_at"] = w.get("saved_at").cloned().unwrap_or(json!(null));
+                    }
+                    respond(fd, 200, "OK", "application/json", &json_bytes(&payload));
+                }
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("GET", "/states") => {
+            match keystore::list() {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
+                Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
+            }
+        }
+
+        ("POST", "/states/delete") => {
+            let store = j.get("name").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            if store.is_empty() {
+                respond(fd, 400, "Bad Request", "application/json", &json_bytes(&err_data("name is required")));
+                return;
+            }
+            match keystore::delete(&store) {
+                Ok(v) => respond(fd, 200, "OK", "application/json", &json_bytes(&v)),
                 Err(e) => respond(fd, 500, "Internal Server Error", "application/json", &json_bytes(&err_data(&e))),
             }
         }
@@ -1032,6 +1112,143 @@ fn uninstall_daemon() {
     }
 }
 
+// MARK: - state CLI (talks to the daemon; the keychain stays server-side)
+
+/// Tiny loopback JSON client for the state subcommands. Honors NAVETTE_TOKEN
+/// like the MCP adapter does.
+fn api_call(base: &str, method: &str, path: &str, body: Option<&Value>) -> Result<Value, String> {
+    use std::net::ToSocketAddrs;
+    let hostport = base.trim_start_matches("http://").trim_end_matches('/');
+    let (host, port) = match hostport.rsplit_once(':') {
+        Some((h, p)) if p.parse::<u16>().is_ok() => (h.to_string(), p.parse::<u16>().unwrap()),
+        _ => (hostport.to_string(), 80u16),
+    };
+    let addr = (host.as_str(), port)
+        .to_socket_addrs()
+        .map_err(|e| e.to_string())?
+        .next()
+        .ok_or_else(|| "no address".to_string())?;
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_secs(3))
+        .map_err(|_| format!("no navette daemon on {base} — start one: navette serve"))?;
+    stream
+        .set_read_timeout(Some(Duration::from_secs(60)))
+        .ok();
+    let body_s = body.map(|v| v.to_string()).unwrap_or_default();
+    let auth = std::env::var("NAVETTE_TOKEN")
+        .ok()
+        .map(|t| format!("Authorization: Bearer {t}\r\n"))
+        .unwrap_or_default();
+    let req = format!(
+        "{method} {path} HTTP/1.1\r\nHost: {host}:{port}\r\nContent-Type: application/json\r\n{auth}Content-Length: {}\r\nConnection: close\r\n\r\n{}",
+        body_s.len(),
+        body_s
+    );
+    stream.write_all(req.as_bytes()).map_err(|e| e.to_string())?;
+    let mut buf = String::new();
+    stream.read_to_string(&mut buf).map_err(|e| e.to_string())?;
+    let text = buf.find("\r\n\r\n").map(|i| &buf[i + 4..]).unwrap_or("{}");
+    let v: Value = serde_json::from_str(text).unwrap_or(json!({}));
+    if buf.starts_with("HTTP/1.1 2") {
+        Ok(v)
+    } else {
+        Err(v.get("error")
+            .and_then(|e| e.as_str())
+            .unwrap_or("request failed")
+            .to_string())
+    }
+}
+
+fn state_usage() {
+    println!("USAGE:");
+    println!("  navette state save NAME [--session S] [--url U]   store the session's logged-in state in the OS keychain");
+    println!("  navette state load NAME [--session S] [--url U]   restore it into the session");
+    println!("  navette state list [--url U]                      stored states (names + origins, never the jars)");
+    println!("  navette state delete NAME [--url U]               remove one");
+    println!();
+    println!("The daemon (navette serve) owns the keychain; --url defaults to $NAVETTE or http://127.0.0.1:8765.");
+}
+
+fn state_cli(args: &[String]) {
+    let cmd = match args.first().map(|s| s.as_str()) {
+        Some(c @ ("save" | "load" | "list" | "delete")) => c,
+        _ => {
+            state_usage();
+            return;
+        }
+    };
+    let flag = |name: &str| {
+        args.iter()
+            .position(|a| a == name)
+            .and_then(|i| args.get(i + 1))
+            .map(|v| v.to_string())
+    };
+    let session = flag("--session").unwrap_or_else(|| "default".into());
+    let base = flag("--url")
+        .or_else(|| std::env::var("NAVETTE").ok())
+        .unwrap_or_else(|| "http://127.0.0.1:8765".into());
+    let name = args.get(1).cloned().unwrap_or_default();
+
+    let fail = |e: String| -> Value {
+        eprintln!("[navette] {e}");
+        std::process::exit(1);
+    };
+
+    match cmd {
+        "save" => {
+            if name.is_empty() {
+                state_usage();
+                return;
+            }
+            let v = api_call(&base, "POST", "/sessions/state",
+                             Some(&json!({"session": session, "store": name}))).unwrap_or_else(fail);
+            println!(
+                "stored {name:?} — {} cookies, origin {} (session {session:?}) — in the OS keychain",
+                v.get("cookies").and_then(|c| c.as_u64()).unwrap_or(0),
+                v.get("origin").and_then(|o| o.as_str()).unwrap_or("?")
+            );
+        }
+        "load" => {
+            if name.is_empty() {
+                state_usage();
+                return;
+            }
+            let v = api_call(&base, "POST", "/sessions/load",
+                             Some(&json!({"session": session, "store": name}))).unwrap_or_else(fail);
+            println!(
+                "loaded {name:?} — {} cookies into session {session:?} (origin {})",
+                v.get("imported").and_then(|c| c.as_u64()).unwrap_or(0),
+                v.get("origin").and_then(|o| o.as_str()).unwrap_or("?")
+            );
+        }
+        "list" => {
+            let v = api_call(&base, "GET", "/states", None).unwrap_or_else(fail);
+            let states = v.get("states").and_then(|s| s.as_array()).cloned().unwrap_or_default();
+            if states.is_empty() {
+                println!("no stored states — create one: navette state save NAME");
+                return;
+            }
+            println!("{:<20} {:<30} saved_at", "NAME", "ORIGIN");
+            for s in states {
+                println!(
+                    "{:<20} {:<30} {}",
+                    s.get("name").and_then(|n| n.as_str()).unwrap_or("?"),
+                    s.get("origin").and_then(|o| o.as_str()).unwrap_or("?"),
+                    s.get("saved_at").and_then(|t| t.as_u64()).unwrap_or(0)
+                );
+            }
+        }
+        "delete" => {
+            if name.is_empty() {
+                state_usage();
+                return;
+            }
+            api_call(&base, "POST", "/states/delete", Some(&json!({"name": name}))).unwrap_or_else(fail);
+            println!("deleted {name:?}");
+        }
+        _ => unreachable!(),
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(|s| s.as_str()) {
@@ -1045,19 +1262,22 @@ fn main() {
             println!("             [--proxy URL] HTTP CONNECT or SOCKS5 proxy for every session");
             println!("             [--user-agent UA] per-serve user-agent override");;
             println!("  navette mcp                 MCP stdio server for agent hosts");
+            println!("  navette state save|load|list|delete NAME    logged-in states in the OS keychain");
             println!("  navette install-daemon      resident: warm from login");
             println!("  navette uninstall-daemon    remove the resident daemon");
             println!("  navette --version           print the version");
             println!();
             println!("HTTP routes: /health /sessions /navigate /read /screenshot /click /hover");
             println!("/type /key /evaluate /wait /scroll /upload /sessions/viewport /sessions/state");
-            println!("/sessions/load /sessions/show /sessions/hide /sessions/close — full docs:");
+            println!("/sessions/load /sessions/show /sessions/hide /sessions/close /states");
+            println!("/states/delete — full docs:");
             println!("https://github.com/slabbdev/navette");
         }
         Some("--version") | Some("-V") | Some("version") => {
             println!("navette {}", env!("CARGO_PKG_VERSION"));
         }
         Some("mcp") => mcp::run(),
+        Some("state") => state_cli(&args[2..]),
         Some("install-daemon") => install_daemon(),
         Some("uninstall-daemon") => uninstall_daemon(),
         _ => serve(&args),
