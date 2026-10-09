@@ -91,8 +91,16 @@ The claims above are claims until measured. Protocol: same machine, same page se
 | RAM per session | idle, one page, then a 10-page session |
 | Crawl | 100-page run: wall time + peak RSS |
 
-Run against **Playwright + Chromium** and **Lightpanda**. Numbers published before v1 — if navette doesn't win on install size, startup and RAM, the pitch dies and we say so.
+Run against **Playwright + Chromium** and **Lightpanda**. Done — [BENCHMARKS.md](BENCHMARKS.md) publishes the numbers, reproducible with one command. navette wins install size, cold start, navigate→read, act latency and the 100-page crawl; the two rows Lightpanda takes (fresh-process boot, peak RAM) are the price of rendering, and the doc says so.
 
 ## Status
 
-One-pager, 2026-09-29. Name collision-checked: `navette` free on npm, free GitHub handle, `navette.dev` and `navette.com` both unregistered — the cleanest name checked this session. Nothing published yet. Built on the shoulders of `tinyjs wrap` (tinyjsapp). MIT when the first commit lands.
+One-pager, 2026-09-29; status refreshed 2026-10-09. Name collision-checked at pitch time: `navette` free on npm, free GitHub handle, `navette.dev` and `navette.com` both unregistered — the cleanest name checked that session. Since then it shipped — **v1.9.0 (2026-10-08)**, CI green on all three OSes:
+
+- **GitHub** — [slabbdev/navette](https://github.com/slabbdev/navette) · site: [slabbdev.github.io/navette](https://slabbdev.github.io/navette/)
+- **crates.io** — `cargo install navette-browser`
+- **Homebrew** — `brew install slabbdev/tap/navette` (macOS arm64)
+- **Docker** — `ghcr.io/slabbdev/navette` (amd64 + arm64, stdio MCP)
+- **Official MCP registry** — listed as `io.github.slabbdev/navette`
+
+Built on the shoulders of `tinyjs wrap` (tinyjsapp). MIT.
