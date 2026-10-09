@@ -123,25 +123,27 @@ CANVAS = ("(document.querySelector('iframe[name=editor-canvas]')||document.query
           "?.contentDocument")
 
 
+def nav_until(session, url, cond_js, tries=3, timeout=8):
+    """Navigate + verify the condition landed — retrying when the wry event
+    loop phantoms a navigate on CI runners (issue #10: ok returned, no load).
+    The condition makes the retry safe: it only re-issues what never landed."""
+    for _ in range(tries):
+        api("/navigate", {"url": url, "session": session})
+        if probe(session, cond_js, True, timeout=timeout) is True:
+            return True
+    return False
+
+
 def journey_install(url):
-    """First boot only: the famous 5-minute install, in 5 seconds."""
-    api("/navigate", {"url": f"{url}/wp-admin/", "session": "wpadmin"})
-    state = ev("wpadmin", "location.pathname")
-    if "/wp-login.php" in str(state):
+    """First boot only: the famous 5-minute install, in 5 seconds.
+    One single navigation: straight to ?step=1 — a navigate issued right
+    after a redirect-completed one is the phantom on CI runners (#10), so
+    the journey never performs two navigations back to back."""
+    api("/navigate", {"url": f"{url}/wp-admin/install.php?step=1", "session": "wpadmin"})
+    state = ev("wpadmin", "(document.body.innerText||'').slice(0,400)")
+    if "Already Installed" in str(state) or "/wp-login.php" in str(ev("wpadmin", "location.pathname")):
         check("install", True, "already installed — skipped")
         return
-    # Fresh boot shows a language-select step whose form submit is flaky
-    # under synthetic events on CI runners. The step is optional: GET
-    # install.php?step=1 serves the five-field install form directly —
-    # the page the language form's POST would have landed on.
-    if ev("wpadmin", "!!document.querySelector('select[name=language]')") is True:
-        # A navigate issued immediately after a redirect-completed one can be
-        # falsely completed by the wry event loop on slow CI runners (issue
-        # #10) — a retry with a condition lands it.
-        for _ in range(3):
-            api("/navigate", {"url": f"{url}/wp-admin/install.php?step=1", "session": "wpadmin"})
-            if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=8) is True:
-                break
     if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=25) is not True:
         state = ev("wpadmin", "(function(){var f=document.querySelector('form');var sel=document.querySelector('select[name=language]');var opt=sel?Array.prototype.slice.call(sel.options).map(function(o){return o.value}).slice(0,3):null;return {p:location.pathname+location.search, t:document.title, form:f?(f.method+' '+f.action).slice(0,80):null, formHTML:f?f.outerHTML.slice(0,260):null, langVals:opt}})()")
         fail("install", f"install form never appeared — page: {json.dumps(state)}")
@@ -162,7 +164,8 @@ def journey_install(url):
 
 
 def journey_login(url):
-    api("/navigate", {"url": f"{url}/wp-login.php", "session": "wpadmin"})
+    if not nav_until("wpadmin", f"{url}/wp-login.php", '!!document.querySelector("input[name=log]")'):
+        fail("login", "wp-login.php form never appeared")
     api("/type", {"selector": "input[name=log]", "value": ADMIN_USER, "session": "wpadmin"})
     api("/type", {"selector": "input[name=pwd]", "value": ADMIN_PASS, "session": "wpadmin"})
     api("/click", {"selector": "input[name=wp-submit]", "session": "wpadmin", "wait_navigation": True})
@@ -183,10 +186,8 @@ def journey_publish(url):
     title = f"Smoke post {ts}"
     body = ("First paragraph typed by nobody — pasted by navette. "
             f"Second paragraph: zero Chromium were downloaded making this post ({ts}).")
-    api("/navigate", {"url": f"{url}/wp-admin/post-new.php", "session": "wpadmin"})
-    waited = api("/wait", {"selector": "button.editor-post-publish-panel__toggle",
-                           "ms": 20000, "session": "wpadmin"})
-    if not waited.get("ok"):
+    if not nav_until("wpadmin", f"{url}/wp-admin/post-new.php",
+                     '!!document.querySelector("button.editor-post-publish-panel__toggle")', timeout=15):
         fail("publish (editor)", "Gutenberg publish toggle never appeared")
     # canvas iframe settles just after the chrome does — probe until the
     # appender exists (a live signal the writing flow is mounted), then give
@@ -259,7 +260,8 @@ def journey_publish(url):
 
 
 def journey_frontend(title, body, permalink):
-    api("/navigate", {"url": permalink, "session": "wpfront"})
+    if not nav_until("wpfront", permalink, '!!document.querySelector("h1.entry-title, h1")', timeout=10):
+        fail("frontend verify", "permalink never loaded")
     got = probe("wpfront", '(function(){var h=document.querySelector("h1.entry-title, h1");return h?h.textContent.trim():null})()',
                 title, timeout=10)
     page_text = ev("wpfront", "document.body.innerText")
@@ -272,8 +274,7 @@ def journey_frontend(title, body, permalink):
 
 
 def journey_comment(permalink):
-    api("/navigate", {"url": permalink, "session": "wpfront"})
-    if probe("wpfront", '!!document.querySelector("#comment")', True, timeout=10) is not True:
+    if not nav_until("wpfront", permalink, '!!document.querySelector("#comment")', timeout=10):
         fail("comment", "comment form never appeared")
     for sel, val in [("textarea#comment", "Automated smoke comment — posted by navette, held for moderation."),
                      ("input#author", "navette smoke"),
