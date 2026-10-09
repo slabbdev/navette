@@ -1088,6 +1088,10 @@ fn serve(args: &[String]) {
         .and_then(|i| args.get(i + 1))
         .and_then(|v| v.parse().ok())
         .unwrap_or(8765);
+    // The wry backends bind the listener inside run_main_loop() and read the
+    // port from this static — without the set, --port was silently ignored on
+    // Linux/Windows and the daemon always bound 8765 (found by ci-race, #9).
+    let _ = PORT.set(port);
 
     // Idle watchdog: drop WebKit sessions after N minutes without any HTTP
     // request. The daemon stays alive; the next request re-warms on demand.
