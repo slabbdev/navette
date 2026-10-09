@@ -1,0 +1,374 @@
+{
+  "summary": {
+    "query": "macbook pro",
+    "pages": [
+      "ok"
+    ],
+    "ads": 35,
+    "challenges": 0,
+    "total_announces": 24059,
+    "price_eur": {
+      "count": 35,
+      "min": 120,
+      "median": 450,
+      "mean": 792,
+      "p90": 1950,
+      "max": 2990
+    },
+    "pro_share": 0.06,
+    "top_locations": [
+      [
+        "Paris",
+        3
+      ],
+      [
+        "Poitiers",
+        1
+      ],
+      [
+        "Saint-Sulpice-de-Pommeray",
+        1
+      ],
+      [
+        "Colmar",
+        1
+      ],
+      [
+        "Cachan",
+        1
+      ]
+    ],
+    "categories": [
+      [
+        "Ordinateurs",
+        35
+      ]
+    ]
+  },
+  "pages": [
+    {
+      "outcome": "ok",
+      "url": "https://www.leboncoin.fr/recherche?text=macbook+pro",
+      "title": "« macbook pro » Toute la France - leboncoin",
+      "total": 24059,
+      "n": 35,
+      "ads": [
+        {
+          "id": "3278139589",
+          "title": "MacBook Pro 14\" M4 PRO/NOIR/24Go/512SSD/état NEUF/18cycles/FACTURE/GARANTI 2 ANS",
+          "price": 1990,
+          "category": "Ordinateurs",
+          "location": "Paris 75016 Exelmans - Molitor",
+          "pro": true,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3278139589"
+        },
+        {
+          "id": "3271934637",
+          "title": "MacBook Pro 16 M4 MAX/CPU14/GPU32/36Go/1To/batterie 98%/FACTURE/GARANTI 1 AN",
+          "price": 2990,
+          "category": "Ordinateurs",
+          "location": "Paris 75016 Exelmans - Molitor",
+          "pro": true,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3271934637"
+        },
+        {
+          "id": "3280322158",
+          "title": "Macbook pro",
+          "price": 150,
+          "category": "Ordinateurs",
+          "location": "Poitiers 86000",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3280322158"
+        },
+        {
+          "id": "3253939833",
+          "title": "Macbook pro",
+          "price": 250,
+          "category": "Ordinateurs",
+          "location": "Saint-Sulpice-de-Pommeray 41000 Champs Provost",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3253939833"
+        },
+        {
+          "id": "3263514358",
+          "title": "Macbook Pro",
+          "price": 200,
+          "category": "Ordinateurs",
+          "location": "Colmar 68000",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3263514358"
+        },
+        {
+          "id": "3274167498",
+          "title": "MacBook Pro 2019 13 pouces",
+          "price": 180,
+          "category": "Ordinateurs",
+          "location": "Cachan 94230",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3274167498"
+        },
+        {
+          "id": "3275958418",
+          "title": "Macbook pro",
+          "price": 250,
+          "category": "Ordinateurs",
+          "location": "Attignat 01340",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3275958418"
+        },
+        {
+          "id": "3268097331",
+          "title": "Apple MacBook Pro",
+          "price": 120,
+          "category": "Ordinateurs",
+          "location": "Roubaix 59100",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3268097331"
+        },
+        {
+          "id": "3277655212",
+          "title": "MacBook Pro 13’´",
+          "price": 150,
+          "category": "Ordinateurs",
+          "location": "Dardilly 69570",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3277655212"
+        },
+        {
+          "id": "3282087490",
+          "title": "MacBook Pro Retina 13\"",
+          "price": 220,
+          "category": "Ordinateurs",
+          "location": "Dijon 21000",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3282087490"
+        },
+        {
+          "id": "3281351738",
+          "title": "MacBook Pro 13 pouces",
+          "price": 350,
+          "category": "Ordinateurs",
+          "location": "Antony 92160",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3281351738"
+        },
+        {
+          "id": "3271332929",
+          "title": "MacBook Pro M2, 2022, 13 Pouces",
+          "price": 749,
+          "category": "Ordinateurs",
+          "location": "Marseille 13013 Saint-Mitre",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3271332929"
+        },
+        {
+          "id": "3260584455",
+          "title": "MacBook Pro 16\" (2019)",
+          "price": 425,
+          "category": "Ordinateurs",
+          "location": "Nancy 54000 Poincaré/Foch/Anatole France",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3260584455"
+        },
+        {
+          "id": "3259367174",
+          "title": "Macbook pro m2 2022",
+          "price": 799,
+          "category": "Ordinateurs",
+          "location": "Le Bouscat 33110",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3259367174"
+        },
+        {
+          "id": "3278300227",
+          "title": "MacBook Pro M4",
+          "price": 1000,
+          "category": "Ordinateurs",
+          "location": "Wittelsheim 68310",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3278300227"
+        },
+        {
+          "id": "3278620897",
+          "title": "MacBook Pro 14’’ M5",
+          "price": 1950,
+          "category": "Ordinateurs",
+          "location": "Aix-en-Provence 13100",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3278620897"
+        },
+        {
+          "id": "3274770249",
+          "title": "MacBook Pro M5 2025",
+          "price": 1400,
+          "category": "Ordinateurs",
+          "location": "Roquebrune-Cap-Martin 06190",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3274770249"
+        },
+        {
+          "id": "3196225037",
+          "title": "MacBook Pro 16",
+          "price": 230,
+          "category": "Ordinateurs",
+          "location": "Longvic 21600",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3196225037"
+        },
+        {
+          "id": "3276749712",
+          "title": "MacBook Pro M3 521ssd",
+          "price": 850,
+          "category": "Ordinateurs",
+          "location": "Thionville 57100",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3276749712"
+        },
+        {
+          "id": "3162235926",
+          "title": "MacBook Pro touch bar 16\" Retina (2019)",
+          "price": 450,
+          "category": "Ordinateurs",
+          "location": "Montpellier 34080 Alco",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3162235926"
+        },
+        {
+          "id": "3280726695",
+          "title": "MacBook Pro 14 pouces m3 Pro 2024",
+          "price": 1300,
+          "category": "Ordinateurs",
+          "location": "Toulouse 31000",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3280726695"
+        },
+        {
+          "id": "3272385912",
+          "title": "MacBook Pro 16 pouces 2019 i7 512go",
+          "price": 530,
+          "category": "Ordinateurs",
+          "location": "Dinsheim-sur-Bruche 67190",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3272385912"
+        },
+        {
+          "id": "3275363202",
+          "title": "MacBook Pro a2338 M2",
+          "price": 799,
+          "category": "Ordinateurs",
+          "location": "Grasse 06130",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3275363202"
+        },
+        {
+          "id": "3266845388",
+          "title": "MacBook Pro 15 pouces",
+          "price": 350,
+          "category": "Ordinateurs",
+          "location": "Ivry-sur-Seine 94200 Monmousseau - Verollot",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3266845388"
+        },
+        {
+          "id": "3251056395",
+          "title": "MacBook Pro",
+          "price": 2200,
+          "category": "Ordinateurs",
+          "location": "Trilport 77470",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3251056395"
+        },
+        {
+          "id": "3279323633",
+          "title": "MacBook Pro 14",
+          "price": 1300,
+          "category": "Ordinateurs",
+          "location": "Villeneuve-Saint-Georges 94190",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3279323633"
+        },
+        {
+          "id": "3279848874",
+          "title": "MacBook Pro 2019",
+          "price": 350,
+          "category": "Ordinateurs",
+          "location": "Soindres 78200",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3279848874"
+        },
+        {
+          "id": "3282281479",
+          "title": "MacBook Pro 13 pouces (M1, 2020)",
+          "price": 800,
+          "category": "Ordinateurs",
+          "location": "Morangis 91420",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3282281479"
+        },
+        {
+          "id": "3283116055",
+          "title": "Macbook pro 2016",
+          "price": 260,
+          "category": "Ordinateurs",
+          "location": "Bédée 35137",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3283116055"
+        },
+        {
+          "id": "3273818930",
+          "title": "MacBook Pro 16 pouces M4 Pro 24G ram 512g Batterie 45 cycles",
+          "price": 2200,
+          "category": "Ordinateurs",
+          "location": "Garches 92380",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3273818930"
+        },
+        {
+          "id": "3276960859",
+          "title": "MacBook Pro 2016",
+          "price": 300,
+          "category": "Ordinateurs",
+          "location": "Paris 75013 Nationale - Jeanne d'Arc",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3276960859"
+        },
+        {
+          "id": "3281532165",
+          "title": "Macbook Pro 2019",
+          "price": 180,
+          "category": "Ordinateurs",
+          "location": "Fécamp 76400",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3281532165"
+        },
+        {
+          "id": "3281469333",
+          "title": "MacBook Pro M5 – 16 Go",
+          "price": 1699,
+          "category": "Ordinateurs",
+          "location": "Angoulême 16000",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3281469333"
+        },
+        {
+          "id": "3265653575",
+          "title": "MacBook Pro 15.4\" - 2019 - 512Gb SSD - 16Gb RAM",
+          "price": 450,
+          "category": "Ordinateurs",
+          "location": "Archamps 74160",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3265653575"
+        },
+        {
+          "id": "3276452692",
+          "title": "MacBook Pro 2019",
+          "price": 310,
+          "category": "Ordinateurs",
+          "location": "Villeurbanne 69100",
+          "pro": false,
+          "url": "https://www.leboncoin.fr/ad/ordinateurs/3276452692"
+        }
+      ]
+    }
+  ]
+}
