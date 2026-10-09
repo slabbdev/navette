@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-navette",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "n8n community node for navette \u2014 the browser for agents. Drive the system WebView: navigate, read, screenshot, click, type, evaluate, cookie state, one-command login.",
   "keywords": [
     "n8n-community-node-package",
@@ -31,7 +31,8 @@
       "nodes/Navette/Navette.node.js"
     ],
     "credentials": [
-      "credentials/NavetteApi.credentials.js"
+      "credentials/NavetteApi.credentials.js",
+      "credentials/NavetteLlmApi.credentials.js"
     ]
   },
   "dependencies": {}

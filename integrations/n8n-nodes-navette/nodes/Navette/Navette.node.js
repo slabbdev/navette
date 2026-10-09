@@ -24,6 +24,7 @@ const OPERATIONS = [
   { name: 'Fill a field', value: 'type', description: 'Type text into a form field' },
   { name: 'Wait for something', value: 'wait', description: 'Wait until an element shows up' },
   { name: 'Run JavaScript', value: 'evaluate', description: 'Advanced: run your own code in the page' },
+  { name: 'Browse for me (AI)', value: 'agent', description: 'Give a mission in plain words — the node drives the browser by itself' },
   { name: 'Log in (saved password)', value: 'login', description: 'Log in with a password saved in the system keychain — the workflow never sees it' },
   { name: 'Save login session', value: 'exportState', description: 'Export the logged-in cookies for later' },
   { name: 'Restore login session', value: 'importState', description: 'Reuse saved cookies — no login needed' },
@@ -62,7 +63,10 @@ class Navette {
       usableAsTool: true,
       inputs: ['main'],
       outputs: ['main'],
-      credentials: [{ name: 'navetteApi', required: true }],
+      credentials: [
+        { name: 'navetteApi', required: false },
+        { name: 'navetteLlmApi', required: false, displayOptions: { show: { operation: ['agent'] } } },
+      ],
       properties: [
         OPERATION_FIELD,
 
@@ -160,6 +164,24 @@ class Navette {
           description: 'The jar exported by Export State (raw or {"cookies":[…]})',
         }),
 
+        field('Mission', 'mission', 'string', {
+          ...show('agent'),
+          required: true,
+          typeOptions: { editor: 'textEditor' },
+          placeholder: 'e.g. Go to news.ycombinator.com and give me the top 5 titles with their points',
+          description: 'What you want, in plain words. The node opens the page, clicks, fills, reads — by itself.',
+        }),
+        field('Start URL (optional)', 'startUrl', 'string', {
+          ...show('agent'),
+          placeholder: 'https://…  (leave empty to let the agent choose)',
+          description: 'Page to open first, if any',
+        }),
+        field('Max Steps', 'maxSteps', 'number', {
+          ...show('agent'),
+          default: 8,
+          description: 'Safety cap on browser actions the agent may take',
+        }),
+
         field('Width', 'width', 'number', {
           ...show('viewport'),
           default: 1920,
@@ -195,6 +217,17 @@ class Navette {
       // no credential configured — the loopback default stands (a daemon on
       // 8765 without --token needs nothing)
     }
+    let llm = null;
+    try {
+      const c = await this.getCredentials('navetteLlmApi');
+      if (c && c.apiKey) {
+        llm = {
+          base: (c.baseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai').replace(/\/+$/, ''),
+          key: c.apiKey,
+          model: c.model || 'gemini-2.5-flash',
+        };
+      }
+    } catch {}
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -204,6 +237,111 @@ class Navette {
       const session = this.getNodeParameter('session', i) || 'default';
       let path = null;
       let body = { session };
+
+      // ---- Browse for me (AI): the self-driving journey -------------------
+      if (operation === 'agent') {
+        if (!llm) {
+          throw new Error('Browse for me needs an LLM: open the node credentials and configure "navette agent — LLM" (a free Gemini key works).');
+        }
+        const mission = this.getNodeParameter('mission', i);
+        const startUrl = this.getNodeParameter('startUrl', i) || '';
+        const maxSteps = Math.min(this.getNodeParameter('maxSteps', i) || 8, 20);
+
+        const daemon = async (p, b) => {
+          const r = await fetch(`${base}${p}`, { method: 'POST', headers, body: JSON.stringify({ session, ...b }) });
+          const text = await r.text();
+          let j; try { j = JSON.parse(text); } catch { j = { raw: text.slice(0, 500) }; }
+          return j;
+        };
+
+        const messages = [
+          { role: 'system', content:
+            'You drive a real browser through the provided tools. Method: open the page, read the markdown content returned by open_page, then click/fill/run_js as needed until the mission is fulfilled. ' +
+            'Selectors are CSS (inspect with run_js if unsure: document.querySelectorAll). ' +
+            'When the mission is done, call finish with the answer, in the user\'s language, concise.' },
+          { role: 'user', content: 'Mission: ' + mission + (startUrl ? `\nStart by opening: ${startUrl}` : '') },
+        ];
+        const tools = [
+          { type: 'function', function: { name: 'open_page', description: 'Open a URL; returns the page title and content as markdown — this is how you read the web', parameters: { type: 'object', properties: { url: { type: 'string', description: 'Full URL' } }, required: ['url'] } } },
+          { type: 'function', function: { name: 'click', description: 'Click an element by CSS selector', parameters: { type: 'object', properties: { selector: { type: 'string' } }, required: ['selector'] } } },
+          { type: 'function', function: { name: 'fill', description: 'Type text into a field by CSS selector', parameters: { type: 'object', properties: { selector: { type: 'string' }, text: { type: 'string' } }, required: ['selector', 'text'] } } },
+          { type: 'function', function: { name: 'run_js', description: 'Run JavaScript in the page; return JSON.stringify(...) of what you want back', parameters: { type: 'object', properties: { expression: { type: 'string' } }, required: ['expression'] } } },
+          { type: 'function', function: { name: 'screenshot', description: 'Capture the current page as a PNG (kept in the node output)', parameters: { type: 'object', properties: {} } } },
+          { type: 'function', function: { name: 'finish', description: 'The mission is complete — deliver the final answer', parameters: { type: 'object', properties: { answer: { type: 'string', description: 'The final answer for the user' } }, required: ['answer'] } } },
+        ];
+
+        let answer = null;
+        const log = [];
+        let shotBytes = null;
+        let lastShot = null;
+        for (let step = 0; step < maxSteps && !answer; step++) {
+          const chat = await fetch(`${llm.base}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${llm.key}` },
+            body: JSON.stringify({ model: llm.model, messages, tools, tool_choice: 'auto' }),
+          });
+          if (!chat.ok) {
+            throw new Error(`LLM error (HTTP ${chat.status}): ${(await chat.text()).slice(0, 300)}`);
+          }
+          const choice = (await chat.json()).choices?.[0]?.message;
+          if (!choice) throw new Error('LLM returned no message');
+          messages.push(choice);
+
+          const calls = choice.tool_calls || [];
+          if (!calls.length) {
+            answer = choice.content || '(the model returned no answer)';
+            log.push({ step, action: 'answer', detail: String(answer).slice(0, 200) });
+            break;
+          }
+          for (const call of calls) {
+            const fn = call.function?.name;
+            let args = {};
+            try { args = JSON.parse(call.function?.arguments || '{}'); } catch {}
+            let result;
+            if (fn === 'open_page') {
+              const r = await daemon('/navigate', { url: args.url, with_content: true, format: 'markdown' });
+              result = r.ok ? `TITLE: ${r.title}\n\n${String(r.content || '').slice(0, 6000)}` : `ERROR: ${JSON.stringify(r).slice(0, 300)}`;
+              log.push({ step, action: 'open_page', url: args.url, ok: !!r.ok });
+            } else if (fn === 'click') {
+              const r = await daemon('/click', { selector: args.selector, wait_navigation: true });
+              result = JSON.stringify(r).slice(0, 300);
+              log.push({ step, action: 'click', selector: args.selector });
+            } else if (fn === 'fill') {
+              const r = await daemon('/type', { selector: args.selector, value: args.text });
+              result = JSON.stringify(r).slice(0, 300);
+              log.push({ step, action: 'fill', selector: args.selector });
+            } else if (fn === 'run_js') {
+              const r = await daemon('/evaluate', { js: args.expression });
+              result = (r.result || JSON.stringify(r)).slice(0, 3000);
+              log.push({ step, action: 'run_js', detail: args.expression?.slice(0, 80) });
+            } else if (fn === 'screenshot') {
+              const sr = await fetch(`${base}/screenshot`, { method: 'POST', headers, body: JSON.stringify({ session }) });
+              const buf = Buffer.from(await sr.arrayBuffer());
+              shotBytes = buf.length;
+              result = `Screenshot captured (${buf.length} bytes) — it is attached to the node output.`;
+              log.push({ step, action: 'screenshot' });
+              lastShot = buf;
+            } else if (fn === 'finish') {
+              answer = args.answer || 'Done.';
+              log.push({ step, action: 'finish' });
+              break;
+            } else {
+              result = `Unknown tool: ${fn}`;
+            }
+            messages.push({ role: 'tool', tool_call_id: call.id, content: String(result) });
+          }
+        }
+        if (!answer) answer = `Stopped after ${maxSteps} steps without finishing — the log shows what happened.`;
+
+        const itemJson = { ok: true, answer, steps: log };
+        if (lastShot) {
+          const binary = await this.helpers.prepareBinaryData(lastShot, 'agent-screenshot.png', 'image/png');
+          out.push({ json: itemJson, binary: { data: binary } });
+        } else {
+          out.push({ json: itemJson });
+        }
+        continue;
+      }
 
       switch (operation) {
         case 'navigate':
