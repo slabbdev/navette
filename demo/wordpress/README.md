@@ -23,18 +23,27 @@ Both print a journey table and exit 0/1. Screenshots land in
 
 | | navette | Playwright 1.63 + Chromium |
 |---|---|---|
-| **Suite runtime** (6 journeys, fresh WP) | **20.7–23.2 s** | **8.4 s** |
+| **Suite runtime** (6 journeys, fresh WP per run) | **8.7 / 8.7 / 9.6 s** | **8.4 / 8.6 s** |
 | One-time engine setup | **0 s — the OS WebView, already installed** | 74 s download, 182 MB over the wire, **557 MB on disk** |
 | Binary footprint | 626 KB | ~5 MB npm + the 557 MB browser cache |
 
-Read the runtime row honestly: **Playwright wins it.** Auto-waiting returns
-the instant an element is actionable; navette's smoke polls conservatively
-(its `/wait` fixed at 150 ms ticks, plus deliberate settle beats). The
-setup row is where the thesis lives: for a CI runner or a laptop, navette is
-*already installed by the OS* — the engine costs nothing to fetch, cache or
-update, ever. Three engines come free with the OS matrix (WebKit on macOS,
-WebView2 = Chromium on Windows, WebKitGTK on Linux) — cross-browser coverage
-without one browser download.
+The runtime row landed at **parity** — within measurement noise once every
+blind sleep in the navette suite became a value-probe (see below). Playwright's
+auto-waiting is excellent; it turns out a smoke suite disciplined about waits
+matches it, and the remaining tenths are screenshots and install-wizard page
+loads, identical on both sides. The setup row is where the thesis lives: for
+a CI runner or a laptop, navette is *already installed by the OS* — the engine
+costs nothing to fetch, cache or update, ever. Three engines come free with
+the OS matrix (WebKit on macOS, WebView2 = Chromium on Windows, WebKitGTK on
+Linux) — cross-browser coverage without one browser download.
+
+A note on getting there: the first green navette run took 20.7 s of
+conservative sleeps. Turning those into 150–300 ms probes cut it to 8.7 s —
+and going fast surfaced a hydration race the slow version slept through (the
+first paragraph click can be swallowed during the editor's tail of mount;
+the swallow-retry pattern from the daily.dev recipe handles it). Speed and
+flakiness trade through the same knob: waits must be *probes with
+conditions*, never clocks.
 
 ## Same journeys, four different flake classes
 
@@ -57,10 +66,10 @@ needed — each is the article's own "best practices" pain list live:
    fix is a fresh anonymous context, which the navette suite had by design
    (separate `wpfront` session).
 
-For fairness: the navette suite had its own two bugs on the way to green —
-a form-wait race (fixed with a real wait loop) and an unquoted CSS attribute
-selector. Script bugs on both sides; the point is *which engine quirks*
-each stack hit.
+For fairness: getting navette green and *fast* surfaced its own three bugs —
+a form-wait race, an unquoted CSS attribute selector, and the appender
+hydration race above. Script bugs on both sides; the point is *which engine
+quirks* each stack hit.
 
 ## Findings worth keeping
 
