@@ -137,7 +137,7 @@ def journey_install(url):
     if ev("wpadmin", "!!document.querySelector('select[name=language]')") is True:
         api("/navigate", {"url": f"{url}/wp-admin/install.php?language=en_US", "session": "wpadmin"})
     if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=25) is not True:
-        state = ev("wpadmin", "(function(){return {p:location.pathname, t:document.title, head:(document.body.innerText||'').slice(0,180)}})()")
+        state = ev("wpadmin", "(function(){var f=document.querySelector('form');var sel=document.querySelector('select[name=language]');var opt=sel?Array.prototype.slice.call(sel.options).map(function(o){return o.value}).slice(0,3):null;return {p:location.pathname+location.search, t:document.title, form:f?(f.method+' '+f.action).slice(0,80):null, formHTML:f?f.outerHTML.slice(0,260):null, langVals:opt}})()")
         fail("install", f"install form never appeared — page: {json.dumps(state)}")
     for sel, val in [("input[name=weblog_title]", SITE_TITLE),
                      ("input[name=user_name]", ADMIN_USER),
