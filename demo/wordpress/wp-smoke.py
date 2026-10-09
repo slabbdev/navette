@@ -130,14 +130,14 @@ def journey_install(url):
     if "/wp-login.php" in str(state):
         check("install", True, "already installed — skipped")
         return
-    # language step (first boot): Continue reloads the page with the real form
-    for _ in range(30):
-        if ev("wpadmin", "!!document.querySelector('input[name=weblog_title]')") is True:
-            break
-        if ev("wpadmin", "!!document.querySelector('#language-continue')") is True:
-            api("/click", {"selector": "input#language-continue", "session": "wpadmin"})
-        time.sleep(1)
-    else:
+    # language step (first boot): Continue reloads the page with the real
+    # form. On CI the synthetic click on the submit input sometimes does not
+    # submit — fall back to requestSubmit() on the form itself.
+    if ev("wpadmin", "!!document.querySelector('select[name=language]')") is True:
+        api("/click", {"selector": "input#language-continue", "session": "wpadmin"})
+        if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=6) is not True:
+            ev("wpadmin", "(function(){var s=document.querySelector('select[name=language]');if(s&&s.form){s.form.requestSubmit();return 'submitted'}return 'no-form'})()")
+    if probe("wpadmin", "!!document.querySelector('input[name=weblog_title]')", True, timeout=25) is not True:
         state = ev("wpadmin", "(function(){return {p:location.pathname, t:document.title, head:(document.body.innerText||'').slice(0,180)}})()")
         fail("install", f"install form never appeared — page: {json.dumps(state)}")
     for sel, val in [("input[name=weblog_title]", SITE_TITLE),
