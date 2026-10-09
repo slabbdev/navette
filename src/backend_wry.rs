@@ -74,9 +74,15 @@ pub type SessionRef = Arc<Session>;
 pub struct PendingNav {
     pub tx: SyncSender<Result<String, String>>,
     pub after: Option<String>,
-    pub url: String,  // completion matches the target URL — the initial
-                      // about:blank event must not swallow it
+    pub url: String,  // requested URL — for exact-match completion
     pub name: String, // the retry EvalJs needs the session name
+    // Set when a main-frame load STARTS while this navigate is pending.
+    // Redirects (302 /wp-admin/ -> install.php…) change the FINAL URL, so
+    // completion cannot rely on URL equality alone; the Started flag is what
+    // makes "this Finished is ours" decidable while still ignoring the
+    // webview's initial about:blank load (its Started fires before any
+    // navigate is pending, and its Finished before the target's Started).
+    pub started: bool,
 }
 
 static SESSIONS: OnceLock<Mutex<HashMap<String, SessionRef>>> = OnceLock::new();
@@ -321,6 +327,7 @@ pub fn navigate(s: &SessionRef, url: &str, after: Option<String>) -> Result<Stri
             after,
             url: url.trim_end_matches('/').to_string(),
             name: s.name.clone(),
+            started: false,
         });
     }
     s.current_url.lock().unwrap().clear();
@@ -1027,16 +1034,31 @@ fn create_session(
         .with_on_page_load_handler(
             move |event: wry::PageLoadEvent, url: String| {
                 if !matches!(event, wry::PageLoadEvent::Finished) {
+                    // A main-frame load STARTING while a navigate is pending
+                    // marks that navigate as under way — redirects change the
+                    // final URL, so completion needs more than URL equality.
+                    // The initial about:blank never trips this: its Started
+                    // fires before any navigate is pending.
+                    if matches!(event, wry::PageLoadEvent::Started) && url != "about:blank" {
+                        let mut g = pl_pending.lock().unwrap();
+                        if let Some(p) = g.as_mut() {
+                            p.started = true;
+                        }
+                    }
                     return;
                 }
                 *pl_url.lock().unwrap() = url.clone();
-                // URL-matched completion: the initial about:blank Finished (or
-                // any other in-flight load) must not swallow a pending navigate
-                // aimed at another URL — the CI cold start hits exactly that race.
+                // Complete on URL equality OR on "our load started here":
+                // the URL match alone strands every redirected navigation at
+                // the 45 s timeout (found by ci-race — WordPress /wp-admin/
+                // 302s to install.php). The started-flag keeps the original
+                // guard intact: the initial about:blank Finished fires before
+                // the target's Started, so it still cannot swallow a pending
+                // navigate.
                 let matched = {
                     let mut g = pl_pending.lock().unwrap();
                     match g.as_ref() {
-                        Some(p) if p.url == url.trim_end_matches('/') => g.take(),
+                        Some(p) if p.url == url.trim_end_matches('/') || p.started => g.take(),
                         _ => None,
                     }
                 };
