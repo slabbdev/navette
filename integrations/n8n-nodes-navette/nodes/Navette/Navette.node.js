@@ -24,6 +24,7 @@ const OPERATIONS = [
   { name: 'login', description: 'Login (keychain credential)', hint: 'the agent never sees the password' },
   { name: 'exportState', description: 'Export cookie state', hint: 'the logged-in jar' },
   { name: 'importState', description: 'Import cookie state', hint: 'restore a login' },
+  { name: 'viewport', description: 'Set viewport size', hint: 'width × height, affects rendering and screenshots' },
   { name: 'sessions', description: 'List sessions', hint: 'url + title each' },
   { name: 'closeSession', description: 'Close a session', hint: 'free the window' },
 ];
@@ -57,7 +58,7 @@ class Navette {
       defaults: { name: 'navette' },
       inputs: ['main'],
       outputs: ['main'],
-      credentials: [{ name: 'navetteApi', required: false }],
+      credentials: [{ name: 'navetteApi', required: true }],
       properties: [
         OPERATION_FIELD,
 
@@ -124,8 +125,19 @@ class Navette {
           description: 'The jar exported by Export State (raw or {"cookies":[…]})',
         }),
 
+        field('Width', 'width', 'number', {
+          ...show('viewport'),
+          default: 1920,
+          description: 'Viewport width in pixels',
+        }),
+        field('Height', 'height', 'number', {
+          ...show('viewport'),
+          default: 1080,
+          description: 'Viewport height in pixels',
+        }),
+
         field('Session', 'session', 'string', {
-          ...show('navigate', 'read', 'screenshot', 'click', 'type', 'evaluate', 'wait', 'login', 'exportState', 'importState', 'closeSession'),
+          ...show('navigate', 'read', 'screenshot', 'click', 'type', 'evaluate', 'wait', 'viewport', 'login', 'exportState', 'importState', 'closeSession'),
           default: '',
           placeholder: 'default',
           description: 'Named browser context in the daemon — keep one per site; cookies persist between nodes',
@@ -136,10 +148,20 @@ class Navette {
 
   async execute() {
     const items = this.getInputData();
-    const creds = (await this.getCredentials('navetteApi')) || {};
-    const base = (creds.baseUrl || 'http://127.0.0.1:8765').replace(/\/+$/, '');
+    let base = 'http://127.0.0.1:8765';
+    let token = '';
+    try {
+      const creds = await this.getCredentials('navetteApi');
+      if (creds) {
+        base = (creds.baseUrl || base).replace(/\/+$/, '');
+        token = creds.token || '';
+      }
+    } catch {
+      // no credential configured — the loopback default stands (a daemon on
+      // 8765 without --token needs nothing)
+    }
     const headers = { 'Content-Type': 'application/json' };
-    if (creds.token) headers.Authorization = `Bearer ${creds.token}`;
+    if (token) headers.Authorization = `Bearer ${token}`;
 
     const out = [];
     for (let i = 0; i < items.length; i++) {
@@ -200,6 +222,11 @@ class Navette {
           path = '/sessions/load';
           break;
         }
+        case 'viewport':
+          body.width = this.getNodeParameter('width', i);
+          body.height = this.getNodeParameter('height', i);
+          path = '/sessions/viewport';
+          break;
         case 'sessions':
           path = null; // GET
           break;
