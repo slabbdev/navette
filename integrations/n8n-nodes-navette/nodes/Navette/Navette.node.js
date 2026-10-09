@@ -176,6 +176,7 @@ class Navette {
         }),
         field('Start URL (optional)', 'startUrl', 'string', {
           ...show('agent'),
+          default: '',
           placeholder: 'https://…  (leave empty to let the agent choose)',
           description: 'Page to open first, if any',
         }),
