@@ -7,7 +7,13 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require(path.join(__dirname, '..', '..', 'bench', 'node_modules', 'playwright'));
+// resolve playwright locally (CI) with the repo's bench install as fallback
+let chromium;
+try {
+  ({ chromium } = require('playwright'));
+} catch (e) {
+  ({ chromium } = require(path.join(__dirname, '..', '..', 'bench', 'node_modules', 'playwright')));
+}
 
 const URL = process.env.WP_URL || 'http://127.0.0.1:8090';
 const ART = path.join(__dirname, 'artifacts-playwright');

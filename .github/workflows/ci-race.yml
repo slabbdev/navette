@@ -1,0 +1,187 @@
+name: ci-race
+
+# The cold-runner race: same WordPress smoke suite (demo/wordpress), two
+# engines, one fresh GitHub Actions runner each — navette on the system
+# WebKitGTK vs Playwright on a downloaded Chromium. Every setup and suite
+# step is timed; the summary job renders the comparison table into the run's
+# step summary (screenshot that). Dispatch manually.
+
+on:
+  workflow_dispatch:
+
+env:
+  WP_URL: http://127.0.0.1:8090
+  NAVETTE_VERSION: v1.9.0
+
+jobs:
+  navette:
+    runs-on: ubuntu-24.04
+    outputs:
+      engine_setup: ${{ steps.data.outputs.engine_setup }}
+      driver_setup: ${{ steps.data.outputs.driver_setup }}
+      driver_mb: ${{ steps.data.outputs.driver_mb }}
+      suite: ${{ steps.data.outputs.suite }}
+      passed: ${{ steps.data.outputs.passed }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: engine setup (WebKitGTK via apt — the OS ships this; macOS/Windows runners need nothing)
+        run: |
+          t0=$(date +%s)
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libwebkit2gtk-4.1-dev libgtk-3-dev glib-networking xvfb dbus
+          echo "ENGINE_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+      - name: driver setup (release binary — the brew/cargo-install path)
+        run: |
+          t0=$(date +%s)
+          curl -sL "https://github.com/slabbdev/navette/releases/download/${NAVETTE_VERSION}/navette-linux-x64" -o /usr/local/bin/navette
+          chmod +x /usr/local/bin/navette
+          echo "DRIVER_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+          echo "DRIVER_MB=$(du -m /usr/local/bin/navette | cut -f1)" >> "$GITHUB_ENV"
+      - name: WordPress stack (both engines pay this)
+        working-directory: demo/wordpress
+        run: |
+          docker compose up -d
+          for i in $(seq 1 60); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' -m 3 $WP_URL/wp-admin/install.php)" = "200" ] && echo "WP up after $((i*3))s" && exit 0
+            sleep 3
+          done
+          echo "WordPress never came up"; exit 1
+      - name: smoke suite
+        working-directory: demo/wordpress
+        run: |
+          # WebKitGTK needs an X server and a session bus — the same harness
+          # the bench workflow uses (setsid so the daemon survives the step).
+          setsid xvfb-run -a -s "-screen 0 1280x800x24" dbus-run-session -- \
+            navette serve --port 8766 > navette.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null && break; sleep 1; done
+          curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null || { cat navette.log; exit 1; }
+          set -o pipefail
+          t0=$(date +%s)
+          WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 \
+            python3 wp-smoke.py 2>&1 | tee suite.log
+          rc=${PIPESTATUS[0]}
+          echo "SUITE=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+          mkdir -p /tmp/race && cp artifacts/*.png /tmp/race/ 2>/dev/null || true
+          pkill -x navette || true
+          exit $rc
+      - name: data
+        id: data
+        if: always()
+        working-directory: demo/wordpress
+        run: |
+          {
+            echo "engine_setup=${ENGINE_SETUP:-failed}"
+            echo "driver_setup=${DRIVER_SETUP:-failed}"
+            echo "driver_mb=${DRIVER_MB:-0}"
+            echo "suite=$(grep -o 'passed in [0-9.]*' suite.log 2>/dev/null | head -1 | grep -o '[0-9.]*' || echo failed)"
+            echo "passed=$(grep -o '[0-9]*/[0-9]* journeys passed' suite.log 2>/dev/null | head -1 || echo 0/6)"
+          } >> "$GITHUB_OUTPUT"
+          cp suite.log /tmp/suite-navette.log 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: race-navette
+          if-no-files-found: ignore
+          path: |
+            /tmp/suite-navette.log
+            /tmp/race
+
+  playwright:
+    runs-on: ubuntu-24.04
+    outputs:
+      engine_setup: ${{ steps.data.outputs.engine_setup }}
+      driver_setup: ${{ steps.data.outputs.driver_setup }}
+      engine_mb: ${{ steps.data.outputs.engine_mb }}
+      suite: ${{ steps.data.outputs.suite }}
+      passed: ${{ steps.data.outputs.passed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: driver setup (npm package)
+        working-directory: demo/wordpress
+        run: |
+          t0=$(date +%s)
+          npm install --no-fund --no-audit playwright
+          echo "DRIVER_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+      - name: engine setup (Chromium download + OS deps)
+        working-directory: demo/wordpress
+        run: |
+          t0=$(date +%s)
+          npx playwright install --with-deps chromium
+          echo "ENGINE_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+          echo "ENGINE_MB=$(du -sm ~/.cache/ms-playwright 2>/dev/null | cut -f1)" >> "$GITHUB_ENV"
+      - name: WordPress stack (both engines pay this)
+        working-directory: demo/wordpress
+        run: |
+          docker compose up -d
+          for i in $(seq 1 60); do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' -m 3 $WP_URL/wp-admin/install.php)" = "200" ] && echo "WP up after $((i*3))s" && exit 0
+            sleep 3
+          done
+          echo "WordPress never came up"; exit 1
+      - name: smoke suite
+        working-directory: demo/wordpress
+        run: |
+          set -o pipefail
+          t0=$(date +%s)
+          node wp-smoke-playwright.js 2>&1 | tee suite.log
+          rc=${PIPESTATUS[0]}
+          echo "SUITE=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
+          mkdir -p /tmp/race && cp artifacts-playwright/*.png /tmp/race/ 2>/dev/null || true
+          exit $rc
+      - name: data
+        id: data
+        if: always()
+        working-directory: demo/wordpress
+        run: |
+          {
+            echo "engine_setup=${ENGINE_SETUP:-failed}"
+            echo "driver_setup=${DRIVER_SETUP:-failed}"
+            echo "engine_mb=${ENGINE_MB:-0}"
+            echo "suite=$(grep -o 'passed in [0-9.]*' suite.log 2>/dev/null | head -1 | grep -o '[0-9.]*' || echo failed)"
+            echo "passed=$(grep -o '[0-9]*/[0-9]* journeys passed' suite.log 2>/dev/null | head -1 || echo 0/6)"
+          } >> "$GITHUB_OUTPUT"
+          cp suite.log /tmp/suite-playwright.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: race-playwright
+          if-no-files-found: ignore
+          path: |
+            /tmp/suite-playwright.log
+            /tmp/race
+
+  summary:
+    needs: [navette, playwright]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: render the race table
+        env:
+          NAV: ${{ toJSON(needs.navette.outputs) }}
+          PW: ${{ toJSON(needs.playwright.outputs) }}
+        run: |
+          nav_engine=$(echo "$NAV" | jq -r .engine_setup)
+          nav_driver=$(echo "$NAV" | jq -r .driver_setup)
+          nav_suite=$(echo "$NAV" | jq -r .suite)
+          nav_pass=$(echo "$NAV" | jq -r .passed)
+          pw_engine=$(echo "$PW" | jq -r .engine_setup)
+          pw_driver=$(echo "$PW" | jq -r .driver_setup)
+          pw_mb=$(echo "$PW" | jq -r .engine_mb)
+          pw_suite=$(echo "$PW" | jq -r .suite)
+          pw_pass=$(echo "$PW" | jq -r .passed)
+          {
+            echo "# Cold-runner race — navette vs Playwright (fresh ubuntu-24.04 runners, same WordPress suite)"
+            echo
+            echo "| fresh runner | navette | Playwright + Chromium |"
+            echo "|---|---|---|"
+            echo "| engine setup | ${nav_engine}s — WebKitGTK from apt (macOS/Windows runners: 0s, the OS ships it) | ${pw_engine}s — Chromium download + deps (${pw_mb} MB on disk) |"
+            echo "| driver setup | ${nav_driver}s (release binary) | ${pw_driver}s (npm) |"
+            echo "| **suite (6 journeys)** | **${nav_pass} in ${nav_suite}s** | **${pw_pass} in ${pw_suite}s** |"
+            echo
+            echo "Both jobs: fresh runner, no caches — the state of a PR from a cold fork or an uncached matrix leg. With a warm Playwright browser cache the engine row drops, but the ${pw_mb} MB cache is the tax you carry everywhere navette needs nothing."
+            echo
+            echo "Suites: \`demo/wordpress/wp-smoke.py\` / \`wp-smoke-playwright.js\`. Local measured parity: 8.7–9.6 s vs 8.4–8.6 s (see demo/wordpress/README.md)."
+          } >> "$GITHUB_STEP_SUMMARY"
