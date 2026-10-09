@@ -540,6 +540,20 @@ pub fn import_cookies(s: &Arc<Session>, cookies: &Value) -> Result<usize, String
 // started a navigation, wait for it to finish; if nothing happened within
 // 300 ms, return immediately (opt-in via wait_navigation on /click).
 pub fn set_viewport(s: &Arc<Session>, width: u32, height: u32) -> Result<(), String> {
+    // Attach the ghost if this session never had a window — /sessions/viewport
+    // must not require a screenshot first (the n8n navigate journey sets the
+    // viewport before anything else).
+    {
+        let s2 = s.clone();
+        let so = s.webview.clone();
+        run_on_main(move || unsafe {
+            let wv = &*so;
+            let mut w = s2.window.lock().unwrap();
+            if w.is_none() {
+                *w = Some(attach_window(wv));
+            }
+        });
+    }
     let win = {
         let guard = s.window.lock().unwrap();
         match guard.as_ref() {

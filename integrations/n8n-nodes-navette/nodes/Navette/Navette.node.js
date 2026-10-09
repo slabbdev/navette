@@ -83,6 +83,37 @@ class Navette {
           default: 'markdown',
         }),
 
+        // ---- Navigate options: the one-node journey (viewport → wait →
+        // screenshot happen inside Navigate, so a basic capture is ONE node)
+        field('Options', 'navigateOptions', 'collection', {
+          ...show('navigate'),
+          label: 'Options',
+          typeOptions: {
+            multipleValues: false,
+          },
+          options: [
+            field('Viewport', 'viewport', 'fixedCollection', {
+              typeOptions: { multipleValues: false },
+              options: [
+                { name: 'values', displayName: 'Viewport', values: [
+                  field('Width', 'width', 'number', { default: 1920, description: 'Viewport width (px)' }),
+                  field('Height', 'height', 'number', { default: 1080, description: 'Viewport height (px)' }),
+                ]},
+              ],
+              default: {},
+              description: 'Set before the page loads — screenshots come out at this size',
+            }),
+            field('Wait For Selector', 'waitFor', 'string', {
+              placeholder: 'textarea[name=q], #main, [data-testid=result]',
+              description: 'Wait until this CSS selector exists before continuing',
+            }),
+            field('Max Wait (ms)', 'waitForMs', 'number', { default: 15000, description: 'Fail if the selector never appears' }),
+            field('Screenshot', 'screenshot', 'boolean', { default: false, description: 'Capture a PNG after the page settles — binary output "screenshot"' }),
+          ],
+          default: {},
+          description: 'Viewport, wait-for-selector, screenshot — the full journey in this one node',
+        }),
+
         field('Selector', 'selector', 'string', {
           ...show('click', 'type', 'wait'),
           required: true,
@@ -239,6 +270,48 @@ class Navette {
 
       const url = path === null ? `${base}/sessions` : `${base}${path}`;
       const method = path === null ? 'GET' : 'POST';
+      const call = async (p, b) => {
+        const r = await fetch(`${base}${p}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(b),
+        });
+        if (!r.ok) {
+          throw new Error(`navette ${p} failed (HTTP ${r.status}): ${await r.text()}`);
+        }
+        return r;
+      };
+
+      // ---- navigate with Options: the one-node journey -------------------
+      // viewport (before the page loads) → navigate → wait-for-selector →
+      // screenshot. Each option is optional; with none set this is a plain
+      // navigate, exactly like before.
+      if (operation === 'navigate') {
+        const opts = this.getNodeParameter('navigateOptions', i) || {};
+        const vp = opts.viewport?.values || opts.viewport || null;
+
+        if (vp && vp.width && vp.height) {
+          await call('/sessions/viewport', { session, width: vp.width, height: vp.height });
+        }
+
+        const navRes = await call('/navigate', body);
+        const navJson = await navRes.json();
+
+        if (opts.waitFor) {
+          await call('/wait', { session, selector: opts.waitFor, ms: opts.waitForMs || 15000 });
+        }
+
+        if (opts.screenshot) {
+          const shotRes = await call('/screenshot', { session });
+          const buf = Buffer.from(await shotRes.arrayBuffer());
+          const binary = await this.helpers.prepareBinaryData(buf, 'screenshot.png', 'image/png');
+          out.push({ json: { ...navJson, screenshotBytes: buf.length }, binary: { data: binary } });
+          continue;
+        }
+        out.push({ json: navJson });
+        continue;
+      }
+
       const res = await fetch(url, {
         method,
         headers,
