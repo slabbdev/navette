@@ -48,6 +48,7 @@ form, logged in for notifications — re-check both if dev.to ships a change):
 import argparse
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -67,6 +68,24 @@ SEL_AVATAR = "header .crayons-avatar"
 def die(msg):
     print(f"error: {msg}", file=sys.stderr)
     sys.exit(1)
+
+
+def fix_unicode(obj):
+    """The macOS eval bridge splits non-BMP chars (emoji) into lone UTF-16
+    surrogates, which Python then refuses to encode. Recombine proper
+    surrogate pairs into real codepoints, replace the orphans."""
+    if isinstance(obj, str):
+        obj = re.sub(
+            r"[\ud800-\udbff][\udc00-\udfff]",
+            lambda m: chr(0x10000 + ((ord(m.group(0)[0]) - 0xD800) << 10)
+                          + (ord(m.group(0)[1]) - 0xDC00)),
+            obj)
+        return obj.encode("utf-8", "replace").decode("utf-8")
+    if isinstance(obj, list):
+        return [fix_unicode(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: fix_unicode(v) for k, v in obj.items()}
+    return obj
 
 
 def api(path, body=None, raw=False, timeout=60):
@@ -196,8 +215,10 @@ JSON.stringify({user:who, count:items.length, items:items,
         data = json.loads(r.get("result", "{}"))
     except json.JSONDecodeError:
         die("notifications page unreadable — dev.to DOM changed?")
+    data = fix_unicode(data)
     if args.out:
-        Path(args.out).write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+        Path(args.out).write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                                  encoding="utf-8")
         print(f"json -> {args.out}")
     print(f"\nnotifications for @{data.get('user') or '?'} — {data['count']} entries")
     for it in data["items"][:args.limit]:

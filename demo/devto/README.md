@@ -40,6 +40,29 @@ name. The password never transits the chat or the script.
 | identity | sync XHR `GET /api/users/me` (session cookie auth) |
 | reply flow | open the comment permalink (`#comment_<id>`), click its Reply button, the inline form reuses the composer |
 
+## Lessons from the first live run (2026-10-09)
+
+- **The GitHub OAuth completes INSIDE the navette window** — the button
+  navigates the same session to `github.com/login?client_id=…`. Completing
+  it in your default browser (muscle memory) leaves navette logged out:
+  the session sat on `media2.dev.to` cookies while dev.to logged in
+  elsewhere. The tell: `/api/users/me` answers 401 while the page looks
+  fine.
+- **The comment editor renders a live preview card** (your avatar, your
+  text) under "Top comments" while you type — it looks EXACTLY like a
+  posted comment in a screenshot. Never trust pixels: verify with the
+  public API (`GET /api/comments?a_id=<id>`), which is also the
+  post-publish receipt.
+- **dev.to keeps the original slug after a retitle.** The orbit article is
+  titled "~1 MB to orbit…" but lives at
+  `/594-kb-to-orbit-a-browser-for-ai-agents-with-no-chromium-attached-1odg`.
+  Resolve URLs with `GET /api/articles?username=<handle>` instead of
+  memorizing slugs.
+- **The macOS eval bridge splits emoji into lone UTF-16 surrogates**
+  (notifications are full of them) — Python refuses to encode `\ud83d`.
+  `fix_unicode()` in the script recombines proper pairs and replaces the
+  orphans. Any navette recipe reading social text needs this.
+
 ## API facts that make this demo exist
 
 - `PUT /api/articles/{id}` works (article writes) — but `POST /api/comments`

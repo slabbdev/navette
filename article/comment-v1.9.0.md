@@ -1,0 +1,5 @@
+**v1.9.0 is out** — native key input on macOS, verified end-to-end on an AZERTY machine: `show_window` is the focus gate (the Window Server confirms `isKeyWindow` before any CGEvent is posted, so a keystroke can never land in someone else's app), and single characters ride with an attached unicode string, so `e.key` is what the agent asked for on **any keyboard layout** — 5/5 trusted keystrokes live (`a`, `Enter`, `Z`, `Tab`, `ArrowLeft`). All three engines now ship attempt-first native input: SendInput (Windows, verified end-to-end), XTEST (Linux/X11), CGEvents (macOS). Plus `NAVETTE_EVAL_TIMEOUT_SECS` for slow or contended environments.
+
+Release notes: https://github.com/slabbdev/navette/releases/tag/v1.9.0
+
+And since the last update here: the no-API recipes grew a second member — a leboncoin.fr demo that logs in the human way, keeps the session in the OS keychain, and reads pro seller stats off two routes. Also new in v1.9.0's wake: **19 MCP tools**, including `login` — the login form is filled straight from the OS keychain and the agent never sees the password ([#8](https://github.com/slabbdev/navette/issues/8)).
