@@ -36,6 +36,8 @@ use webviewkit::WebviewKit;
 static T0: OnceLock<Instant> = OnceLock::new();
 pub static PORT: OnceLock<u16> = OnceLock::new();
 static TOKEN: OnceLock<String> = OnceLock::new();
+// Extra Host headers accepted by the rebinding guard (--allow-host, repeatable).
+static ALLOWED_HOSTS: OnceLock<Vec<String>> = OnceLock::new();
 
 #[cfg(unix)]
 extern "C" fn graceful_term(_sig: i32) {
@@ -399,13 +401,16 @@ fn route(fd: &mut TcpStream, req: Req) {
     // that rebinds its DNS to 127.0.0.1 must not reach it. Only requests
     // addressed to a local Host are served (browsers' Private Network
     // Access blocks most of this already — this is the belt to that).
+    // --allow-host NAME extends the accepted Host headers for container
+    // topologies (n8n → navette across a docker network): opt-in per name,
+    // and the docs require pairing it with --token in that case.
     let host_local = req
         .headers
         .iter()
         .find(|(k, _)| k == "host")
         .map(|(_, v)| {
             let h = v.split(':').next().unwrap_or("").trim();
-            h == "127.0.0.1" || h == "localhost" || h == "[::1]"
+            h == "127.0.0.1" || h == "localhost" || h == "[::1]" || ALLOWED_HOSTS.get().is_some_and(|a| a.iter().any(|x| x == h))
         })
         .unwrap_or(false);
     let path_ok = req.path.split('?').next() == Some("/health");
@@ -1111,6 +1116,24 @@ fn serve(args: &[String]) {
     if let Some(t) = &token {
         let _ = TOKEN.set(t.clone());
         eprintln!("[navette] auth enabled: routes require the token (Authorization: Bearer)");
+    }
+
+    // --allow-host NAME (repeatable): extra Host headers the rebinding guard
+    // accepts. Container topologies need this (n8n → navette over a docker
+    // network arrives with Host: navette:8765). Pair with --token: once the
+    // API leaves the loopback namespace, the token is the door.
+    let allowed: Vec<String> = args
+        .iter()
+        .zip(args.iter().skip(1))
+        .filter(|(a, _)| a.as_str() == "--allow-host")
+        .map(|(_, v)| v.trim().trim_end_matches('/').to_string())
+        .collect();
+    if !allowed.is_empty() {
+        let _ = ALLOWED_HOSTS.set(allowed);
+        eprintln!(
+            "[navette] --allow-host: {} accepted beyond loopback — pair with --token outside a private network",
+            ALLOWED_HOSTS.get().map(|a| a.join(", ")).unwrap_or_default()
+        );
     }
 
     let proxy: Option<String> = args

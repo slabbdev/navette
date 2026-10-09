@@ -29,8 +29,26 @@ use tao::event_loop::{ControlFlow, EventLoopBuilder, EventLoopProxy};
 use tao::window::{Window, WindowBuilder};
 use wry::WebView;
 
+// Default ghost window size; NAVETTE_SIZE=WxH overrides it at process start
+// (container deployments size the Xvfb screen to match, so screenshots can
+// exceed the 1280×800 boot default). /sessions/viewport resizes per session
+// on top of this.
 pub const WIDTH: f64 = 1280.0;
 pub const HEIGHT: f64 = 800.0;
+
+fn boot_size() -> (f64, f64) {
+    if let Ok(spec) = std::env::var("NAVETTE_SIZE") {
+        if let Some((w, h)) = spec.split_once(['x', 'X']) {
+            if let (Ok(w), Ok(h)) = (w.trim().parse::<f64>(), h.trim().parse::<f64>()) {
+                if w >= 100.0 && h >= 100.0 && w <= 7680.0 && h <= 4320.0 {
+                    return (w, h);
+                }
+            }
+        }
+        eprintln!("[navette] NAVETTE_SIZE='{spec}' ignored — expected WxH, e.g. 1920x1080");
+    }
+    (WIDTH, HEIGHT)
+}
 
 // Injected at webview creation: eval results and fold completions both post
 // through window.ipc (the with_callback path returns empty on WebKitGTK).
@@ -813,6 +831,14 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                 // events — nested handlers must see None and skip, not deadlock.
                 let wv = s.webview_slot.lock().unwrap().take();
                 let Some(wv) = wv else { return Err("session not ready".into()) };
+                // X11: wry's set_bounds resizes the GTK window only when it is
+                // MAPPED — an off-screen ghost has no GdkWindow yet, the resize
+                // is silently dropped and screenshots stay at the boot size.
+                // Map → resize → let the frames pump → restore visibility.
+                let was_visible = s.window.0.is_visible();
+                if !was_visible {
+                    s.window.0.set_visible(true);
+                }
                 let r = wv
                     .0
                     .set_bounds(wry::Rect {
@@ -824,6 +850,9 @@ fn handle_command(cmd: Command, target: &tao::event_loop::EventLoopWindowTarget<
                     s.window
                         .0
                         .set_inner_size(tao::dpi::LogicalSize::new(f64::from(w), f64::from(h)));
+                }
+                if !was_visible {
+                    s.window.0.set_visible(false);
                 }
                 *s.webview_slot.lock().unwrap() = Some(wv);
                 r
@@ -941,7 +970,10 @@ fn create_session(
     let window = WindowBuilder::new()
         .with_title(format!("navette — {name}"))
         .with_decorations(false)
-        .with_inner_size(tao::dpi::LogicalSize::new(WIDTH, HEIGHT))
+        .with_inner_size({
+            let (w, h) = boot_size();
+            tao::dpi::LogicalSize::new(w, h)
+        })
         .with_position(tao::dpi::Position::Logical(tao::dpi::LogicalPosition::new(
             -WIDTH - 120.0,
             60.0,
