@@ -194,7 +194,7 @@ class Navette {
         }),
 
         field('Session', 'session', 'string', {
-          ...show('navigate', 'read', 'screenshot', 'click', 'type', 'evaluate', 'wait', 'viewport', 'login', 'exportState', 'importState', 'closeSession'),
+          ...show('navigate', 'read', 'screenshot', 'click', 'type', 'evaluate', 'wait', 'viewport', 'agent', 'login', 'exportState', 'importState', 'closeSession'),
           default: '',
           placeholder: 'default',
           description: 'Named browser context in the daemon — keep one per site; cookies persist between nodes',
