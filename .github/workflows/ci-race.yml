@@ -20,6 +20,7 @@ jobs:
       engine_setup: ${{ steps.data.outputs.engine_setup }}
       driver_setup: ${{ steps.data.outputs.driver_setup }}
       driver_mb: ${{ steps.data.outputs.driver_mb }}
+      daemon_boot: ${{ steps.data.outputs.daemon_boot }}
       suite: ${{ steps.data.outputs.suite }}
       passed: ${{ steps.data.outputs.passed }}
     steps:
@@ -50,15 +51,19 @@ jobs:
         working-directory: demo/wordpress
         run: |
           # WebKitGTK needs an X server and a session bus — the same harness
-          # the bench workflow uses (setsid so the daemon survives the step).
-          setsid xvfb-run -a -s "-screen 0 1280x800x24" dbus-run-session -- \
-            navette serve --port 8766 > navette.log 2>&1 &
-          for i in $(seq 1 30); do curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null && break; sleep 1; done
-          curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null || { cat navette.log; exit 1; }
+          # as ci.yml: env vars on the daemon, setsid so it survives the step.
+          # Cold CI boot is slow (the repo's own history: 38 s) — wait up to
+          # 4 minutes and record the daemon boot time as a race data point.
+          WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 \
+            setsid xvfb-run -a -s "-screen 0 1280x800x24" dbus-run-session -- \
+            /usr/local/bin/navette serve --port 8766 > navette.log 2>&1 &
+          t_boot=$(date +%s)
+          for i in $(seq 1 120); do curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null 2>&1 && break; sleep 2; done
+          curl -sf -m 2 http://127.0.0.1:8766/health >/dev/null || { echo "HEALTH FAILED after $(( $(date +%s) - t_boot ))s"; cat navette.log; exit 1; }
+          echo "DAEMON_BOOT=$(( $(date +%s) - t_boot ))" >> "$GITHUB_ENV"
           set -o pipefail
           t0=$(date +%s)
-          WEBKIT_FORCE_SANDBOX=0 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_PLATFORM=x11 \
-            python3 wp-smoke.py 2>&1 | tee suite.log
+          python3 wp-smoke.py 2>&1 | tee suite.log
           rc=${PIPESTATUS[0]}
           echo "SUITE=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
           mkdir -p /tmp/race && cp artifacts/*.png /tmp/race/ 2>/dev/null || true
@@ -73,6 +78,7 @@ jobs:
             echo "engine_setup=${ENGINE_SETUP:-failed}"
             echo "driver_setup=${DRIVER_SETUP:-failed}"
             echo "driver_mb=${DRIVER_MB:-0}"
+            echo "daemon_boot=${DAEMON_BOOT:-failed}"
             echo "suite=$(grep -o 'passed in [0-9.]*' suite.log 2>/dev/null | head -1 | grep -o '[0-9.]*' || echo failed)"
             echo "passed=$(grep -o '[0-9]*/[0-9]* journeys passed' suite.log 2>/dev/null | head -1 || echo 0/6)"
           } >> "$GITHUB_OUTPUT"
@@ -165,6 +171,7 @@ jobs:
         run: |
           nav_engine=$(echo "$NAV" | jq -r .engine_setup)
           nav_driver=$(echo "$NAV" | jq -r .driver_setup)
+          nav_boot=$(echo "$NAV" | jq -r .daemon_boot)
           nav_suite=$(echo "$NAV" | jq -r .suite)
           nav_pass=$(echo "$NAV" | jq -r .passed)
           pw_engine=$(echo "$PW" | jq -r .engine_setup)
@@ -179,6 +186,7 @@ jobs:
             echo "|---|---|---|"
             echo "| engine setup | ${nav_engine}s — WebKitGTK from apt (macOS/Windows runners: 0s, the OS ships it) | ${pw_engine}s — Chromium download + deps (${pw_mb} MB on disk) |"
             echo "| driver setup | ${nav_driver}s (release binary) | ${pw_driver}s (npm) |"
+            echo "| daemon boot (one-time, pre-warms the engine) | ${nav_boot}s cold — warm navigates are ms after | n/a (browser boots per launch) |"
             echo "| **suite (6 journeys)** | **${nav_pass} in ${nav_suite}s** | **${pw_pass} in ${pw_suite}s** |"
             echo
             echo "Both jobs: fresh runner, no caches — the state of a PR from a cold fork or an uncached matrix leg. With a warm Playwright browser cache the engine row drops, but the ${pw_mb} MB cache is the tax you carry everywhere navette needs nothing."
