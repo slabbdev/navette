@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-navette",
-  "version": "0.1.0",
-  "description": "n8n community node for navette — the browser for agents. Drive the system WebView: navigate, read, screenshot, click, type, evaluate, cookie state, one-command login.",
+  "version": "0.1.1",
+  "description": "n8n community node for navette \u2014 the browser for agents. Drive the system WebView: navigate, read, screenshot, click, type, evaluate, cookie state, one-command login.",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
@@ -13,12 +13,26 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/slabbdev/navette",
-  "author": { "name": "Sam LABBE" },
-  "repository": { "type": "git", "url": "git+https://github.com/slabbdev/navette.git" },
-  "engines": { "node": ">=18" },
+  "author": {
+    "name": "Sam LABBE"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slabbdev/navette.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "n8n": {
-    "n8n-nodes": ["nodes/Navette/Navette.node.js"],
-    "credentials": ["credentials/NavetteApi.credentials.js"]
+    "nodes": [
+      "nodes/Navette/Navette.node.js"
+    ],
+    "n8n-nodes": [
+      "nodes/Navette/Navette.node.js"
+    ],
+    "credentials": [
+      "credentials/NavetteApi.credentials.js"
+    ]
   },
   "dependencies": {}
 }
