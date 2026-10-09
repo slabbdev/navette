@@ -72,6 +72,11 @@ jobs:
           rc=${PIPESTATUS[0]}
           echo "SUITE=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
           mkdir -p /tmp/race && cp artifacts/*.png /tmp/race/ 2>/dev/null || true
+          echo "--- navette.log tail (page-load breadcrumbs) ---"
+          grep -E "page-load|navigate|listening|panic" navette.log | tail -25 || true
+          echo "--- direct POST of the language form (does WP accept it from the runner?) ---"
+          curl -s -m 10 -X POST "http://127.0.0.1:8090/wp-admin/install.php?step=1" \
+            -d "language=&Submit=Continue" | grep -o "weblog_title\|Select a default language" | head -2 || true
           pkill -x navette || true
           exit $rc
       - name: data
