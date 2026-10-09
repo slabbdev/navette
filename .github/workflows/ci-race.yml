@@ -31,13 +31,16 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq libwebkit2gtk-4.1-dev libgtk-3-dev glib-networking xvfb dbus
           echo "ENGINE_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
-      - name: driver setup (release binary — the brew/cargo-install path)
+      - name: driver setup (from source — the v1.9.0 release asset freezes on cold CI, see issue #9)
         run: |
           t0=$(date +%s)
-          curl -sL "https://github.com/slabbdev/navette/releases/download/${NAVETTE_VERSION}/navette-linux-x64" -o /usr/local/bin/navette
-          chmod +x /usr/local/bin/navette
+          # engine dev headers double as build deps for the source path
+          sudo apt-get install -y -qq build-essential pkg-config > /dev/null
+          cargo build --release
+          sudo cp target/release/navette /usr/local/bin/navette
           echo "DRIVER_SETUP=$(( $(date +%s) - t0 ))" >> "$GITHUB_ENV"
           echo "DRIVER_MB=$(du -m /usr/local/bin/navette | cut -f1)" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
       - name: WordPress stack (both engines pay this)
         working-directory: demo/wordpress
         run: |
