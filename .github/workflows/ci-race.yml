@@ -52,6 +52,8 @@ jobs:
           echo "WordPress never came up"; exit 1
       - name: smoke suite
         working-directory: demo/wordpress
+        env:
+          NAVETTE: http://127.0.0.1:8766
         run: |
           # WebKitGTK needs an X server and a session bus — the same harness
           # as ci.yml: env vars on the daemon, setsid so it survives the step.
