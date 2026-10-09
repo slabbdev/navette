@@ -166,7 +166,10 @@ class Navette {
 
         field('Mission', 'mission', 'string', {
           ...show('agent'),
-          required: true,
+          // NOT `required` in the schema: n8n validates required params
+          // BEFORE the trigger data flows, and an expression like
+          // {{$json.chatInput}} evaluates empty at that moment — the check
+          // would block every chat run. Runtime check below instead.
           typeOptions: { editor: 'textEditor' },
           placeholder: 'e.g. Go to news.ycombinator.com and give me the top 5 titles with their points',
           description: 'What you want, in plain words. The node opens the page, clicks, fills, reads — by itself.',
@@ -244,6 +247,9 @@ class Navette {
           throw new Error('Browse for me needs an LLM: open the node credentials and configure "navette agent — LLM" (a free Gemini key works).');
         }
         const mission = this.getNodeParameter('mission', i);
+        if (!mission || !String(mission).trim()) {
+          throw new Error('Browse for me needs a Mission — what should the agent do? (e.g. "Go to example.com and tell me the page title")');
+        }
         const startUrl = this.getNodeParameter('startUrl', i) || '';
         const maxSteps = Math.min(this.getNodeParameter('maxSteps', i) || 8, 20);
 
