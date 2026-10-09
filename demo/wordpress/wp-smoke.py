@@ -57,15 +57,25 @@ def api(path, body=None, timeout=90):
 
 
 def ev(session, js):
-    """evaluate, always returning parsed JSON (stringify in the page: the
-    macOS bridge serializes objects as NSDictionary descriptions)."""
+    """evaluate, always returning parsed JSON. The expression is stringified
+    in the page (the macOS bridge serializes objects as NSDictionary
+    descriptions) — and the wry ipc shim stringifies the result AGAIN, so a
+    string result comes back double-encoded. Unwrap one extra layer: what
+    arrives as '"true"' must become the boolean True, or every boolean
+    probe false-negatives on Linux (the CI-only ghost that cost a day)."""
     raw = api("/evaluate", {"js": f"(function(){{try{{return JSON.stringify({js})}}catch(e){{return JSON.stringify({{err:String(e)}})}}}})()", "session": session}).get("result")
     if raw in (None, ""):
         return {}
     try:
-        return json.loads(raw)
+        v = json.loads(raw)
     except (TypeError, ValueError):
         return {"raw": raw}
+    if isinstance(v, str):
+        try:
+            v = json.loads(v)
+        except (TypeError, ValueError):
+            pass
+    return v
 
 
 def probe(session, js, want, timeout=10.0, tick=0.25):
