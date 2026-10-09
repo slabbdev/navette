@@ -1,0 +1,527 @@
+{
+ "name": "navette \u2014 audit WordPress (example)",
+ "id": "c302200c-f99e-4a57-b0d5-adec87910e3d",
+ "nodes": [
+  {
+   "parameters": {},
+   "id": "trig",
+   "name": "When clicking Test",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "operation": "importState",
+    "session": "wp-audit",
+    "cookies": "{{ $json.cookiesJson }}  // paste your exported state (Export State node output)"
+   },
+   "id": "st1",
+   "name": "restore admin session",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    200,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "navigate",
+    "url": "http://navette-wp/wp-admin/",
+    "withContent": false,
+    "format": "markdown",
+    "session": "wp-audit",
+    "navigateOptions": {
+     "viewport": {
+      "values": {
+       "width": 1920,
+       "height": 1080
+      }
+     },
+     "waitFor": "#wpadminbar",
+     "waitForMs": 15000,
+     "screenshot": true
+    }
+   },
+   "id": "admin view (1080p)",
+   "name": "admin view (1080p)",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    420,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "evaluate",
+    "session": "wp-audit",
+    "js": "JSON.stringify({atGlance:(document.querySelector('#dashboard_right_now .inside')||{innerText:''}).innerText.replace(/\\n+/g,' | ').slice(0,160), user:(document.querySelector('.display-name')||{textContent:''}).textContent.trim()})"
+   },
+   "id": "ev1",
+   "name": "extract dashboard stats",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    640,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "read",
+    "session": "wp-audit",
+    "format": "markdown"
+   },
+   "id": "rd1",
+   "name": "read dashboard (markdown)",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    860,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "exportState",
+    "session": "wp-audit"
+   },
+   "id": "ex1",
+   "name": "persist refreshed state",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1080,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "navigate",
+    "url": "http://navette-wp/",
+    "withContent": true,
+    "format": "markdown",
+    "session": "wp-public",
+    "navigateOptions": {
+     "viewport": {
+      "values": {
+       "width": 1600,
+       "height": 900
+      }
+     },
+     "waitFor": "h1",
+     "waitForMs": 15000
+    }
+   },
+   "id": "public view (anonymous)",
+   "name": "public view (anonymous)",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1300,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "evaluate",
+    "session": "wp-public",
+    "js": "JSON.stringify(document.querySelector('a[href*=\"?p=\"]') ? document.querySelector('a[href*=\"?p=\"]').href : 'NOPOST')"
+   },
+   "id": "findpost",
+   "name": "find first post link",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1420,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "navigate",
+    "url": "={{ JSON.parse($json.result) }}",
+    "withContent": false,
+    "session": "wp-public"
+   },
+   "id": "openpost",
+   "name": "open the post",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1470,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "type",
+    "session": "wp-public",
+    "selector": "#comment",
+    "value": "Audit bot: site reachable, comment pipeline exercised (run 2)."
+   },
+   "id": "ty1",
+   "name": "type comment",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1520,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "type",
+    "session": "wp-public",
+    "selector": "#author",
+    "value": "navette auditor"
+   },
+   "id": "ty2",
+   "name": "type author",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1740,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "type",
+    "session": "wp-public",
+    "selector": "#email",
+    "value": "audit@local.test"
+   },
+   "id": "ty3",
+   "name": "type email",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    1960,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "click",
+    "session": "wp-public",
+    "selector": "#submit",
+    "waitNavigation": true
+   },
+   "id": "cl1",
+   "name": "submit comment",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    2180,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "evaluate",
+    "session": "wp-public",
+    "js": "JSON.stringify({moderated:/awaiting moderation|pending|moderation/i.test(document.body.innerText), auditText:/Audit bot/i.test(document.body.innerText)})"
+   },
+   "id": "ev2",
+   "name": "verify moderation",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    2400,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "closeSession",
+    "session": "wp-audit"
+   },
+   "id": "cs1",
+   "name": "close admin session",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    2620,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  },
+  {
+   "parameters": {
+    "operation": "closeSession",
+    "session": "wp-public"
+   },
+   "id": "cs2",
+   "name": "close public session",
+   "type": "n8n-nodes-navette.navette",
+   "typeVersion": 1,
+   "position": [
+    2840,
+    0
+   ],
+   "credentials": {
+    "navetteApi": {
+     "id": "H09h2g0XkWQxq34Z",
+     "name": "navette daemon (smoke)"
+    }
+   }
+  }
+ ],
+ "connections": {
+  "When clicking Test": {
+   "main": [
+    [
+     {
+      "node": "restore admin session",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "restore admin session": {
+   "main": [
+    [
+     {
+      "node": "admin view (1080p)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "admin view (1080p)": {
+   "main": [
+    [
+     {
+      "node": "extract dashboard stats",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "extract dashboard stats": {
+   "main": [
+    [
+     {
+      "node": "read dashboard (markdown)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "read dashboard (markdown)": {
+   "main": [
+    [
+     {
+      "node": "persist refreshed state",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "persist refreshed state": {
+   "main": [
+    [
+     {
+      "node": "public view (anonymous)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "public view (anonymous)": {
+   "main": [
+    [
+     {
+      "node": "find first post link",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "find first post link": {
+   "main": [
+    [
+     {
+      "node": "open the post",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "open the post": {
+   "main": [
+    [
+     {
+      "node": "type comment",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "type comment": {
+   "main": [
+    [
+     {
+      "node": "type author",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "type author": {
+   "main": [
+    [
+     {
+      "node": "type email",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "type email": {
+   "main": [
+    [
+     {
+      "node": "submit comment",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "submit comment": {
+   "main": [
+    [
+     {
+      "node": "verify moderation",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "verify moderation": {
+   "main": [
+    [
+     {
+      "node": "close admin session",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "close admin session": {
+   "main": [
+    [
+     {
+      "node": "close public session",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {}
+}

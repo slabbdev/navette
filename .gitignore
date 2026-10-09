@@ -19,3 +19,4 @@ demo/wordpress/wp-state.json
 demo/wordpress/wp-state-playwright.json
 __pycache__/
 integrations/n8n-nodes-navette/*.tgz
+demo/wordpress/wp-admin-state.json
